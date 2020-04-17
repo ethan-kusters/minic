@@ -27,10 +27,14 @@ class ErrorBucker: ErrorHandler {
             return
         }
         
+        let sortedErrors = errors.sorted { (first, second) in
+            (first as? TypeError)?.lineNumber ?? 0 <= (second as? TypeError)?.lineNumber ?? 0
+        }
+        
         print()
         print(header.colorize(.darkBlue, background: .cyan2).bold())
         
-        errors.forEach { error in
+        sortedErrors.forEach { error in
             guard let typeError = error as? TypeError else { return }
             
             let lineNumber = typeError.lineNumber.description.padding(toLength: 4, withPad: " ", startingAt: 0)

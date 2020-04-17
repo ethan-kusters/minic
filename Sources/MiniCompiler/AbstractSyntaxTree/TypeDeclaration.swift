@@ -19,3 +19,15 @@ extension Array where Self.Element == Declaration {
         first(where: {$0.name == name})
     }
 }
+
+extension TypeDeclaration: Equatable {
+    static func == (lhs: TypeDeclaration, rhs: TypeDeclaration) -> Bool {
+        lhs.name == rhs.name
+    }
+}
+
+extension TypeDeclaration: CustomStringConvertible {
+    var description: String {
+        "struct \(self.name)"
+    }
+}

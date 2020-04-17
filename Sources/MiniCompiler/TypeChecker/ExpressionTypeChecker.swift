@@ -131,15 +131,34 @@ class ExpressionTypeChecker {
             
             return .bool
         case .equalTo, .notEqualTo:
-            guard leftType == .bool || leftType == .int else {
-                errorHandler.report(.invalidEqualityExpression(lineNumber: lineNumber,
-                                                               leftType: leftType,
-                                                               rightType: rightType))
+            if case let .struct(_, leftStructName) = leftType,
+                case let .struct(_, rightStructName) = rightType {
+                guard let leftStruct = context.getStruct(leftStructName) else {
+                    errorHandler.report(.structNotFound(leftStructName, lineNumber: lineNumber))
+                    return nil
+                }
                 
-                return nil
+                guard let rightStruct = context.getStruct(rightStructName) else {
+                    errorHandler.report(.structNotFound(rightStructName, lineNumber: lineNumber))
+                    return nil
+                }
+                
+                guard leftStruct == rightStruct else {
+                    errorHandler.report(.invalidStructEqualityExpression(lineNumber: lineNumber, leftTypeDecl: leftStruct, rightTypeDecl: rightStruct))
+                    
+                    return nil
+                }
+                
+                return .bool
+            } else if leftType == .int {
+                return .bool
             }
             
-            return .bool
+            errorHandler.report(.invalidEqualityExpression(lineNumber: lineNumber,
+                                                           leftType: leftType,
+                                                           rightType: rightType))
+            
+            return nil
         case .and, .or:
             guard leftType == .bool else {
                 errorHandler.report(.invalidBooleanExpression(lineNumber: lineNumber,

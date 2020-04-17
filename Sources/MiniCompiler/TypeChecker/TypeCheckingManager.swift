@@ -1,8 +1,9 @@
 //
-//  File.swift
-//  
+//  TypeCheckingManager.swift
+//  MiniCompiler
 //
 //  Created by Ethan Kusters on 4/15/20.
+//  Copyright © 2020 Ethan Kusters. All rights reserved.
 //
 
 import Foundation
@@ -33,6 +34,14 @@ class TypeCheckingManager {
             }
             
             context.popLocalContext()
+        }
+        
+        let hasValidMainFunction = program.functions.contains { function in
+            function.name == "main" && function.retType == .int
+        }
+        
+        if !hasValidMainFunction {
+            errorBucket.report(.mainFunctionMissing)
         }
         
         guard errorBucket.count > 0 else { return true }

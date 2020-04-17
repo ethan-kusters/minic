@@ -11,6 +11,9 @@ import ColorizeSwift
 
 enum TypeError: Error {
     
+    // MARK: - Program Errors
+    case mainFunctionMissing
+    
     // MARK: - Function Body Type Checker
     case functionMissingReturn(lineNumber: Int, functionName: String, returnType: Type)
     
@@ -38,6 +41,8 @@ enum TypeError: Error {
     case invalidComparisonExpression(lineNumber: Int, leftType: Type, rightType: Type)
     case invalidArithmeticExpression(lineNumber: Int, leftType: Type, rightType: Type)
     case invalidEqualityExpression(lineNumber: Int, leftType: Type, rightType: Type)
+    case invalidStructEqualityExpression(lineNumber: Int,
+        leftTypeDecl: TypeDeclaration, rightTypeDecl: TypeDeclaration)
     case invalidBooleanExpression(lineNumber: Int, leftType: Type, rightType: Type)
     case invalidInvocationTooManyArgs(lineNumber: Int, functionName: String)
     case invalidInvocationTooFewArgs(lineNumber: Int, functionName: String)
@@ -45,7 +50,7 @@ enum TypeError: Error {
 }
 
 extension TypeError {
-    var lineNumber: Int {
+    public var lineNumber: Int {
         switch self {
         case let .deleteTypeError(lineNumber, _):
             return lineNumber
@@ -95,6 +100,10 @@ extension TypeError {
             return lineNumber
         case let .invocationStatementExpError(lineNumber, _):
             return lineNumber
+        case let .invalidStructEqualityExpression(lineNumber, _, _):
+            return lineNumber
+        case .mainFunctionMissing:
+            return 0
         }
     }
     
@@ -127,13 +136,13 @@ extension TypeError {
         case let .invalidMinusOperation(_, typeUsed):
             return "Minus operations expect 'int' type. Found '\(typeUsed)'."
         case let .invalidBinaryExpression(_, leftType, rightType):
-            return "Binary expressions expect matching types. Found '\(leftType)' and '\(rightType)'."
+            return "Binary expressions expect equal types. Found '\(leftType)' and '\(rightType)'."
         case let .invalidComparisonExpression(_, leftType, rightType):
             return "Comparison expressions expect 'int' values. Found '\(leftType)' and '\(rightType)'."
         case let .invalidArithmeticExpression(_, leftType, rightType):
             return "Arithmetic expressions expect 'int' values. Found '\(leftType)' and '\(rightType)'."
         case let .invalidEqualityExpression(_, leftType, rightType):
-            return "Equality expressions expect 'int' values or structure references. Found '\(leftType)' and '\(rightType)'."
+            return "Cannot compare '\(leftType)' and '\(rightType)'."
         case let .invalidBooleanExpression(_, leftType, rightType):
             return "Boolean expressions expect 'bool' values. Found '\(leftType)' and '\(rightType)'."
         case let .invalidInvocationTooManyArgs(_, functionName):
@@ -148,6 +157,10 @@ extension TypeError {
             return "Function '\(functionName)' missing return. Expected to return type '\(returnType)'."
         case let .invocationStatementExpError(_, expressionUsed):
             return "Invocation statement expects 'invocation' expression. Found '\(expressionUsed)'."
+        case let .invalidStructEqualityExpression(_, leftTypeDecl, rightTypeDecl):
+            return "Cannot compare equality of differing types '\(leftTypeDecl)' and '\(rightTypeDecl)'."
+        case .mainFunctionMissing:
+            return "All mini programs must contain a main() function that returns an int."
         }
     }
 }
