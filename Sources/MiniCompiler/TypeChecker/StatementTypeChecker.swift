@@ -45,7 +45,7 @@ class StatementTypeChecker {
                 return .notReturnEquivalent
             }
             
-            return typeCheck(thenStmt) && typeCheck(elseStmt)
+            return typeCheck(thenStmt) && typeCheck(elseStmt ?? Statement.emptyBlock())
         case let .delete(lineNumber, expression):
             guard let expressionType = expressionTypeChecker(expression) else { return .notReturnEquivalent }
             guard case .struct = expressionType else {

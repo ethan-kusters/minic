@@ -1,5 +1,5 @@
 //
-//  Function+constructControlFlowGraph.swift
+//  Function+controlFlowGraph.swift
 //  MiniCompiler
 //
 //  Created by Ethan Kusters on 4/23/20.
@@ -9,7 +9,7 @@
 import Foundation
 
 extension Function {
-    func constructControlFlowGraph() -> [Block] {
-        return ControlFlowGraphBuilder(self).blocks
+    var controlFlowGraph: ControlFlowGraph {
+        return ControlFlowGraph(blocks: ControlFlowGraphBuilder(self).blocks, name: name)
     }
 }

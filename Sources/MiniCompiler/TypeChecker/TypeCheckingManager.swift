@@ -25,7 +25,9 @@ class TypeCheckingManager {
             
             let errorCountBeforeTypeCheck = errorBucket.count
             
-            if statementTypeChecker(function.body) == .notReturnEquivalent && errorCountBeforeTypeCheck == errorBucket.count {
+            if function.retType != .void
+                && statementTypeChecker(function.body) == .notReturnEquivalent
+                && errorCountBeforeTypeCheck == errorBucket.count {
                 let error = TypeError.functionMissingReturn(lineNumber: function.lineNumber,
                                                             functionName: function.name,
                                                             returnType: function.retType)

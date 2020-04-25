@@ -5,6 +5,9 @@ import PackageDescription
 
 let package = Package(
     name: "MiniCompiler",
+    platforms: [
+        .macOS(.v10_13)
+    ],
     products: [
         .executable(name: "minic", targets: ["MiniCompiler"])
     ],

@@ -15,7 +15,7 @@ enum Statement {
     indirect case block(lineNumber: Int, statements: [Statement])
     
     indirect case conditional(lineNumber: Int, guard: Expression,
-        then: Statement, else: Statement)
+        then: Statement, else: Statement?)
     
     case delete(lineNumber: Int, expression: Expression)
     

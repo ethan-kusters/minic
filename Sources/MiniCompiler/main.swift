@@ -12,16 +12,45 @@ import Foundation
 struct minic: ParsableCommand {
     @Argument(help: "The path of the source file to be compiled.") var sourceFilePath: URL
     
+    var sourceFileName: String {
+        sourceFilePath.deletingPathExtension().lastPathComponent
+    }
+    
+    @Flag(help: "Generate a GraphViz DOT file of the program's control flow graph.")
+    var generateCfg: Bool
+    
+    @Flag(help: "Use GraphViz to generate a PDF of the program's control flow graph.")
+    var generateCfgPdf: Bool
+    
     mutating func validate() throws {
-      // Verify the file actually exists.
-      guard FileManager.default.fileExists(atPath: sourceFilePath.path) else {
-        throw ValidationError("File does not exist at \(sourceFilePath.path)")
-      }
+        // Verify the file actually exists.
+        guard FileManager.default.fileExists(atPath: sourceFilePath.path) else {
+            throw ValidationError("File does not exist at \(sourceFilePath.path)")
+        }
+        
+        guard !generateCfgPdf || FileManager.default.isExecutableFile(atPath: GraphVizConstants.dotExecutablePath) else {
+            throw ValidationError("Unable to generate CFG PDF without an installatin of dot at \(GraphVizConstants.dotExecutablePath)")
+        }
     }
     
     func run() throws {
         let program = try ParsingManager().parseFileAtURL(sourceFilePath)
-        _ = try TypeCheckingManager().check(program)
+        
+        guard try TypeCheckingManager().check(program) else { return }
+        
+        let functionGraphs = program.functions.map(\.controlFlowGraph)
+        
+        if generateCfgPdf || generateCfg {
+            let graphVizManager = GraphVizManager(with: functionGraphs, named: sourceFileName)
+            
+            if generateCfgPdf {
+                try graphVizManager.generateGraphPDF()
+            }
+            
+            if generateCfg {
+                try graphVizManager.generateGraphDotfile()
+            }
+        }
     }
 }
 

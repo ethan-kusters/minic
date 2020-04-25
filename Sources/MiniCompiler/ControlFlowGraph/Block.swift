@@ -37,6 +37,21 @@ extension Block {
     
     private static func getLabel(_ description: String) -> String {
         labelIndex += 1
-        return "_\(description)_L\(labelIndex)"
+        return "_L\(labelIndex)_\(description)".replacingOccurrences(of: " ", with: "_")
+    }
+}
+
+extension Block: Equatable {
+    static func == (lhs: Block, rhs: Block) -> Bool {
+        lhs.label == rhs.label
+            && lhs.predecessors == rhs.predecessors
+            && lhs.successors == rhs.successors
+            && lhs.instructions == rhs.instructions
+    }
+}
+
+extension Block: CustomStringConvertible {
+    var description: String {
+        label
     }
 }

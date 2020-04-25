@@ -101,7 +101,7 @@ class MiniToAstStatementVisitor: MiniBaseVisitor<Statement> {
         return .conditional(lineNumber: ctx.startLineNumber,
                             guard: expression,
                             then: thenStatement,
-                            else: elseStatement ?? Statement.emptyBlock())
+                            else: elseStatement)
     }
     
     override func visitWhile(_ ctx: MiniParser.WhileContext) -> Statement? {
