@@ -15,25 +15,25 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#add-instruction)
-    case add(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue)
+    case add(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
     
     /// The ‘sub’ instruction returns the difference of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#sub-instruction)
-    case subtract(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue)
+    case subtract(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
     
     /// The ‘mul’ instruction returns the product of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#mul-instruction)
-    case multiply(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue)
+    case multiply(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
     
     /// The ‘sdiv’ instruction returns the quotient of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#sdiv-instruction)
-    case signedDivide(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue)
+    case signedDivide(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
     
     // MARK: - Boolean Instructions
     
@@ -41,13 +41,13 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#and-instruction)
-    case and(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue)
+    case and(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
     
     /// The ‘or’ instruction returns the bitwise logical inclusive or of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#or-instruction)
-    case or(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue)
+    case or(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
     
     /// The ‘xor’ instruction returns the bitwise logical exclusive or of its two operands.
     ///
@@ -55,7 +55,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#xor-instruction)
-    case xor(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue)
+    case exclusiveOr(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
     
     // MARK: - Comparison
     
@@ -64,7 +64,7 @@ enum Instruction: Equatable {
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#icmp-instruction)
     case comparison(condCode: InstructionConditionCode,
-        type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue)
+        type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
     
     // MARK: - Branch
     
@@ -86,7 +86,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#load-instruction)
-    case load(valueType: InstructionType, pointerType: InstructionPointer, pointer: InstructionPointer)
+    case load(valueType: InstructionType, pointerType: InstructionPointer, pointer: InstructionPointer, result: InstructionValue)
     
     /// The ‘store’ instruction is used to write to memory.
     ///
@@ -100,13 +100,13 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#call-instruction)
-    case call(returnType: InstructionType, functionPointer: InstructionPointer, arguments: [InstructionArgument])
+    case call(returnType: InstructionType, functionPointer: InstructionPointer, arguments: [InstructionArgument], result: InstructionValue)
     
     /// The ‘ret’ instruction is used to return control flow (and optionally a value) from a function back to the caller.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#ret-instruction)
-    case returnValue(type: InstructionType, value: InstructionValue)
+    case returnValue(type: InstructionType, value: InstructionValue, result: InstructionValue)
     
     /// The ‘ret’ instruction is used to return control flow (and optionally a value) from a function back to the caller.
     ///
@@ -123,7 +123,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#alloca-instruction)
-    case allocate(type: InstructionType)
+    case allocate(type: InstructionType, result: InstructionValue)
     
     // MARK: - Conversino
     
@@ -131,7 +131,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#bitcast-to-instruction)
-    case bitcast(currentType: InstructionType, value: InstructionValue, destinationType: InstructionType)
+    case bitcast(currentType: InstructionType, value: InstructionValue, destinationType: InstructionType, result: InstructionValue)
     
     /// The ‘trunc’ instruction truncates its operand to the type ty2.
     ///
@@ -140,7 +140,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#trunc-to-instruction)
-    case truncate(currentType: InstructionType, value: InstructionValue, destinationType: InstructionType)
+    case truncate(currentType: InstructionType, value: InstructionValue, destinationType: InstructionType, result: InstructionValue)
     
     /// The ‘zext’ instruction zero extends its operand to type ty2.
     ///
@@ -149,5 +149,5 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#zext-to-instruction)
-    case zeroExtend(currentType: InstructionType, value: InstructionValue, destinationType: InstructionType)
+    case zeroExtend(currentType: InstructionType, value: InstructionValue, destinationType: InstructionType, result: InstructionValue)
 }

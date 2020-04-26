@@ -11,8 +11,8 @@ import Foundation
 class MiniToAstExpressionVisitor: MiniBaseVisitor<Expression> {
     override func visitIntegerExpr(_ ctx: MiniParser.IntegerExprContext) -> Expression? {
         guard let value = ctx.INTEGER()?.getText() else { return nil }
-        
-        return .integer(lineNumber: ctx.startLineNumber, value: value)
+        guard let intValue = Int.init(argument: value) else { return nil }
+        return .integer(lineNumber: ctx.startLineNumber, value: intValue)
     }
     
     override func visitTrueExpr(_ ctx: MiniParser.TrueExprContext) -> Expression? {

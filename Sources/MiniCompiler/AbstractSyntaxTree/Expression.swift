@@ -18,7 +18,7 @@ enum Expression {
     
     case identifier(lineNumber: Int, id: String)
     
-    case integer(lineNumber: Int, value: String)
+    case integer(lineNumber: Int, value: Int)
     
     indirect case invocation(lineNumber: Int, name: String, arguments: [Expression])
     
