@@ -6,11 +6,18 @@
 //
 
 import Foundation
-import AppKit
+
+#if canImport(AppKit)
+    import AppKit
+#endif
 
 class GraphVizManager {
     private let controlFlowGraphs: [ControlFlowGraph]
     private let baseFilename: String
+    private var fileName: String {
+        baseFilename + "_GraphRepresentation"
+    }
+    
     
     init(with controlFlowGraphs: [ControlFlowGraph], named baseFilename: String) {
         self.controlFlowGraphs = controlFlowGraphs
@@ -19,10 +26,8 @@ class GraphVizManager {
     
     @discardableResult
     func generateGraphDotfile(inTemporaryDirectory: Bool = false) throws -> URL {
-        let fileName = baseFilename + "_GraphRepresentation"
-        
         let baseDirectory = inTemporaryDirectory ?
-            FileManager.default.temporaryDirectory : FileManager.default.currentDirectory
+            FileManager.default.universalTempDirectory : FileManager.default.currentDirectory
         
         let outputFilePath = baseDirectory
             .appendingPathComponent(fileName)
@@ -35,16 +40,26 @@ class GraphVizManager {
     func generateGraphPDF() throws {
         let dotfileURL = try generateGraphDotfile(inTemporaryDirectory: true)
         
-        let outputPDF = dotfileURL.deletingPathExtension().appendingPathExtension("pdf")
+        let outputPDF = FileManager.default.currentDirectory
+            .appendingPathComponent(fileName)
+            .appendingPathExtension("pdf")
         
         let dotTask = Process()
-        dotTask.executableURL = URL(fileURLWithPath: GraphVizConstants.dotExecutablePath)
         dotTask.arguments = ["-Tpdf", dotfileURL.path, "-o", outputPDF.path]
-        try dotTask.run()
+        
+        if #available(macOS 10.13, *) {
+            dotTask.executableURL = URL(fileURLWithPath: GraphVizConstants.dotExecutablePath)
+            try dotTask.run()
+        } else {
+            dotTask.launchPath = GraphVizConstants.dotExecutablePath
+            dotTask.launch()
+        }
+        
         dotTask.waitUntilExit()
-        
-        NSWorkspace.shared.open(outputPDF)
-        
         try FileManager.default.removeItem(at: dotfileURL)
+        
+        #if canImport(AppKit)
+            NSWorkspace.shared.open(outputPDF)
+        #endif
     }
 }
