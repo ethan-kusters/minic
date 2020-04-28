@@ -12,4 +12,6 @@ struct InstructionConstants {
     static let defaultBoolType = InstructionType.i32
     static let falseValue = 0
     static let trueValue = 1
+    static let parameterPrefix = "_param_"
+    static let returnPointer = "_retVal"
 }

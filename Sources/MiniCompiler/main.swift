@@ -23,6 +23,7 @@ struct minic: ParsableCommand {
     var generateCfgPdf: Bool
     
     mutating func validate() throws {
+        
         // Verify the file actually exists.
         guard FileManager.default.fileExists(atPath: sourceFilePath.path) else {
             throw ValidationError("File does not exist at \(sourceFilePath.path)")
@@ -36,9 +37,11 @@ struct minic: ParsableCommand {
     func run() throws {
         let program = try ParsingManager().parseFileAtURL(sourceFilePath)
         
-        guard try TypeCheckingManager().check(program) else { return }
+        guard let functionsWithContexts = try TypeCheckingManager().check(program) else { return }
         
-        let functionGraphs = program.functions.map(\.controlFlowGraph)
+        let functionGraphs = functionsWithContexts.map { (function, context) in
+            function.getControlFlowGraph(context: context)
+        }
         
         if generateCfgPdf || generateCfg {
             let graphVizManager = GraphVizManager(with: functionGraphs, named: sourceFileName)
@@ -51,6 +54,10 @@ struct minic: ParsableCommand {
                 try graphVizManager.generateGraphDotfile()
             }
         }
+        
+        let llvmManager = LLVMManager(program, with: functionGraphs, named: sourceFileName)
+        
+        try llvmManager.generateLLVM()
     }
 }
 

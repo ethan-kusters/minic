@@ -10,10 +10,20 @@ import Foundation
 struct InstructionRegister: Equatable {
     private static var currentIndex = 0
     
-    let index: Int
+    let id: String
     
     init() {
         InstructionRegister.currentIndex += 1
-        index = InstructionRegister.currentIndex
+        id = "_reg\(InstructionRegister.currentIndex)"
+    }
+    
+    init(withId id: String) {
+        self.id = id
+    }
+}
+
+extension InstructionRegister: CustomStringConvertible {
+    var description: String {
+        id
     }
 }

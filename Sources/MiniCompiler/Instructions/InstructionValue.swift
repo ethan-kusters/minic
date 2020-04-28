@@ -17,9 +17,10 @@ extension InstructionValue {
         switch(self) {
         case let .register(_, type):
             return type
-        case .literal(_):
+        case .literal:
             return InstructionConstants.defaultIntType
         }
+        
     }
 }
 
@@ -30,5 +31,13 @@ extension InstructionValue {
     
     static func newBoolRegister() -> InstructionValue {
         return .register(register: InstructionRegister(), type: InstructionConstants.defaultBoolType)
+    }
+    
+    static func newRegister(forType type: InstructionType) -> InstructionValue {
+        .register(register: InstructionRegister(), type: type)
+    }
+    
+    static func existingRegister(withId id: String, type: InstructionType) -> InstructionValue {
+        .register(register: InstructionRegister(withId: id), type: type)
     }
 }

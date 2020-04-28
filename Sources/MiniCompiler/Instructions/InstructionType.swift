@@ -7,8 +7,9 @@
 
 import Foundation
 
-enum InstructionType: Equatable {
+enum InstructionType: String, Equatable {
     case void
+    case null
     case i1
     case i8
     case i32

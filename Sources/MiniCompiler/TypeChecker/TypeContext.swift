@@ -19,10 +19,22 @@ class TypeContext {
     private var structTable = [String: TypeDeclaration]()
     private var functionTable = [String: Function]()
     
-    private var globalSymbolTable = [String: Type]()
-    private var localSymbolTable: [String: Type]?
+    var globalSymbolTable = [String: Type]()
+    var localSymbolTable: [String: Type]?
     
     private var returnType: Type?
+    
+    func copy() -> TypeContext {
+        let copy = TypeContext()
+        
+        copy.structTable = self.structTable
+        copy.functionTable = self.functionTable
+        copy.globalSymbolTable = self.globalSymbolTable
+        copy.localSymbolTable = self.localSymbolTable
+        copy.returnType = self.returnType
+        
+        return copy
+    }
     
     func addStruct(_ declaration: TypeDeclaration) throws {
         guard structTable[declaration.name] == nil else {

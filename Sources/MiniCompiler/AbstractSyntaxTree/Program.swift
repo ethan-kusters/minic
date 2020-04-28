@@ -11,5 +11,5 @@ import Foundation
 struct Program {
     let types: [TypeDeclaration]
     let declarations: [Declaration]
-    let functions: [Function]
+    var functions: [Function]
 }

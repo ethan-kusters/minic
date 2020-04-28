@@ -13,6 +13,9 @@ enum Instruction: Equatable {
     
     /// The `add` instruction returns the sum of its two operands.
     ///
+    /// # Example
+    /// result = add i32 4, %var
+    ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#add-instruction)
     case add(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
@@ -72,13 +75,13 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#br-instruction)
-    indirect case conditionalBranch(conditional: Instruction, ifTrue: InstructionPointer, ifFalse: InstructionPointer)
+    indirect case conditionalBranch(conditional: InstructionValue, ifTrue: Block, ifFalse: Block)
     
     /// The ‘br’ instruction is used to cause control flow to transfer to a different basic block in the current function.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#br-instruction)
-    case unconditionalBranch(destination: InstructionPointer)
+    case unconditionalBranch(destination: Block)
     
     // MARK: - Load & Store
     
@@ -86,7 +89,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#load-instruction)
-    case load(valueType: InstructionType, pointerType: InstructionPointer, pointer: InstructionPointer, result: InstructionValue)
+    case load(valueType: InstructionType, pointerType: InstructionType, pointer: InstructionPointer, result: InstructionValue)
     
     /// The ‘store’ instruction is used to write to memory.
     ///
@@ -100,13 +103,13 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#call-instruction)
-    case call(returnType: InstructionType, functionPointer: InstructionPointer, arguments: [InstructionArgument], result: InstructionValue)
+    case call(returnType: InstructionType, functionPointer: InstructionPointer, arguments: [InstructionValue], result: InstructionValue?)
     
     /// The ‘ret’ instruction is used to return control flow (and optionally a value) from a function back to the caller.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#ret-instruction)
-    case returnValue(type: InstructionType, value: InstructionValue, result: InstructionValue)
+    case returnValue(type: InstructionType, value: InstructionValue)
     
     /// The ‘ret’ instruction is used to return control flow (and optionally a value) from a function back to the caller.
     ///
@@ -123,7 +126,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#alloca-instruction)
-    case allocate(type: InstructionType, result: InstructionValue)
+    case allocate(type: InstructionType, result: InstructionPointer)
     
     // MARK: - Conversino
     

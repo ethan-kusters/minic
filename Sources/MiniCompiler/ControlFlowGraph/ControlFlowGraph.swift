@@ -9,5 +9,5 @@ import Foundation
 
 struct ControlFlowGraph {
     let blocks: [Block]
-    let name: String
+    let function: Function
 }

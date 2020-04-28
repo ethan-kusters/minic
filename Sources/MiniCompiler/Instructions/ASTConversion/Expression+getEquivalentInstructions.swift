@@ -1,5 +1,5 @@
 //
-//  Expression+equivalentInstruction.swift
+//  Expression+getEquivalentInstructions.swift
 //  MiniCompiler
 //
 //  Created by Ethan Kusters on 4/26/20.
@@ -8,36 +8,68 @@
 import Foundation
 
 extension Expression {
-    var equivalentInstructions: ([Instruction], InstructionValue) {
+    func getEquivalentInstructions(_ context: TypeContext) -> (instructions: [Instruction], value: InstructionValue) {
         switch(self) {
         case let .binary(_, op, left, right):
-            let (leftInstructions, leftValue) = left.equivalentInstructions
-            let (rightInstructions, rightValue) = right.equivalentInstructions
+            let (leftInstructions, leftValue) = left.getEquivalentInstructions(context)
+            let (rightInstructions, rightValue) = right.getEquivalentInstructions(context)
             
             let (instruction, value) = fromBinaryExpression(binaryOp: op, firstOp: leftValue, secondOp: rightValue)
             
             let instructions = leftInstructions + rightInstructions + [instruction]
             return (instructions, value)
-        case .dot(lineNumber: let lineNumber, left: let left, id: let id):
-            <#code#>
+        case let .dot(_, left, id):
+            // TODO: Finish me
+            return ([], .literal(0))
         case .false:
             return ([], .literal(InstructionConstants.falseValue))
         case let .identifier(_, id):
-            return ([], .)
+            let pointerVal = context.getInstructionPointer(from: id)
+            let destinationRegister = InstructionValue.newRegister(forType: pointerVal.type)
+            
+            let loadInstruction = Instruction.load(valueType: pointerVal.type,
+                                                   pointerType: pointerVal.type,
+                                                   pointer: pointerVal,
+                                                   result: destinationRegister)
+            
+            return ([loadInstruction], destinationRegister)
         case let .integer(_, value):
             return ([], .literal(value))
-        case .invocation(lineNumber: let lineNumber, name: let name, arguments: let arguments):
-            <#code#>
+        case let .invocation(_, name, arguments):
+            var instructions = [Instruction]()
+            
+            let argumentValues = arguments.map { expression -> InstructionValue in
+                let (newInstructions, newValue) = expression.getEquivalentInstructions(context)
+                instructions.append(contentsOf: newInstructions)
+                return newValue
+            }
+            
+            let returnType = context.getFunction(name)!.retType.equivalentInstructionType
+            
+            let returnRegister = InstructionValue.newRegister(forType: returnType)
+            
+            let callInstruction = Instruction.call(returnType: returnType,
+                                                   functionPointer: .function(name, retType: returnType),
+                                                   arguments: argumentValues,
+                                                   result: returnRegister)
+            
+            instructions.append(callInstruction)
+            
+            return (instructions, returnRegister)
         case .new(lineNumber: let lineNumber, id: let id):
-            <#code#>
+            // TODO: Finish me
+            return ([], .literal(0))
         case .null(lineNumber: let lineNumber):
-            <#code#>
+            return ([], .literal(0))
         case .read:
-            <#code#>
+            // TODO: Finish me
+            let register = InstructionValue.newIntRegister()
+            
+            return ([], register)
         case .true:
             return ([], .literal(InstructionConstants.trueValue))
         case let .unary(_, op, operand):
-            let (operandInstructions, operandValue) = operand.equivalentInstructions
+            let (operandInstructions, operandValue) = operand.getEquivalentInstructions(context)
             let (instruction, value) = fromUnaryExpression(unaryOp: op, operand: operandValue)
             
             return (operandInstructions + [instruction], value)

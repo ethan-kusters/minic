@@ -9,7 +9,9 @@
 import Foundation
 
 class TypeCheckingManager {
-    func check(_ program: Program) throws -> Bool {
+    func check(_ program: Program) throws -> [(function: Function, context: TypeContext)]? {
+        var typeCheckedFunctionsWithContexts = [(function: Function, context: TypeContext)]()
+        
         let context = TypeContext()
         let errorBucket = ErrorBucker()
         let statementTypeChecker = StatementTypeChecker(context: context, errorHandler: errorBucket)
@@ -35,6 +37,7 @@ class TypeCheckingManager {
                 errorBucket.report(error)
             }
             
+            typeCheckedFunctionsWithContexts.append((function, context.copy()))
             context.popLocalContext()
         }
         
@@ -46,9 +49,9 @@ class TypeCheckingManager {
             errorBucket.report(.mainFunctionMissing)
         }
         
-        guard errorBucket.count > 0 else { return true }
+        guard errorBucket.count > 0 else { return typeCheckedFunctionsWithContexts }
         errorBucket.printErrors()
         
-        return false
+        return nil
     }
 }

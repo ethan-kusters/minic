@@ -13,7 +13,7 @@ extension ControlFlowGraph {
     var graphVizSubgraph: String {
         var subgraph = ControlFlowGraph.getSubgraphHeader() + GraphVizConstants.openBrace
         
-        subgraph += "\(GraphVizConstants.label)\"Function '\(name)'\"\(GraphVizConstants.semicolon)"
+        subgraph += "\(GraphVizConstants.label)\"Function '\(function.name)'\"\(GraphVizConstants.semicolon)"
         blocks.forEach { block in
             subgraph += (block.label + GraphVizConstants.arrow + GraphVizConstants.openBrace)
             let successorLabels = block.successors.map(\.label)

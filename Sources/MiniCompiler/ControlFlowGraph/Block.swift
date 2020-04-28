@@ -30,6 +30,14 @@ class Block {
     func addSuccesor(_ block: Block) {
         successors.append(block)
     }
+    
+    func addInstructions(_ newInstructions: [Instruction]) {
+        instructions.append(contentsOf: newInstructions)
+    }
+    
+    func addInstruction(_ newInstruction: Instruction) {
+        instructions.append(newInstruction)
+    }
 }
 
 extension Block {
