@@ -14,12 +14,10 @@ extension Type {
             return InstructionConstants.defaultIntType
         case .void:
             return .void
-        case .struct:
-            // TODO: Fixme
-            
-            return .null
+        case let .struct(_, name):
+            return .structure(name: name)
         case .bool:
-            return InstructionConstants.defaultBoolType
+            return InstructionConstants.defaultIntType
         }
     }
 }

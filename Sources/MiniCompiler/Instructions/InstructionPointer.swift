@@ -11,6 +11,8 @@ enum InstructionPointer: Equatable {
     case function(String, retType: InstructionType)
     case localValue(String, type: InstructionType)
     case globalValue(String, type: InstructionType)
+    case structureType(String)
+    case null
 }
 
 extension InstructionPointer {
@@ -22,6 +24,10 @@ extension InstructionPointer {
             return type
         case let .globalValue(_, type):
             return type
+        case .null:
+            return .null
+        case let .structureType(name):
+            return .structure(name: name)
         }
     }
 }

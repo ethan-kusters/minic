@@ -28,6 +28,7 @@ class ControlFlowGraphBuilder {
         
         if let final = build(function.body, currentBlock: functionEntry) {
             link(final, functionExit)
+            final.addInstruction(.unconditionalBranch(destination: functionExit))
         }
         
         blocks.append(functionExit)
@@ -108,8 +109,71 @@ class ControlFlowGraphBuilder {
             let (sourceInstructions, sourceValue) = source.getEquivalentInstructions(context)
             currentBlock.addInstructions(sourceInstructions)
             
-            if let _ = lValue.leftExpression {
-                fatalError("Haven't added support for structs yet.")
+            if let leftExpression = lValue.leftExpression {
+                let (leftInstructions, leftValue) = leftExpression.getEquivalentInstructions(context)
+                currentBlock.addInstructions(leftInstructions)
+                
+                let structTypeDeclaration: TypeDeclaration
+                
+                if case let .identifier(_, id) = leftExpression {
+                    let structPointer = context.getInstructionPointer(from: id)
+                    
+                    guard case let .structure(name: name) = structPointer.type else {
+                        fatalError("Type checker should have caught this. Dot access on not-struct value.")
+                    }
+                    
+                    structTypeDeclaration = context.getStruct(name)!
+                } else if case let .dot(_, left, id) = leftExpression {
+                    var idChain = [id]
+                    var currentLeft: Expression = left
+                    while case let .dot(_, left, id) = currentLeft {
+                        currentLeft = left
+                        idChain.append(id)
+                    }
+                    
+                    guard case let .identifier(_, baseID) = currentLeft else { fatalError() }
+                    
+                    let structPointer = context.getInstructionPointer(from: baseID)
+                    
+                    guard case let .structure(name: baseStructTypeName) = structPointer.type else {
+                        fatalError("Type checker should have caught this. Dot access on not-struct value.")
+                    }
+                    
+                    var currentStruct = context.getStruct(baseStructTypeName)!
+                    
+                    idChain.reversed().forEach { id in
+                        let currentStructPointer = currentStruct.fields[id]!.type.equivalentInstructionType
+                        
+                        guard case let .structure(name: currentStructName) = currentStructPointer else {
+                            fatalError("Type checker should have caught this. Dot access on not-struct value.")
+                        }
+                        
+                        currentStruct = context.getStruct(currentStructName)!
+                    }
+                    
+                    structTypeDeclaration = currentStruct
+                } else {
+                    fatalError("Type checker should have caught this. Dot access on non-identifier value.")
+                }
+                
+                let fieldIndex = structTypeDeclaration.fields.firstIndex(where: {
+                    $0.name == lValue.id
+                })!
+                
+                let fieldType = structTypeDeclaration.fields[fieldIndex].type.equivalentInstructionType
+                
+                let ptrResult = InstructionValue.newRegister(forType: fieldType)
+                let getPtrInstruction = Instruction.getElementPointer(structureType: .structureType(structTypeDeclaration.name),
+                                                                      structurePointer: leftValue,
+                                                                      elementIndex: fieldIndex,
+                                                                      result: ptrResult)
+                
+                let setInstr = Instruction.store(valueType: fieldType,
+                                                 value: sourceValue,
+                                                 pointerType: ptrResult.type,
+                                                 pointer: .localValue(ptrResult.identifier, type: ptrResult.type))
+                
+                currentBlock.addInstructions([getPtrInstruction, setInstr])
             } else {
                 let pointer = context.getInstructionPointer(from: lValue.id)
                 currentBlock.addInstruction(.store(valueType: sourceValue.type,
@@ -191,7 +255,8 @@ class ControlFlowGraphBuilder {
             let (instructions, value) = expression.getEquivalentInstructions(context)
             currentBlock.addInstructions(instructions)
             currentBlock.addInstruction(.call(returnType: .void,
-                                        functionPointer: .function("println", retType: .void),
+                                              functionPointer: .function(InstructionConstants.printlnHelperFunction,
+                                                                         retType: .void),
                                         arguments: [value],
                                         result: nil))
             
@@ -201,7 +266,8 @@ class ControlFlowGraphBuilder {
             let (instructions, value) = expression.getEquivalentInstructions(context)
             currentBlock.addInstructions(instructions)
             currentBlock.addInstruction(.call(returnType: .void,
-                                              functionPointer: .function("print", retType: .void),
+                                              functionPointer: .function(InstructionConstants.printHelperFunction,
+                                                                         retType: .void),
                                               arguments: [value],
                                               result: nil))
             
@@ -223,18 +289,30 @@ class ControlFlowGraphBuilder {
             currentBlock.addInstruction(.unconditionalBranch(destination: functionExit))
             
             return nil
-        case let .while(lineNumber, guardExp, body):
+        case let .while(_, guardExp, body):
+            let (guardInstructions, guardValue) = guardExp.getEquivalentInstructions(context)
+            currentBlock.addInstructions(guardInstructions)
+            
             let whileBodyEntry = Block("WhileBodyEntrance")
             let whileExit = Block("WhileExit")
             
             link(currentBlock, whileBodyEntry)
             link(currentBlock, whileExit)
+            currentBlock.addInstruction(.conditionalBranch(conditional: guardValue,
+                                                           ifTrue: whileBodyEntry,
+                                                           ifFalse: whileExit))
             
             blocks.append(whileBodyEntry)
             
             if let whileBodyExit = build(body, currentBlock: whileBodyEntry) {
+                let (secondGuardInstructions, secondGuardValue) = guardExp.getEquivalentInstructions(context)
+                whileBodyExit.addInstructions(secondGuardInstructions)
+                
                 link(whileBodyExit, whileBodyEntry)
                 link(whileBodyExit, whileExit)
+                whileBodyExit.addInstruction(.conditionalBranch(conditional: secondGuardValue,
+                                                                ifTrue: whileBodyEntry,
+                                                                ifFalse: whileExit))
             }
             
             blocks.append(whileExit)

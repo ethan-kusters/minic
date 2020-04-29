@@ -14,6 +14,10 @@ extension InstructionValue: ExpressibleAsLLVM {
             return "%\(register)"
         case let .literal(value):
             return String(value)
+        case .null:
+            return "null"
+        case .void:
+            return "void"
         }
     }
 }

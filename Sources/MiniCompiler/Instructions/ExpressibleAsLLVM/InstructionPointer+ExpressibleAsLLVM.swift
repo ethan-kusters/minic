@@ -16,6 +16,10 @@ extension InstructionPointer: ExpressibleAsLLVM {
             return "%\(value)"
         case let .globalValue(value, _):
             return "@\(value)"
+        case .null:
+            return "null"
+        case let .structureType(value):
+            return "%struct.\(value)"
         }
     }
 }

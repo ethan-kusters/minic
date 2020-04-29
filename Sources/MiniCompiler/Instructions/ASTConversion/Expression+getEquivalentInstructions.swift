@@ -14,13 +14,75 @@ extension Expression {
             let (leftInstructions, leftValue) = left.getEquivalentInstructions(context)
             let (rightInstructions, rightValue) = right.getEquivalentInstructions(context)
             
-            let (instruction, value) = fromBinaryExpression(binaryOp: op, firstOp: leftValue, secondOp: rightValue)
+            let (expInstructions, value) = fromBinaryExpression(binaryOp: op, firstOp: leftValue, secondOp: rightValue)
             
-            let instructions = leftInstructions + rightInstructions + [instruction]
+            let instructions = leftInstructions + rightInstructions + expInstructions
             return (instructions, value)
         case let .dot(_, left, id):
-            // TODO: Finish me
-            return ([], .literal(0))
+            let (leftInstructions, leftValue) = left.getEquivalentInstructions(context)
+            
+            let structTypeDeclaration: TypeDeclaration
+            
+            if case let .identifier(_, id) = left {
+                let structPointer = context.getInstructionPointer(from: id)
+                
+                guard case let .structure(name: name) = structPointer.type else {
+                    fatalError("Type checker should have caught this. Dot access on not-struct value.")
+                }
+                
+                structTypeDeclaration = context.getStruct(name)!
+            } else if case let .dot(_, left, id) = left {
+                var idChain = [id]
+                var currentLeft: Expression = left
+                while case let .dot(_, left, id) = currentLeft {
+                    currentLeft = left
+                    idChain.append(id)
+                }
+                
+                guard case let .identifier(_, baseID) = currentLeft else { fatalError() }
+                
+                let structPointer = context.getInstructionPointer(from: baseID)
+                
+                guard case let .structure(name: baseStructTypeName) = structPointer.type else {
+                    fatalError("Type checker should have caught this. Dot access on not-struct value.")
+                }
+                
+                var currentStruct = context.getStruct(baseStructTypeName)!
+                
+                idChain.reversed().forEach { id in
+                    let currentStructPointer = currentStruct.fields[id]!.type.equivalentInstructionType
+                    
+                    guard case let .structure(name: currentStructName) = currentStructPointer else {
+                        fatalError("Type checker should have caught this. Dot access on not-struct value.")
+                    }
+                    
+                    currentStruct = context.getStruct(currentStructName)!
+                }
+                
+                structTypeDeclaration = currentStruct
+            } else {
+                fatalError("Type checker should have caught this. Dot access on non-identifier value.")
+            }
+            
+            let fieldIndex = structTypeDeclaration.fields.firstIndex(where: {
+                $0.name == id
+            })!
+            
+            let fieldType = structTypeDeclaration.fields[fieldIndex].type.equivalentInstructionType
+            
+            let ptrResult = InstructionValue.newRegister(forType: fieldType)
+            let getPtrInstruction = Instruction.getElementPointer(structureType: .structureType(structTypeDeclaration.name),
+                                                                  structurePointer: leftValue,
+                                                                  elementIndex: fieldIndex,
+                                                                  result: ptrResult)
+            
+            let ldResult = InstructionValue.newRegister(forType: fieldType)
+            let loadInstr = Instruction.load(valueType: fieldType,
+                                             pointerType: fieldType,
+                                             pointer: .localValue(ptrResult.identifier, type: ptrResult.type),
+                                             result: ldResult)
+            
+            return (leftInstructions + [getPtrInstruction, loadInstr], ldResult)
         case .false:
             return ([], .literal(InstructionConstants.falseValue))
         case let .identifier(_, id):
@@ -51,21 +113,40 @@ extension Expression {
             let callInstruction = Instruction.call(returnType: returnType,
                                                    functionPointer: .function(name, retType: returnType),
                                                    arguments: argumentValues,
-                                                   result: returnRegister)
+                                                   result: returnType == .void ? nil : returnRegister)
             
             instructions.append(callInstruction)
             
             return (instructions, returnRegister)
-        case .new(lineNumber: let lineNumber, id: let id):
-            // TODO: Finish me
-            return ([], .literal(0))
-        case .null(lineNumber: let lineNumber):
-            return ([], .literal(0))
-        case .read:
-            // TODO: Finish me
-            let register = InstructionValue.newIntRegister()
+        case let .new(_, id):
+            let numFieldsInType = context.getStruct(id)!.fields.count
             
-            return ([], register)
+            let tempReg = InstructionValue.newRegister(forType: .pointer(.i8))
+            let mallocInstr = Instruction.call(returnType: tempReg.type,
+                                               functionPointer: .function(InstructionConstants.mallocFunction,
+                                                                          retType: tempReg.type),
+                                               arguments: [.literal(numFieldsInType * 4)],
+                                               result: tempReg)
+            
+            let destReg = InstructionValue.newRegister(forType: .structure(name: id))
+            
+            let bitCastInstr = Instruction.bitcast(currentType: tempReg.type,
+                                                   value: tempReg,
+                                                   destinationType: destReg.type,
+                                                   result: destReg)
+            
+            return ([mallocInstr, bitCastInstr], destReg)
+        case .null:
+            return ([], .null)
+        case .read:
+            let register = InstructionValue.newIntRegister()
+            let readInstruction = Instruction.call(returnType: register.type,
+                                                   functionPointer: .function(InstructionConstants.readHelperFunction,
+                                                                              retType: register.type),
+                                                   arguments: [],
+                                                   result: register)
+            
+            return ([readInstruction], register)
         case .true:
             return ([], .literal(InstructionConstants.trueValue))
         case let .unary(_, op, operand):
@@ -78,63 +159,61 @@ extension Expression {
     
     private func fromBinaryExpression(binaryOp: Expression.BinaryOperator,
                                       firstOp: InstructionValue,
-                                      secondOp: InstructionValue) -> (Instruction, InstructionValue) {
+                                      secondOp: InstructionValue) -> ([Instruction], InstructionValue) {
         switch(binaryOp) {
         case .times:
-            let result = InstructionValue.newIntRegister()
-            return (.add(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result), result)
+            let result = InstructionValue.newRegister(forType: firstOp.type)
+            return ([.add(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
         case .divide:
-            let result = InstructionValue.newIntRegister()
-            return (.signedDivide(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result), result)
+            let result = InstructionValue.newRegister(forType: firstOp.type)
+            return ([.signedDivide(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
         case .plus:
-            let result = InstructionValue.newIntRegister()
-            return (.add(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result), result)
+            let result = InstructionValue.newRegister(forType: firstOp.type)
+            return ([.add(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
         case .minus:
-            let result = InstructionValue.newIntRegister()
-            return (.subtract(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result), result)
+            let result = InstructionValue.newRegister(forType: firstOp.type)
+            return ([.subtract(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
         case .lessThan:
-            let result = InstructionValue.newBoolRegister()
-            return (.comparison(condCode: .slt, type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result), result)
+            return compareInstruction(condCode: .slt, firstOp: firstOp, secondOp: secondOp)
         case .lessThanOrEqualTo:
-            let result = InstructionValue.newBoolRegister()
-            return (.comparison(condCode: .sle, type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result), result)
+            return compareInstruction(condCode: .sle, firstOp: firstOp, secondOp: secondOp)
         case .greaterThan:
-            let result = InstructionValue.newBoolRegister()
-            return (.comparison(condCode: .sgt, type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result), result)
+            return compareInstruction(condCode: .sgt, firstOp: firstOp, secondOp: secondOp)
         case .greaterThanOrEqualTo:
-            let result = InstructionValue.newBoolRegister()
-            return (.comparison(condCode: .sge, type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result), result)
+            return compareInstruction(condCode: .sge, firstOp: firstOp, secondOp: secondOp)
         case .equalTo:
-            let result = InstructionValue.newBoolRegister()
-            return (.comparison(condCode: .eq, type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result), result)
+            return compareInstruction(condCode: .eq, firstOp: firstOp, secondOp: secondOp)
         case .notEqualTo:
-            let result = InstructionValue.newBoolRegister()
-            return (.comparison(condCode: .ne, type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result), result)
+            return compareInstruction(condCode: .ne, firstOp: firstOp, secondOp: secondOp)
         case .and:
-            let result = InstructionValue.newBoolRegister()
-            return (.and(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result), result)
+            let result = InstructionValue.newRegister(forType: firstOp.type)
+            return ([.and(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
         case .or:
-            let result = InstructionValue.newBoolRegister()
-            return (.or(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result), result)
+            let result = InstructionValue.newRegister(forType: firstOp.type)
+            return ([.or(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
         }
+    }
+    
+    private func compareInstruction(condCode: InstructionConditionCode, firstOp: InstructionValue, secondOp: InstructionValue) -> ([Instruction], InstructionValue) {
+        let cmpResult = InstructionValue.newBoolRegister()
+        let comp = Instruction.comparison(condCode: condCode, type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: cmpResult)
+        return ([comp], cmpResult)
     }
     
     private func fromUnaryExpression(unaryOp: Expression.UnaryOperator, operand: InstructionValue) -> (Instruction, InstructionValue) {
         switch(unaryOp) {
         case .not:
-            let result = InstructionValue.newBoolRegister()
+            let result = InstructionValue.newRegister(forType: operand.type)
             return (.exclusiveOr(type: operand.type,
                                  firstOp: operand,
                                  secondOp: .literal(InstructionConstants.trueValue),
                                  result: result), result)
         case .minus:
-            let result = InstructionValue.newIntRegister()
+            let result = InstructionValue.newRegister(forType: operand.type)
             return (.subtract(type: operand.type,
-                              firstOp: operand,
-                              secondOp: .literal(0),
+                              firstOp: .literal(0),
+                              secondOp: operand,
                               result: result), result)
         }
     }
-    
-    
 }

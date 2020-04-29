@@ -47,6 +47,9 @@ extension Instruction: ExpressibleAsLLVM {
         case let .store(valueType, value, pointerType, pointer):
             return "store \(valueType.llvmString) \(value.llvmString), \(pointerType.llvmString)* \(pointer.llvmString)"
             
+        case let .getElementPointer(structureType, structurePointer, elementIndex, result):
+            return "\(result.llvmString) = getelementptr \(structureType.llvmString), \(structureType.llvmString)* \(structurePointer.llvmString), i1 0, i32 \(elementIndex)"
+            
         case let .call(returnType, functionPointer, arguments, result):
             let argumentString = arguments.map { arg in
                 "\(arg.type.llvmString) \(arg.llvmString)"
@@ -59,6 +62,7 @@ extension Instruction: ExpressibleAsLLVM {
             } else {
                 return call
             }
+            
         case let .returnValue(type, value):
             return "ret \(type.llvmString) \(value.llvmString)"
             
@@ -68,6 +72,13 @@ extension Instruction: ExpressibleAsLLVM {
         case let .allocate(type, result):
             return "\(result.llvmString) = alloca \(type.llvmString)"
             
+        case let .declareGlobal(type, value, result):
+            return "\(result.llvmString) = common global \(type.llvmString) \(value.llvmString), align 4"
+            
+        case let .declareStructureType(types, result):
+            let typeList = types.map(\.llvmString).joined(separator: ", ")
+            return "\(result.llvmString) = type { \(typeList) }"
+            
         case let .bitcast(currentType, value, destinationType, result):
             return "\(result.llvmString) = bitcast \(currentType.llvmString) \(value.llvmString) to \(destinationType.llvmString)"
             
@@ -76,6 +87,7 @@ extension Instruction: ExpressibleAsLLVM {
             
         case let .zeroExtend(currentType, value, destinationType, result):
             return "\(result.llvmString) = zext \(currentType.llvmString) \(value.llvmString) to \(destinationType.llvmString)"
+        
         }
     }
 }

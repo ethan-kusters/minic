@@ -97,6 +97,13 @@ enum Instruction: Equatable {
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#store-instruction)
     case store(valueType: InstructionType, value: InstructionValue, pointerType: InstructionType, pointer: InstructionPointer)
     
+    /// The ‘getelementptr’ instruction is used to get the address of a subelement of an aggregate data structure.
+    ///
+    /// It performs address calculation only and does not access memory.
+    /// # Reference
+    /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#getelementptr-instruction)
+    case getElementPointer(structureType: InstructionPointer, structurePointer: InstructionValue, elementIndex: Int, result: InstructionValue)
+    
     // MARK: - Invocation
     
     /// The ‘call’ instruction represents a simple function call.
@@ -128,7 +135,22 @@ enum Instruction: Equatable {
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#alloca-instruction)
     case allocate(type: InstructionType, result: InstructionPointer)
     
-    // MARK: - Conversino
+    /// Global variables define regions of memory allocated at compilation time instead of run-time.
+    ///
+    /// # Reference
+    /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#global-variables)
+    case declareGlobal(type: InstructionType, value: InstructionValue, result: InstructionPointer)
+    
+    
+    /// The structure type is used to represent a collection of data members together in memory.
+    ///
+    /// The elements of a structure may be any type that has a size.
+    ///
+    /// # Reference
+    /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#structure-type)
+    case declareStructureType(types: [InstructionType], result: InstructionPointer)
+    
+    // MARK: - Conversion
     
     /// The ‘bitcast’ instruction converts value to type ty2 without changing any bits.
     ///

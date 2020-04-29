@@ -10,6 +10,8 @@ import Foundation
 enum InstructionValue: Equatable {
     case register(register: InstructionRegister, type: InstructionType)
     case literal(Int)
+    case null
+    case void
 }
 
 extension InstructionValue {
@@ -19,6 +21,10 @@ extension InstructionValue {
             return type
         case .literal:
             return InstructionConstants.defaultIntType
+        case .null:
+            return .null
+        case .void:
+            return .void
         }
         
     }
@@ -39,5 +45,18 @@ extension InstructionValue {
     
     static func existingRegister(withId id: String, type: InstructionType) -> InstructionValue {
         .register(register: InstructionRegister(withId: id), type: type)
+    }
+    
+    var identifier: String {
+        switch(self) {
+        case let .register(register, _):
+            return register.id
+        case let .literal(val):
+            return val.description
+        case .null:
+            return "null"
+        case .void:
+            return "void"
+        }
     }
 }
