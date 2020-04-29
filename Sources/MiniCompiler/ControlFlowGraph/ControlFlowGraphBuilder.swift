@@ -34,10 +34,6 @@ class ControlFlowGraphBuilder {
         blocks.append(functionExit)
     }
     
-//    func getControlFlowGraph() -> ControlFlowGraph {
-//        let functionHeade
-//    }
-    
     private func buildEntryBlock() -> Block {
         let entryBlock = Block("FunctionEntry")
         
@@ -242,8 +238,22 @@ class ControlFlowGraphBuilder {
                 return nil
             }
         case let .delete(_, expression):
-            let expressionInstructions = expression.getEquivalentInstructions(context).instructions
-            currentBlock.addInstructions(expressionInstructions)
+            let (instructions, value) = expression.getEquivalentInstructions(context)
+            currentBlock.addInstructions(instructions)
+            
+            let destinationReg = InstructionValue.newRegister(forType: .pointer(.i8))
+            let cast = Instruction.bitcast(currentType: value.type,
+                                           value: value,
+                                           destinationType: destinationReg.type,
+                                           result: destinationReg)
+            
+            let free = Instruction.call(returnType: .void,
+                                        functionPointer: .function(InstructionConstants.freeFunction,
+                                                                   retType: .void),
+                                        arguments: [destinationReg],
+                                        result: nil)
+            
+            currentBlock.addInstructions([cast, free])
             
             return currentBlock
         case let .invocation(_, expression):
