@@ -60,6 +60,15 @@ extension Expression {
                 }
                 
                 structTypeDeclaration = currentStruct
+            } else if case let .invocation(_, functionName, _) = left {
+                let functionRetType = context.getFunction(functionName)!.retType.equivalentInstructionType
+                
+                guard case let .structure(name: name) = functionRetType else {
+                    fatalError("Type checker should have caught this. Dot access on not-struct value.")
+                }
+                
+                structTypeDeclaration = context.getStruct(name)!
+                
             } else {
                 fatalError("Type checker should have caught this. Dot access on non-identifier value.")
             }

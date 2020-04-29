@@ -22,6 +22,9 @@ struct minic: ParsableCommand {
     @Flag(help: "Use GraphViz to generate a PDF of the program's control flow graph.")
     var generateCfgPdf: Bool
     
+    @Flag(help: "Print LLVM output instead of outputting to file.")
+    var printLlvm: Bool
+    
     mutating func validate() throws {
         
         // Verify the file actually exists.
@@ -57,7 +60,7 @@ struct minic: ParsableCommand {
         
         let llvmManager = LLVMManager(program, with: functionGraphs, named: sourceFileName)
         
-        try llvmManager.generateLLVM()
+        try llvmManager.generateLLVM(printOutput: printLlvm)
     }
 }
 

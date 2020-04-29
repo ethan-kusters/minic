@@ -52,7 +52,8 @@ extension Instruction: ExpressibleAsLLVM {
             
         case let .call(returnType, functionPointer, arguments, result):
             let argumentString = arguments.map { arg in
-                "\(arg.type.llvmString) \(arg.llvmString)"
+                guard arg.type != .null else { return "null" }
+                return "\(arg.type.llvmString) \(arg.llvmString)"
             }.joined(separator: ", ")
             
             let call = "call \(returnType.llvmString) \(functionPointer.llvmString)(\(argumentString))"

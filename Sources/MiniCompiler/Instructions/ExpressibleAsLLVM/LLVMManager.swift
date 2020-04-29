@@ -49,7 +49,7 @@ class LLVMManager {
         return LLVMConstants.predefinedHelperFunctions
     }
     
-    func generateLLVM() throws {
+    func generateLLVM(printOutput: Bool = false) throws {
         let programHeader = getProgramHeader()
         
         let programBody = controlFlowGraphs.map { graph in
@@ -64,6 +64,10 @@ class LLVMManager {
         
         let programString = [programHeader, programBody, programFooter].joined(separator: "\n\n")
         
-        try programString.write(to: outputURL, atomically: true, encoding: .ascii)
+        if printOutput {
+            print(programString)
+        } else {
+            try programString.write(to: outputURL, atomically: true, encoding: .ascii)
+        }
     }
 }
