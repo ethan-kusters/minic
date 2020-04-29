@@ -206,7 +206,7 @@ class ControlFlowGraphBuilder {
                 thenExit.addInstruction(.unconditionalBranch(destination: condExit))
             }
             
-            let ifBranch: Instruction
+            let ifBranch: [Instruction]
             
             if let elseStmt = elseStmt {
                 let elseEntry = Block("ElseEntry")
@@ -214,9 +214,9 @@ class ControlFlowGraphBuilder {
                 link(currentBlock, elseEntry)
                 blocks.append(elseEntry)
                 
-                ifBranch = .conditionalBranch(conditional: guardValue,
-                                              ifTrue: thenEntry,
-                                              ifFalse: elseEntry)
+                ifBranch = getConditionalBranch(conditional: guardValue,
+                                                ifTrue: thenEntry,
+                                                ifFalse: elseEntry)
                 
                 if let elseExit = build(elseStmt, currentBlock: elseEntry) {
                     link(elseExit, condExit)
@@ -224,12 +224,12 @@ class ControlFlowGraphBuilder {
                 }
             } else {
                 link(currentBlock, condExit)
-                ifBranch = .conditionalBranch(conditional: guardValue,
-                                              ifTrue: thenEntry,
-                                              ifFalse: condExit)
+                ifBranch = getConditionalBranch(conditional: guardValue,
+                                                ifTrue: thenEntry,
+                                                ifFalse: condExit)
             }
             
-            currentBlock.addInstruction(ifBranch)
+            currentBlock.addInstructions(ifBranch)
             
             if condExit.predecessors.count > 0 {
                 blocks.append(condExit)
@@ -308,9 +308,9 @@ class ControlFlowGraphBuilder {
             
             link(currentBlock, whileBodyEntry)
             link(currentBlock, whileExit)
-            currentBlock.addInstruction(.conditionalBranch(conditional: guardValue,
-                                                           ifTrue: whileBodyEntry,
-                                                           ifFalse: whileExit))
+            currentBlock.addInstructions(getConditionalBranch(conditional: guardValue,
+                                                              ifTrue: whileBodyEntry,
+                                                              ifFalse: whileExit))
             
             blocks.append(whileBodyEntry)
             
@@ -320,13 +320,28 @@ class ControlFlowGraphBuilder {
                 
                 link(whileBodyExit, whileBodyEntry)
                 link(whileBodyExit, whileExit)
-                whileBodyExit.addInstruction(.conditionalBranch(conditional: secondGuardValue,
-                                                                ifTrue: whileBodyEntry,
-                                                                ifFalse: whileExit))
+                whileBodyExit.addInstructions(getConditionalBranch(conditional: secondGuardValue,
+                                                                   ifTrue: whileBodyEntry,
+                                                                   ifFalse: whileExit))
             }
             
             blocks.append(whileExit)
             return whileExit
         }
+    }
+    
+    func getConditionalBranch(conditional: InstructionValue, ifTrue: Block, ifFalse: Block) -> [Instruction] {
+        guard conditional.type != .i1 else {
+            return [.conditionalBranch(conditional: conditional, ifTrue: ifTrue, ifFalse: ifFalse)]
+        }
+        
+        let castResult = InstructionValue.newRegister(forType: .i1)
+        let castInstruction = Instruction.truncate(currentType: conditional.type,
+                                                   value: conditional,
+                                                   destinationType: castResult.type,
+                                                   result: castResult)
+        
+        let branch = Instruction.conditionalBranch(conditional: castResult, ifTrue: ifTrue, ifFalse: ifFalse)
+        return [castInstruction, branch]
     }
 }

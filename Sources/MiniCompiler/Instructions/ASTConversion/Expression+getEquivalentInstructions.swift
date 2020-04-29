@@ -163,7 +163,7 @@ extension Expression {
         switch(binaryOp) {
         case .times:
             let result = InstructionValue.newRegister(forType: firstOp.type)
-            return ([.add(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
+            return ([.multiply(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
         case .divide:
             let result = InstructionValue.newRegister(forType: firstOp.type)
             return ([.signedDivide(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
