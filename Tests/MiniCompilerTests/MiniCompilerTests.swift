@@ -236,7 +236,7 @@ final class MiniCompilerTests: XCTestCase {
         let minicProcessOutputString = String(data: minicProcessOutputData, encoding: .utf8)!
         
         guard !minicProcessOutputString.hasPrefix("Type check failure") else {
-            XCTFail("Type check failure")
+            XCTFail("\n\n\(minicProcessOutputString)")
             return
         }
         
@@ -253,7 +253,7 @@ final class MiniCompilerTests: XCTestCase {
         let clangProcessOutputString = String(data: clangProcessOutputData, encoding: .utf8)!
         
         guard clangProcessOutputString.isEmpty else {
-            XCTFail("Clang failure: \(clangProcessOutputString)")
+            XCTFail("\nClang failure:\n\n\(clangProcessOutputString)")
             return
         }
         
@@ -275,7 +275,7 @@ final class MiniCompilerTests: XCTestCase {
         let expectedOutput = try String(contentsOf: expectedOutputFileURL)
         
         guard programOutput == expectedOutput else {
-            XCTFail("Unexpected program output. Diff failure.")
+            XCTFail("\nUnexpected program output. Diff failure\n")
             return
         }
     }

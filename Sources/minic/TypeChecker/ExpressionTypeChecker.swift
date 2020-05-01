@@ -65,8 +65,8 @@ class ExpressionTypeChecker {
             }
             
             return .struct(lineNumber: newStruct.lineNumber, name: newStruct.name)
-        case let .null(lineNumber):
-            return .struct(lineNumber: lineNumber, name: "null")
+        case let .null(_, typeIndex):
+            return .null(typeIndex: typeIndex)
         case .read:
             return .int
         case .true:
@@ -133,6 +133,7 @@ class ExpressionTypeChecker {
         case .equalTo, .notEqualTo:
             if case let .struct(_, leftStructName) = leftType,
                 case let .struct(_, rightStructName) = rightType {
+                
                 guard let leftStruct = context.getStruct(leftStructName) else {
                     errorHandler.report(.structNotFound(leftStructName, lineNumber: lineNumber))
                     return nil
@@ -146,6 +147,20 @@ class ExpressionTypeChecker {
                 guard leftStruct == rightStruct else {
                     errorHandler.report(.invalidStructEqualityExpression(lineNumber: lineNumber, leftTypeDecl: leftStruct, rightTypeDecl: rightStruct))
                     
+                    return nil
+                }
+                
+                return .bool
+            } else if case let .struct(_, leftStructName) = leftType, case .null = rightType {
+                guard let _ = context.getStruct(leftStructName) else {
+                    errorHandler.report(.structNotFound(leftStructName, lineNumber: lineNumber))
+                    return nil
+                }
+                
+                return .bool
+            } else if case .null = leftType, case let .struct(_, rightStructName) = rightType {
+                guard let _ = context.getStruct(rightStructName) else {
+                    errorHandler.report(.structNotFound(rightStructName, lineNumber: lineNumber))
                     return nil
                 }
                 

@@ -145,8 +145,8 @@ extension Expression {
                                                    result: destReg)
             
             return ([mallocInstr, bitCastInstr], destReg)
-        case .null:
-            return ([], .null)
+        case let .null(_, typeIndex):
+            return ([], .null(type: NullTypeManager.getNullType(forIndex: typeIndex).equivalentInstructionType))
         case .read:
             let register = InstructionValue.newIntRegister()
             let readInstruction = Instruction.call(returnType: register.type,

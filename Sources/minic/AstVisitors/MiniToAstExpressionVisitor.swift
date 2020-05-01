@@ -78,7 +78,7 @@ class MiniToAstExpressionVisitor: MiniBaseVisitor<Expression> {
     }
     
     override func visitNullExpr(_ ctx: MiniParser.NullExprContext) -> Expression? {
-        return .null(lineNumber: ctx.startLineNumber)
+        return .null(lineNumber: ctx.startLineNumber, typeIndex: NullTypeManager.getNullIndex())
     }
     
     override func visitNestedExpr(_ ctx: MiniParser.NestedExprContext) -> Expression? {
@@ -87,7 +87,7 @@ class MiniToAstExpressionVisitor: MiniBaseVisitor<Expression> {
     }
     
     override func defaultResult() -> Expression? {
-        return .null(lineNumber: -1)
+        return .null(lineNumber: -1, typeIndex: NullTypeManager.getNullIndex())
     }
     
 }

@@ -10,7 +10,7 @@ import Foundation
 enum InstructionValue: Equatable {
     case register(register: InstructionRegister, type: InstructionType)
     case literal(Int)
-    case null
+    case null(type: InstructionType)
     case void
 }
 
@@ -21,8 +21,8 @@ extension InstructionValue {
             return type
         case .literal:
             return InstructionConstants.defaultIntType
-        case .null:
-            return .null
+        case let .null(type):
+            return type
         case .void:
             return .void
         }

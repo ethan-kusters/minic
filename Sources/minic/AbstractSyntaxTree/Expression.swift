@@ -24,7 +24,7 @@ enum Expression {
     
     case new(lineNumber: Int, id: String)
     
-    case null(lineNumber: Int)
+    case null(lineNumber: Int, typeIndex: Int)
     
     case read(lineNumber: Int)
     

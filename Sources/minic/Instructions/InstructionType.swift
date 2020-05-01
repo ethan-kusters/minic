@@ -24,13 +24,13 @@ extension InstructionType {
         case .i1, .i8, .i32, .i64:
             return .literal(0)
         case .void:
-            return .null
+            return .null(type: .void)
         case .null:
-            return .null
-        case .structure:
-            return .null
-        case .pointer:
-            return .null
+            return .null(type: .null)
+        case let .structure(name):
+            return .null(type: .structure(name: name))
+        case let .pointer(type):
+            return .null(type: .pointer(type))
         }
     }
 }

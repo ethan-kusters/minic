@@ -11,6 +11,7 @@ import Foundation
 enum Type {
     case int
     case void
+    case null (typeIndex: Int)
     case `struct` (lineNumber: Int, name: String)
     case bool
 }
@@ -25,6 +26,16 @@ extension Type: Equatable {
         case (.struct, .struct):
             return true
         case (.bool, .bool):
+            return true
+        case let (.struct(lineNumber, name), .null(typeIndex)):
+            NullTypeManager.setNullType(forIndex: typeIndex,
+                                        asType: .struct(lineNumber: lineNumber, name: name))
+            
+            return true
+        case let (.null(typeIndex), .struct(lineNumber, name)):
+            NullTypeManager.setNullType(forIndex: typeIndex,
+                                        asType: .struct(lineNumber: lineNumber, name: name))
+            
             return true
         case (_, _):
             return false
@@ -41,6 +52,8 @@ extension Type: CustomStringConvertible {
             return "bool"
         case .struct(lineNumber: _, name: let name):
             return "struct \(name)"
+        case .null:
+            return "null"
         case .void:
             return "void"
         }

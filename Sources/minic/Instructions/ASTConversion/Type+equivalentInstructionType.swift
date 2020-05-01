@@ -18,6 +18,8 @@ extension Type {
             return .structure(name: name)
         case .bool:
             return InstructionConstants.defaultIntType
+        case .null:
+            return .null
         }
     }
 }
