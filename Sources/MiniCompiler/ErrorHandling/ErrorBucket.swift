@@ -31,6 +31,7 @@ class ErrorBucker: ErrorHandler {
             (first as? TypeError)?.lineNumber ?? 0 <= (second as? TypeError)?.lineNumber ?? 0
         }
         
+        print("Type check failure.")
         print()
         print(header.colorize(.darkBlue, background: .cyan2).bold())
         

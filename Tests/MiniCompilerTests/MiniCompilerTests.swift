@@ -227,7 +227,7 @@ final class MiniCompilerTests: XCTestCase {
         
         let minicProcess = Process()
         minicProcess.executableURL = minicBinary
-        minicProcess.arguments = [miniFile.path]
+        minicProcess.arguments = [miniFile.path, "--print-llvm"]
         minicProcess.standardOutput = minicProcessOutput
         try minicProcess.run()
         minicProcess.waitUntilExit()
@@ -235,14 +235,28 @@ final class MiniCompilerTests: XCTestCase {
         let minicProcessOutputData = minicProcessOutput.fileHandleForReading.readDataToEndOfFile()
         let minicProcessOutputString = String(data: minicProcessOutputData, encoding: .utf8)!
         
-        XCTAssertEqual(minicProcessOutputString, "")
+        guard !minicProcessOutputString.hasPrefix("Type check failure") else {
+            XCTFail("Type check failure")
+            return
+        }
         
+        let clangProcessOutput = Pipe()
         
         let clangProcess = Process()
         clangProcess.executableURL = clangURL
-        clangProcess.arguments = [compiledMiniFile.path, "-o", executableMiniFile.path]
+        clangProcess.arguments = ["-xir", "-o", executableMiniFile.path, "-"]
+        clangProcess.standardOutput = clangProcessOutput
+        clangProcess.standardInput = minicProcessOutput
         try clangProcess.run()
         clangProcess.waitUntilExit()
+        
+        let clangProcessOutputData = clangProcessOutput.fileHandleForReading.readDataToEndOfFile()
+        let clangProcessOutputString = String(data: clangProcessOutputData, encoding: .utf8)!
+        
+        guard clangProcessOutputString.isEmpty else {
+            XCTFail("Clang failure")
+            return
+        }
         
         
         let inputFileURL = benchmarkFolder.appendingPathComponent(longerInput ? "input.longer" : "input")
@@ -265,7 +279,7 @@ final class MiniCompilerTests: XCTestCase {
     }
     
     var minicBinary: URL {
-        productsDirectory.appendingPathComponent("MiniCompiler")
+        productsDirectory.appendingPathComponent("minic")
     }
 
     var benchmarksDirectory: URL {

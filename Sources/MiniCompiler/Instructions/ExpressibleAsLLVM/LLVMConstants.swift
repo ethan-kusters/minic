@@ -17,7 +17,7 @@ struct LLVMConstants {
     
     static let printFunctionDeclarations = """
         ; Print Helper Function Constants:
-        @.printFormatString = private unnamed_addr constant [3 x i8] c"%d\\00", align 1
+        @.printFormatString = private unnamed_addr constant [4 x i8] c"%d \\00", align 1
         @.printlnFormatString = private unnamed_addr constant [4 x i8] c"%d\\0A\\00", align 1
         
         ; Print Helper Functions:
@@ -25,7 +25,7 @@ struct LLVMConstants {
             %2 = alloca i32, align 4
             store i32 %0, i32* %2, align 4
             %3 = load i32, i32* %2, align 4
-            %4 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.printFormatString, i64 0, i64 0), i32 %3)
+            %4 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.printFormatString, i64 0, i64 0), i32 %3)
             ret void
         }
 
