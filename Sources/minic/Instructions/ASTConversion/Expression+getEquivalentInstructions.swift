@@ -134,7 +134,7 @@ extension Expression {
             let mallocInstr = Instruction.call(returnType: tempReg.type,
                                                functionPointer: .function(InstructionConstants.mallocFunction,
                                                                           retType: tempReg.type),
-                                               arguments: [.literal(numFieldsInType * 4)],
+                                               arguments: [.literal(numFieldsInType * InstructionConstants.numberOfBytesPerStructField)],
                                                result: tempReg)
             
             let destReg = InstructionValue.newRegister(forType: .structure(name: id))

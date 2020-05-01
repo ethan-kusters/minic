@@ -18,5 +18,20 @@ struct InstructionConstants {
     static let printlnHelperFunction = ".printlnHelper"
     static let readHelperFunction = ".readHelper"
     static let mallocFunction = "malloc"
+    static let expectedCompilationArchitecture = Architecture._64
     static let freeFunction = "free"
+    
+    static var numberOfBytesPerStructField: Int {
+        switch(expectedCompilationArchitecture) {
+        case ._32:
+            return 4
+        case ._64:
+            return 8
+        }
+    }
+}
+
+enum Architecture {
+    case _32
+    case _64
 }
