@@ -4,9 +4,9 @@
 import PackageDescription
 
 let package = Package(
-    name: "MiniCompiler",
+    name: "minic",
     products: [
-        .executable(name: "minic", targets: ["MiniCompiler"])
+        .executable(name: "minic", targets: ["minic"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "0.0.1"),
@@ -17,7 +17,7 @@ let package = Package(
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
-            name: "MiniCompiler",
+            name: "minic",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "Antlr4", package: "Antlr4"),
@@ -25,6 +25,6 @@ let package = Package(
         ]),
         .testTarget(
             name: "MiniCompilerTests",
-            dependencies: ["MiniCompiler"]),
+            dependencies: ["minic"]),
     ]
 )
