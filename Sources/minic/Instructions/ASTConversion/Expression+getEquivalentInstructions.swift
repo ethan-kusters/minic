@@ -204,9 +204,11 @@ extension Expression {
     }
     
     private func compareInstruction(condCode: InstructionConditionCode, firstOp: InstructionValue, secondOp: InstructionValue) -> ([Instruction], InstructionValue) {
-        let cmpResult = InstructionValue.newBoolRegister()
+        let cmpResult = InstructionValue.newRegister(forType: .i1)
         let comp = Instruction.comparison(condCode: condCode, type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: cmpResult)
-        return ([comp], cmpResult)
+        let extResult = InstructionValue.newBoolRegister()
+        let ext = Instruction.zeroExtend(currentType: cmpResult.type, value: cmpResult, destinationType: extResult.type, result: extResult)
+        return ([comp, ext], extResult)
     }
     
     private func fromUnaryExpression(unaryOp: Expression.UnaryOperator, operand: InstructionValue) -> (Instruction, InstructionValue) {

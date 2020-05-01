@@ -9,7 +9,7 @@ import Foundation
 
 struct InstructionConstants {
     static let defaultIntType = InstructionType.i32
-    static let defaultBoolType = InstructionType.i1
+    static let defaultBoolType = InstructionType.i32
     static let falseValue = 0
     static let trueValue = 1
     static let parameterPrefix = "_param_"
