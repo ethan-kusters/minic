@@ -2,7 +2,7 @@ import XCTest
 import class Foundation.Bundle
 
 final class MiniCompilerTests: XCTestCase {
-    let clangURL = URL(fileURLWithPath: "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang")
+    let clangURL = URL(fileURLWithPath: "/usr/bin/clang")
     
 //    func testExample() throws {
 //        // This is an example of a functional test case.
@@ -227,7 +227,7 @@ final class MiniCompilerTests: XCTestCase {
         
         let minicProcess = Process()
         minicProcess.executableURL = minicBinary
-        minicProcess.arguments = [miniFile.path, "--print-llvm"]
+        minicProcess.arguments = [miniFile.path, "-o", compiledMiniFile.path]
         minicProcess.standardOutput = minicProcessOutput
         try minicProcess.run()
         minicProcess.waitUntilExit()
@@ -244,9 +244,8 @@ final class MiniCompilerTests: XCTestCase {
         
         let clangProcess = Process()
         clangProcess.executableURL = clangURL
-        clangProcess.arguments = ["-xir", "-o", executableMiniFile.path, "-"]
-        clangProcess.standardOutput = clangProcessOutput
-        clangProcess.standardInput = minicProcessOutput
+        clangProcess.arguments = [compiledMiniFile.path, "-o", executableMiniFile.path]
+        clangProcess.standardError = clangProcessOutput
         try clangProcess.run()
         clangProcess.waitUntilExit()
         
@@ -254,7 +253,7 @@ final class MiniCompilerTests: XCTestCase {
         let clangProcessOutputString = String(data: clangProcessOutputData, encoding: .utf8)!
         
         guard clangProcessOutputString.isEmpty else {
-            XCTFail("Clang failure")
+            XCTFail("Clang failure: \(clangProcessOutputString)")
             return
         }
         
@@ -275,7 +274,10 @@ final class MiniCompilerTests: XCTestCase {
         let expectedOutputFileURL = benchmarkFolder.appendingPathComponent(longerInput ? "output.longer" : "output")
         let expectedOutput = try String(contentsOf: expectedOutputFileURL)
         
-        XCTAssertEqual(programOutput, expectedOutput)
+        guard programOutput == expectedOutput else {
+            XCTFail("Unexpected program output. Diff failure.")
+            return
+        }
     }
     
     var minicBinary: URL {

@@ -12,6 +12,8 @@ import Foundation
 struct minic: ParsableCommand {
     @Argument(help: "The path of the source file to be compiled.") var sourceFilePath: URL
     
+    @Option(name: .shortAndLong, help: "The path of the destination file.") var outputFilePath: URL?
+    
     var sourceFileName: String {
         sourceFilePath.deletingPathExtension().lastPathComponent
     }
@@ -60,7 +62,7 @@ struct minic: ParsableCommand {
         
         let llvmManager = LLVMManager(program, with: functionGraphs, named: sourceFileName)
         
-        try llvmManager.generateLLVM(printOutput: printLlvm)
+        try llvmManager.generateLLVM(printOutput: printLlvm, outputFilePath: outputFilePath)
     }
 }
 

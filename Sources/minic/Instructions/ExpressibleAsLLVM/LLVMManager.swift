@@ -49,7 +49,7 @@ class LLVMManager {
         return LLVMConstants.predefinedHelperFunctions
     }
     
-    func generateLLVM(printOutput: Bool = false) throws {
+    func generateLLVM(printOutput: Bool = false, outputFilePath: URL? = nil) throws {
         let programHeader = getProgramHeader()
         
         let programBody = controlFlowGraphs.map { graph in
@@ -58,7 +58,7 @@ class LLVMManager {
         
         let programFooter = getProgramFooter()
         
-        let outputURL = FileManager.default.currentDirectory
+        let outputURL = outputFilePath ?? FileManager.default.currentDirectory
             .appendingPathComponent(filename)
             .appendingPathExtension("ll")
         
