@@ -21,57 +21,7 @@ extension Expression {
         case let .dot(_, left, id):
             let (leftInstructions, leftValue) = left.getEquivalentInstructions(context)
             
-            let structTypeDeclaration: TypeDeclaration
-            
-            if case let .identifier(_, id) = left {
-                let structPointer = context.getInstructionPointer(from: id)
-                
-                guard case let .structure(name: name) = structPointer.type else {
-                    fatalError("Type checker should have caught this. Dot access on not-struct value.")
-                }
-                
-                structTypeDeclaration = context.getStruct(name)!
-            } else if case let .dot(_, left, id) = left {
-                var idChain = [id]
-                var currentLeft: Expression = left
-                while case let .dot(_, left, id) = currentLeft {
-                    currentLeft = left
-                    idChain.append(id)
-                }
-                
-                guard case let .identifier(_, baseID) = currentLeft else { fatalError() }
-                
-                let structPointer = context.getInstructionPointer(from: baseID)
-                
-                guard case let .structure(name: baseStructTypeName) = structPointer.type else {
-                    fatalError("Type checker should have caught this. Dot access on not-struct value.")
-                }
-                
-                var currentStruct = context.getStruct(baseStructTypeName)!
-                
-                idChain.reversed().forEach { id in
-                    let currentStructPointer = currentStruct.fields[id]!.type.equivalentInstructionType
-                    
-                    guard case let .structure(name: currentStructName) = currentStructPointer else {
-                        fatalError("Type checker should have caught this. Dot access on not-struct value.")
-                    }
-                    
-                    currentStruct = context.getStruct(currentStructName)!
-                }
-                
-                structTypeDeclaration = currentStruct
-            } else if case let .invocation(_, functionName, _) = left {
-                let functionRetType = context.getFunction(functionName)!.retType.equivalentInstructionType
-                
-                guard case let .structure(name: name) = functionRetType else {
-                    fatalError("Type checker should have caught this. Dot access on not-struct value.")
-                }
-                
-                structTypeDeclaration = context.getStruct(name)!
-                
-            } else {
-                fatalError("Type checker should have caught this. Dot access on non-identifier value.")
-            }
+            let structTypeDeclaration = left.getStructFromDotExpression(context)
             
             let fieldIndex = structTypeDeclaration.fields.firstIndex(where: {
                 $0.name == id
