@@ -28,7 +28,7 @@ class ControlFlowGraphBuilder {
         
         if let final = build(function.body, currentBlock: functionEntry) {
             link(final, functionExit)
-            final.addInstruction(.unconditionalBranch(destination: functionExit))
+            final.addInstruction(.unconditionalBranch(functionExit))
         }
         
         blocks.append(functionExit)
@@ -38,21 +38,19 @@ class ControlFlowGraphBuilder {
         let entryBlock = Block("FunctionEntry")
         
         if function.retType != .void {
-            entryBlock.addInstruction(.allocate(type: function.retType.equivalentInstructionType,
-                                                result: .localValue(InstructionConstants.returnPointer,
+            entryBlock.addInstruction(.allocate(.localValue(InstructionConstants.returnPointer,
                                                                     type: function.retType.equivalentInstructionType)))
         }
         
         let parameterInstructions = function.parameters.flatMap { param -> [Instruction] in
             let type = param.type.equivalentInstructionType
-            let allocateInstruction = Instruction.allocate(type: type,
-                                                           result: .localValue(param.name, type: type))
+            let allocateInstruction = Instruction.allocate(.localValue(param.name, type: type))
             
             let existingParamValue = InstructionValue.existingRegister(withId: InstructionConstants.parameterPrefix + param.name,
                                                                        type: type)
             
-            let storeInstruction = Instruction.store(value: existingParamValue,
-                                                     pointer: .localValue(param.name, type: type))
+            let storeInstruction = Instruction.store(souce: existingParamValue,
+                                                     destination: .localValue(param.name, type: type))
             
             return [allocateInstruction, storeInstruction]
         }
@@ -60,8 +58,7 @@ class ControlFlowGraphBuilder {
         entryBlock.addInstructions(parameterInstructions)
         
         let localAllocations = function.locals.map { local -> Instruction in
-            .allocate(type: local.type.equivalentInstructionType,
-                      result: .localValue(local.name,
+            .allocate(.localValue(local.name,
                                           type: local.type.equivalentInstructionType))
         }
         
@@ -79,8 +76,8 @@ class ControlFlowGraphBuilder {
             let retType = function.retType.equivalentInstructionType
             let retRegister = InstructionValue.newRegister(forType: retType)
             
-            let load = Instruction.load(pointer: .localValue(InstructionConstants.returnPointer, type: retType),
-                                        result: retRegister)
+            let load = Instruction.load(source: .localValue(InstructionConstants.returnPointer, type: retType),
+                                        destination: retRegister)
             
             let ret = Instruction.returnValue(retRegister)
             
@@ -119,14 +116,14 @@ class ControlFlowGraphBuilder {
                                                                       elementIndex: fieldIndex,
                                                                       result: ptrResult)
                 
-                let setInstr = Instruction.store(value: sourceValue,
-                                                 pointer: .localValue(ptrResult.identifier, type: ptrResult.type))
+                let setInstr = Instruction.store(souce: sourceValue,
+                                                 destination: .localValue(ptrResult.identifier, type: ptrResult.type))
                 
                 currentBlock.addInstructions([getPtrInstruction, setInstr])
             } else {
                 let pointer = context.getInstructionPointer(from: lValue.id)
-                currentBlock.addInstruction(.store(value: sourceValue,
-                                                   pointer: pointer))
+                currentBlock.addInstruction(.store(souce: sourceValue,
+                                                   destination: pointer))
             }
             
             return currentBlock
@@ -154,7 +151,7 @@ class ControlFlowGraphBuilder {
             
             if let thenExit = build(thenStmt, currentBlock: thenEntry) {
                 link(thenExit, condExit)
-                thenExit.addInstruction(.unconditionalBranch(destination: condExit))
+                thenExit.addInstruction(.unconditionalBranch(condExit))
             }
             
             let ifBranch: [Instruction]
@@ -171,7 +168,7 @@ class ControlFlowGraphBuilder {
                 
                 if let elseExit = build(elseStmt, currentBlock: elseEntry) {
                     link(elseExit, condExit)
-                    elseExit.addInstruction(.unconditionalBranch(destination: condExit))
+                    elseExit.addInstruction(.unconditionalBranch(condExit))
                 }
             } else {
                 link(currentBlock, condExit)
@@ -193,8 +190,8 @@ class ControlFlowGraphBuilder {
             currentBlock.addInstructions(instructions)
             
             let destinationReg = InstructionValue.newRegister(forType: .pointer(.i8))
-            let cast = Instruction.bitcast(value: value,
-                                           result: destinationReg)
+            let cast = Instruction.bitcast(source: value,
+                                           destination: destinationReg)
             
             let free = Instruction.call(returnType: .void,
                                         functionPointer: .function(InstructionConstants.freeFunction,
@@ -237,13 +234,13 @@ class ControlFlowGraphBuilder {
                 
                 let retType = function.retType.equivalentInstructionType
                 
-                currentBlock.addInstruction(.store(value: value,
-                                                   pointer: .localValue(InstructionConstants.returnPointer,
+                currentBlock.addInstruction(.store(souce: value,
+                                                   destination: .localValue(InstructionConstants.returnPointer,
                                                                         type: retType)))
             }
             
             link(currentBlock, functionExit)
-            currentBlock.addInstruction(.unconditionalBranch(destination: functionExit))
+            currentBlock.addInstruction(.unconditionalBranch(functionExit))
             
             return nil
         case let .while(_, guardExp, body):
@@ -283,10 +280,8 @@ class ControlFlowGraphBuilder {
         }
         
         let castResult = InstructionValue.newRegister(forType: .i1)
-        let castInstruction = Instruction.truncate(currentType: conditional.type,
-                                                   value: conditional,
-                                                   destinationType: castResult.type,
-                                                   result: castResult)
+        let castInstruction = Instruction.truncate(source: conditional,
+                                                   destination: castResult)
         
         let branch = Instruction.conditionalBranch(conditional: castResult, ifTrue: ifTrue, ifFalse: ifFalse)
         return [castInstruction, branch]

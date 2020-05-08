@@ -36,8 +36,8 @@ extension Expression {
                                                                   result: ptrResult)
             
             let ldResult = InstructionValue.newRegister(forType: fieldType)
-            let loadInstr = Instruction.load(pointer: .localValue(ptrResult.identifier, type: ptrResult.type),
-                                             result: ldResult)
+            let loadInstr = Instruction.load(source: .localValue(ptrResult.identifier, type: ptrResult.type),
+                                             destination: ldResult)
             
             return (leftInstructions + [getPtrInstruction, loadInstr], ldResult)
         case .false:
@@ -46,8 +46,8 @@ extension Expression {
             let pointerVal = context.getInstructionPointer(from: id)
             let destinationRegister = InstructionValue.newRegister(forType: pointerVal.type)
             
-            let loadInstruction = Instruction.load(pointer: pointerVal,
-                                                   result: destinationRegister)
+            let loadInstruction = Instruction.load(source: pointerVal,
+                                                   destination: destinationRegister)
             
             return ([loadInstruction], destinationRegister)
         case let .integer(_, value):
@@ -85,8 +85,8 @@ extension Expression {
             
             let destReg = InstructionValue.newRegister(forType: .structure(name: id))
             
-            let bitCastInstr = Instruction.bitcast(value: tempReg,
-                                                   result: destReg)
+            let bitCastInstr = Instruction.bitcast(source: tempReg,
+                                                   destination: destReg)
             
             return ([mallocInstr, bitCastInstr], destReg)
         case let .null(_, typeIndex):
@@ -116,16 +116,16 @@ extension Expression {
         switch(binaryOp) {
         case .times:
             let result = InstructionValue.newRegister(forType: firstOp.type)
-            return ([.multiply(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
+            return ([.multiply(firstOp: firstOp, secondOp: secondOp, destination: result)], result)
         case .divide:
             let result = InstructionValue.newRegister(forType: firstOp.type)
-            return ([.signedDivide(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
+            return ([.signedDivide(firstOp: firstOp, secondOp: secondOp, destination: result)], result)
         case .plus:
             let result = InstructionValue.newRegister(forType: firstOp.type)
-            return ([.add(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
+            return ([.add(firstOp: firstOp, secondOp: secondOp, destination: result)], result)
         case .minus:
             let result = InstructionValue.newRegister(forType: firstOp.type)
-            return ([.subtract(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
+            return ([.subtract(firstOp: firstOp, secondOp: secondOp, destination: result)], result)
         case .lessThan:
             return compareInstruction(condCode: .slt, firstOp: firstOp, secondOp: secondOp)
         case .lessThanOrEqualTo:
@@ -140,18 +140,18 @@ extension Expression {
             return compareInstruction(condCode: .ne, firstOp: firstOp, secondOp: secondOp)
         case .and:
             let result = InstructionValue.newRegister(forType: firstOp.type)
-            return ([.and(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
+            return ([.and(firstOp: firstOp, secondOp: secondOp, destination: result)], result)
         case .or:
             let result = InstructionValue.newRegister(forType: firstOp.type)
-            return ([.or(type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: result)], result)
+            return ([.or(firstOp: firstOp, secondOp: secondOp, destination: result)], result)
         }
     }
     
     private func compareInstruction(condCode: InstructionConditionCode, firstOp: InstructionValue, secondOp: InstructionValue) -> ([Instruction], InstructionValue) {
         let cmpResult = InstructionValue.newRegister(forType: .i1)
-        let comp = Instruction.comparison(condCode: condCode, type: firstOp.type, firstOp: firstOp, secondOp: secondOp, result: cmpResult)
+        let comp = Instruction.comparison(condCode: condCode, firstOp: firstOp, secondOp: secondOp, destination: cmpResult)
         let extResult = InstructionValue.newBoolRegister()
-        let ext = Instruction.zeroExtend(currentType: cmpResult.type, value: cmpResult, destinationType: extResult.type, result: extResult)
+        let ext = Instruction.zeroExtend(source: cmpResult, destination: extResult)
         return ([comp, ext], extResult)
     }
     
@@ -159,16 +159,14 @@ extension Expression {
         switch(unaryOp) {
         case .not:
             let result = InstructionValue.newRegister(forType: operand.type)
-            return (.exclusiveOr(type: operand.type,
-                                 firstOp: operand,
+            return (.exclusiveOr(firstOp: operand,
                                  secondOp: .literal(InstructionConstants.trueValue),
-                                 result: result), result)
+                                 destination: result), result)
         case .minus:
             let result = InstructionValue.newRegister(forType: operand.type)
-            return (.subtract(type: operand.type,
-                              firstOp: .literal(0),
+            return (.subtract(firstOp: .literal(0),
                               secondOp: operand,
-                              result: result), result)
+                              destination: result), result)
         }
     }
 }

@@ -18,25 +18,25 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#add-instruction)
-    case add(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
+    case add(firstOp: InstructionValue, secondOp: InstructionValue, destination: InstructionValue)
     
     /// The ‘sub’ instruction returns the difference of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#sub-instruction)
-    case subtract(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
+    case subtract(firstOp: InstructionValue, secondOp: InstructionValue, destination: InstructionValue)
     
     /// The ‘mul’ instruction returns the product of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#mul-instruction)
-    case multiply(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
+    case multiply(firstOp: InstructionValue, secondOp: InstructionValue, destination: InstructionValue)
     
     /// The ‘sdiv’ instruction returns the quotient of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#sdiv-instruction)
-    case signedDivide(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
+    case signedDivide(firstOp: InstructionValue, secondOp: InstructionValue, destination: InstructionValue)
     
     // MARK: - Boolean Instructions
     
@@ -44,13 +44,13 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#and-instruction)
-    case and(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
+    case and(firstOp: InstructionValue, secondOp: InstructionValue, destination: InstructionValue)
     
     /// The ‘or’ instruction returns the bitwise logical inclusive or of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#or-instruction)
-    case or(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
+    case or(firstOp: InstructionValue, secondOp: InstructionValue, destination: InstructionValue)
     
     /// The ‘xor’ instruction returns the bitwise logical exclusive or of its two operands.
     ///
@@ -58,7 +58,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#xor-instruction)
-    case exclusiveOr(type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
+    case exclusiveOr(firstOp: InstructionValue, secondOp: InstructionValue, destination: InstructionValue)
     
     // MARK: - Comparison
     
@@ -66,8 +66,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#icmp-instruction)
-    case comparison(condCode: InstructionConditionCode,
-        type: InstructionType, firstOp: InstructionValue, secondOp: InstructionValue, result: InstructionValue)
+    case comparison(condCode: InstructionConditionCode, firstOp: InstructionValue, secondOp: InstructionValue, destination: InstructionValue)
     
     // MARK: - Branch
     
@@ -81,7 +80,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#br-instruction)
-    case unconditionalBranch(destination: Block)
+    case unconditionalBranch(_ destination: Block)
     
     // MARK: - Load & Store
     
@@ -89,20 +88,20 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#load-instruction)
-    case load(pointer: InstructionPointer, result: InstructionValue)
+    case load(source: InstructionIdentifier, destination: InstructionValue)
     
     /// The ‘store’ instruction is used to write to memory.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#store-instruction)
-    case store(value: InstructionValue, pointer: InstructionPointer)
+    case store(souce: InstructionValue, destination: InstructionIdentifier)
     
     /// The ‘getelementptr’ instruction is used to get the address of a subelement of an aggregate data structure.
     ///
     /// It performs address calculation only and does not access memory.
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#getelementptr-instruction)
-    case getElementPointer(structureType: InstructionPointer, structurePointer: InstructionValue, elementIndex: Int, result: InstructionValue)
+    case getElementPointer(structureType: InstructionIdentifier, structurePointer: InstructionValue, elementIndex: Int, result: InstructionValue)
     
     // MARK: - Invocation
     
@@ -110,7 +109,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#call-instruction)
-    case call(returnType: InstructionType, functionPointer: InstructionPointer, arguments: [InstructionValue], result: InstructionValue?)
+    case call(returnType: InstructionType, functionPointer: InstructionIdentifier, arguments: [InstructionValue], result: InstructionValue?)
     
     /// The ‘ret’ instruction is used to return control flow (and optionally a value) from a function back to the caller.
     ///
@@ -133,13 +132,13 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#alloca-instruction)
-    case allocate(type: InstructionType, result: InstructionPointer)
+    case allocate(_ destination: InstructionIdentifier)
     
     /// Global variables define regions of memory allocated at compilation time instead of run-time.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#global-variables)
-    case declareGlobal(type: InstructionType, value: InstructionValue, result: InstructionPointer)
+    case declareGlobal(source: InstructionValue, destination: InstructionIdentifier)
     
     
     /// The structure type is used to represent a collection of data members together in memory.
@@ -148,7 +147,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#structure-type)
-    case declareStructureType(types: [InstructionType], result: InstructionPointer)
+    case declareStructureType(types: [InstructionType], destination: InstructionIdentifier)
     
     // MARK: - Conversion
     
@@ -156,7 +155,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#bitcast-to-instruction)
-    case bitcast(value: InstructionValue, result: InstructionValue)
+    case bitcast(source: InstructionValue, destination: InstructionValue)
     
     /// The ‘trunc’ instruction truncates its operand to the type ty2.
     ///
@@ -165,7 +164,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#trunc-to-instruction)
-    case truncate(currentType: InstructionType, value: InstructionValue, destinationType: InstructionType, result: InstructionValue)
+    case truncate(source: InstructionValue, destination: InstructionValue)
     
     /// The ‘zext’ instruction zero extends its operand to type ty2.
     ///
@@ -174,5 +173,5 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#zext-to-instruction)
-    case zeroExtend(currentType: InstructionType, value: InstructionValue, destinationType: InstructionType, result: InstructionValue)
+    case zeroExtend(source: InstructionValue, destination: InstructionValue)
 }

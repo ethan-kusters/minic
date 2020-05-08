@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum InstructionPointer: Equatable {
+enum InstructionIdentifier: Equatable {
     case function(String, retType: InstructionType)
     case localValue(String, type: InstructionType)
     case globalValue(String, type: InstructionType)
@@ -15,7 +15,7 @@ enum InstructionPointer: Equatable {
     case null
 }
 
-extension InstructionPointer {
+extension InstructionIdentifier {
     var type: InstructionType {
         switch(self) {
         case let .function(_, retType):

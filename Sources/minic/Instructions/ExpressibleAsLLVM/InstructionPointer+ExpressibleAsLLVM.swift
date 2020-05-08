@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension InstructionPointer: ExpressibleAsLLVM {
+extension InstructionIdentifier: ExpressibleAsLLVM {
     var llvmString: String {
         switch(self) {
         case let .function(value, _):

@@ -8,7 +8,7 @@
 import Foundation
 
 extension TypeContext {
-    func getInstructionPointer(from id: String) -> InstructionPointer {
+    func getInstructionPointer(from id: String) -> InstructionIdentifier {
         if let symbol = localSymbolTable?[id] {
             return .localValue(id, type: symbol.equivalentInstructionType)
         } else {
