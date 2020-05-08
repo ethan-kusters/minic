@@ -17,7 +17,7 @@ struct LLVMVirtualRegister: Equatable {
         .localValue(id, type: type)
     }
     
-    init(_ type: LLVMType) {
+    init(ofType type: LLVMType) {
         LLVMVirtualRegister.currentIndex += 1
         id = "_reg\(LLVMVirtualRegister.currentIndex)"
         self.type = type
@@ -29,10 +29,10 @@ struct LLVMVirtualRegister: Equatable {
     }
     
     static func newIntRegister() -> LLVMVirtualRegister {
-        .init(LLVMInstructionConstants.defaultIntType)
+        LLVMVirtualRegister(ofType: LLVMInstructionConstants.defaultIntType)
     }
     
     static func newBoolRegister() -> LLVMVirtualRegister {
-        .init(LLVMInstructionConstants.defaultBoolType)
+        LLVMVirtualRegister(ofType: LLVMInstructionConstants.defaultBoolType)
     }
 }

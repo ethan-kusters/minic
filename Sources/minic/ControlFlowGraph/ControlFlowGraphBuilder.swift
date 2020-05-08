@@ -73,7 +73,7 @@ class ControlFlowGraphBuilder {
             exitBlock.addInstruction(.returnVoid)
         } else {
             let retType = function.retType.llvmType
-            let returnReg = LLVMVirtualRegister(retType)
+            let returnReg = LLVMVirtualRegister(ofType: retType)
             
             let loadInstr = LLVMInstruction.load(source: .localValue(LLVMInstructionConstants.returnPointer, type: retType),
                                             destination: returnReg.identifier)
@@ -109,7 +109,7 @@ class ControlFlowGraphBuilder {
                 
                 let fieldType = structTypeDeclaration.fields[fieldIndex].type.llvmType
                 
-                let getPtrDestReg = LLVMVirtualRegister(fieldType)
+                let getPtrDestReg = LLVMVirtualRegister(ofType: fieldType)
                 let getPtrInstruction = LLVMInstruction.getElementPointer(structureType: .structureType(structTypeDeclaration.name),
                                                                           structurePointer: leftValue.identifier,
                                                                           elementIndex: fieldIndex,
@@ -188,7 +188,7 @@ class ControlFlowGraphBuilder {
             let (instructions, value) = expression.getLLVMInstructions(context)
             currentBlock.addInstructions(instructions)
             
-            let castDestReg = LLVMVirtualRegister(.pointer(.i8))
+            let castDestReg = LLVMVirtualRegister(ofType: .pointer(.i8))
             let castInstr = LLVMInstruction.bitcast(source: value.identifier,
                                                     destination: castDestReg.identifier)
             
@@ -280,7 +280,7 @@ class ControlFlowGraphBuilder {
             return [.conditionalBranch(conditional: conditional, ifTrue: ifTrue, ifFalse: ifFalse)]
         }
         
-        let castDestReg = LLVMVirtualRegister(.i1)
+        let castDestReg = LLVMVirtualRegister(ofType: .i1)
         let castInstruction = LLVMInstruction.truncate(source: conditional.identifier,
                                                        destination: castDestReg.identifier)
         
