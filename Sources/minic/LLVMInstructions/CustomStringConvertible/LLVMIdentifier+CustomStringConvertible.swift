@@ -22,6 +22,8 @@ extension LLVMIdentifier: CustomStringConvertible {
             return "%struct.\(value)"
         case let .label(value):
             return "label %\(value)"
+        case .void:
+            return "void"
         }
     }
 }

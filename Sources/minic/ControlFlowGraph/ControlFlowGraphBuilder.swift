@@ -50,7 +50,7 @@ class ControlFlowGraphBuilder {
                                                                        type: type)
             
             let storeInstruction = LLVMInstruction.store(souce: existingParamValue,
-                                                     destination: .localValue(param.name, type: type))
+                                                         destination: .localValue(param.name, type: type))
             
             return [allocateInstruction, storeInstruction]
         }

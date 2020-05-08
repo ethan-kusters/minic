@@ -8,7 +8,7 @@
 import Foundation
 
 enum LLVMValue: Equatable {
-    case register(register: VirtualRegister, type: LLVMType)
+    case register(register: LLVMVirtualRegister)
     case literal(Int)
     case null(type: LLVMType)
     case void
@@ -17,8 +17,8 @@ enum LLVMValue: Equatable {
 extension LLVMValue {
     var type: LLVMType {
         switch(self) {
-        case let .register(_, type):
-            return type
+        case let .register(register):
+            return register.type
         case .literal:
             return LLVMInstructionConstants.defaultIntType
         case let .null(type):
@@ -32,24 +32,24 @@ extension LLVMValue {
 
 extension LLVMValue {
     static func newIntRegister() -> LLVMValue {
-        return .register(register: VirtualRegister(), type: LLVMInstructionConstants.defaultIntType)
+        .register(register: LLVMVirtualRegister(LLVMInstructionConstants.defaultIntType))
     }
     
     static func newBoolRegister() -> LLVMValue {
-        return .register(register: VirtualRegister(), type: LLVMInstructionConstants.defaultBoolType)
+        .register(register: LLVMVirtualRegister(LLVMInstructionConstants.defaultBoolType))
     }
     
     static func newRegister(forType type: LLVMType) -> LLVMValue {
-        .register(register: VirtualRegister(), type: type)
+        .register(register: LLVMVirtualRegister(type))
     }
     
     static func existingRegister(withId id: String, type: LLVMType) -> LLVMValue {
-        .register(register: VirtualRegister(withId: id), type: type)
+        .register(register: LLVMVirtualRegister(withId: id, type: type))
     }
     
     var identifier: String {
         switch(self) {
-        case let .register(register, _):
+        case let .register(register):
             return register.id
         case let .literal(val):
             return val.description

@@ -8,12 +8,21 @@
 import Foundation
 
 enum LLVMIdentifier: Equatable {
+    
     case function(String, retType: LLVMType)
+    
     case localValue(String, type: LLVMType)
+    
     case globalValue(String, type: LLVMType)
+    
     case structureType(String)
+    
     case label(String)
+    
     case null
+    
+    case void
+    
 }
 
 extension LLVMIdentifier {
@@ -31,6 +40,8 @@ extension LLVMIdentifier {
             return .structure(name: name)
         case .label:
             return .label
+        case .void:
+            return .void
         }
     }
 }

@@ -10,7 +10,7 @@ import Foundation
 extension LLVMValue: CustomStringConvertible {
     var description: String {
         switch(self) {
-        case let .register(register, _):
+        case let .register(register):
             return "%\(register)"
         case let .literal(value):
             return String(value)
