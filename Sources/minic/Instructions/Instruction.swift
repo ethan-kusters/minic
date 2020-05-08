@@ -89,13 +89,13 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#load-instruction)
-    case load(valueType: InstructionType, pointerType: InstructionType, pointer: InstructionPointer, result: InstructionValue)
+    case load(pointer: InstructionPointer, result: InstructionValue)
     
     /// The ‘store’ instruction is used to write to memory.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#store-instruction)
-    case store(valueType: InstructionType, value: InstructionValue, pointerType: InstructionType, pointer: InstructionPointer)
+    case store(value: InstructionValue, pointer: InstructionPointer)
     
     /// The ‘getelementptr’ instruction is used to get the address of a subelement of an aggregate data structure.
     ///
@@ -116,7 +116,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#ret-instruction)
-    case returnValue(type: InstructionType, value: InstructionValue)
+    case returnValue(_ value: InstructionValue)
     
     /// The ‘ret’ instruction is used to return control flow (and optionally a value) from a function back to the caller.
     ///
@@ -156,7 +156,7 @@ enum Instruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#bitcast-to-instruction)
-    case bitcast(currentType: InstructionType, value: InstructionValue, destinationType: InstructionType, result: InstructionValue)
+    case bitcast(value: InstructionValue, result: InstructionValue)
     
     /// The ‘trunc’ instruction truncates its operand to the type ty2.
     ///

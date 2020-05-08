@@ -51,9 +51,7 @@ class ControlFlowGraphBuilder {
             let existingParamValue = InstructionValue.existingRegister(withId: InstructionConstants.parameterPrefix + param.name,
                                                                        type: type)
             
-            let storeInstruction = Instruction.store(valueType: type,
-                                                     value: existingParamValue,
-                                                     pointerType: type,
+            let storeInstruction = Instruction.store(value: existingParamValue,
                                                      pointer: .localValue(param.name, type: type))
             
             return [allocateInstruction, storeInstruction]
@@ -81,12 +79,10 @@ class ControlFlowGraphBuilder {
             let retType = function.retType.equivalentInstructionType
             let retRegister = InstructionValue.newRegister(forType: retType)
             
-            let load = Instruction.load(valueType: retType,
-                                        pointerType: retType,
-                                        pointer: .localValue(InstructionConstants.returnPointer, type: retType),
+            let load = Instruction.load(pointer: .localValue(InstructionConstants.returnPointer, type: retType),
                                         result: retRegister)
             
-            let ret = Instruction.returnValue(type: retType, value: retRegister)
+            let ret = Instruction.returnValue(retRegister)
             
             exitBlock.addInstructions([load, ret])
         }
@@ -123,17 +119,13 @@ class ControlFlowGraphBuilder {
                                                                       elementIndex: fieldIndex,
                                                                       result: ptrResult)
                 
-                let setInstr = Instruction.store(valueType: fieldType,
-                                                 value: sourceValue,
-                                                 pointerType: ptrResult.type,
+                let setInstr = Instruction.store(value: sourceValue,
                                                  pointer: .localValue(ptrResult.identifier, type: ptrResult.type))
                 
                 currentBlock.addInstructions([getPtrInstruction, setInstr])
             } else {
                 let pointer = context.getInstructionPointer(from: lValue.id)
-                currentBlock.addInstruction(.store(valueType: sourceValue.type,
-                                                   value: sourceValue,
-                                                   pointerType: pointer.type,
+                currentBlock.addInstruction(.store(value: sourceValue,
                                                    pointer: pointer))
             }
             
@@ -201,9 +193,7 @@ class ControlFlowGraphBuilder {
             currentBlock.addInstructions(instructions)
             
             let destinationReg = InstructionValue.newRegister(forType: .pointer(.i8))
-            let cast = Instruction.bitcast(currentType: value.type,
-                                           value: value,
-                                           destinationType: destinationReg.type,
+            let cast = Instruction.bitcast(value: value,
                                            result: destinationReg)
             
             let free = Instruction.call(returnType: .void,
@@ -247,9 +237,7 @@ class ControlFlowGraphBuilder {
                 
                 let retType = function.retType.equivalentInstructionType
                 
-                currentBlock.addInstruction(.store(valueType: value.type,
-                                                   value: value,
-                                                   pointerType: retType,
+                currentBlock.addInstruction(.store(value: value,
                                                    pointer: .localValue(InstructionConstants.returnPointer,
                                                                         type: retType)))
             }

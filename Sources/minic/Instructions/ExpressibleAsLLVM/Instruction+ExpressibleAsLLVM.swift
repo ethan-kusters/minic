@@ -41,11 +41,11 @@ extension Instruction: ExpressibleAsLLVM {
         case let .unconditionalBranch(destination):
             return "br label \(destination.llvmString)"
             
-        case let .load(valueType, pointerType, pointer, result):
-            return "\(result.llvmString) = load \(valueType.llvmString), \(pointerType.llvmString)* \(pointer.llvmString)"
+        case let .load(pointer, result):
+            return "\(result.llvmString) = load \(result.type.llvmString), \(pointer.type.llvmString)* \(pointer.llvmString)"
             
-        case let .store(valueType, value, pointerType, pointer):
-            return "store \(valueType.llvmString) \(value.llvmString), \(pointerType.llvmString)* \(pointer.llvmString)"
+        case let .store(value, pointer):
+            return "store \(value.type.llvmString) \(value.llvmString), \(pointer.type.llvmString)* \(pointer.llvmString)"
             
         case let .getElementPointer(structureType, structurePointer, elementIndex, result):
             return "\(result.llvmString) = getelementptr \(structureType.llvmString), \(structureType.llvmString)* \(structurePointer.llvmString), i1 0, i32 \(elementIndex)"
@@ -64,8 +64,8 @@ extension Instruction: ExpressibleAsLLVM {
                 return call
             }
             
-        case let .returnValue(type, value):
-            return "ret \(type.llvmString) \(value.llvmString)"
+        case let .returnValue(value):
+            return "ret \(value.type.llvmString) \(value.llvmString)"
             
         case .returnVoid:
             return "ret void"
@@ -80,8 +80,8 @@ extension Instruction: ExpressibleAsLLVM {
             let typeList = types.map(\.llvmString).joined(separator: ", ")
             return "\(result.llvmString) = type { \(typeList) }"
             
-        case let .bitcast(currentType, value, destinationType, result):
-            return "\(result.llvmString) = bitcast \(currentType.llvmString) \(value.llvmString) to \(destinationType.llvmString)"
+        case let .bitcast(value, result):
+            return "\(result.llvmString) = bitcast \(value.type.llvmString) \(value.llvmString) to \(result.type.llvmString)"
             
         case let .truncate(currentType, value, destinationType, result):
             return "\(result.llvmString) = trunc \(currentType.llvmString) \(value.llvmString) to \(destinationType.llvmString)"

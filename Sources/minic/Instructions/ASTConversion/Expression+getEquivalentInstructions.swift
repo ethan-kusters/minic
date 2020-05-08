@@ -36,9 +36,7 @@ extension Expression {
                                                                   result: ptrResult)
             
             let ldResult = InstructionValue.newRegister(forType: fieldType)
-            let loadInstr = Instruction.load(valueType: fieldType,
-                                             pointerType: fieldType,
-                                             pointer: .localValue(ptrResult.identifier, type: ptrResult.type),
+            let loadInstr = Instruction.load(pointer: .localValue(ptrResult.identifier, type: ptrResult.type),
                                              result: ldResult)
             
             return (leftInstructions + [getPtrInstruction, loadInstr], ldResult)
@@ -48,9 +46,7 @@ extension Expression {
             let pointerVal = context.getInstructionPointer(from: id)
             let destinationRegister = InstructionValue.newRegister(forType: pointerVal.type)
             
-            let loadInstruction = Instruction.load(valueType: pointerVal.type,
-                                                   pointerType: pointerVal.type,
-                                                   pointer: pointerVal,
+            let loadInstruction = Instruction.load(pointer: pointerVal,
                                                    result: destinationRegister)
             
             return ([loadInstruction], destinationRegister)
@@ -89,9 +85,7 @@ extension Expression {
             
             let destReg = InstructionValue.newRegister(forType: .structure(name: id))
             
-            let bitCastInstr = Instruction.bitcast(currentType: tempReg.type,
-                                                   value: tempReg,
-                                                   destinationType: destReg.type,
+            let bitCastInstr = Instruction.bitcast(value: tempReg,
                                                    result: destReg)
             
             return ([mallocInstr, bitCastInstr], destReg)
