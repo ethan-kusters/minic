@@ -8,10 +8,10 @@
 import Foundation
 
 enum LLVMValue: Equatable {
-    case register(register: LLVMVirtualRegister)
-    case literal(Int)
-    case null(type: LLVMType)
+    case register(LLVMVirtualRegister)
+    case null(LLVMType)
     case void
+    case literal(Int)
 }
 
 extension LLVMValue {
@@ -31,20 +31,8 @@ extension LLVMValue {
 }
 
 extension LLVMValue {
-    static func newIntRegister() -> LLVMValue {
-        .register(register: LLVMVirtualRegister(LLVMInstructionConstants.defaultIntType))
-    }
-    
-    static func newBoolRegister() -> LLVMValue {
-        .register(register: LLVMVirtualRegister(LLVMInstructionConstants.defaultBoolType))
-    }
-    
-    static func newRegister(forType type: LLVMType) -> LLVMValue {
-        .register(register: LLVMVirtualRegister(type))
-    }
-    
     static func existingRegister(withId id: String, type: LLVMType) -> LLVMValue {
-        .register(register: LLVMVirtualRegister(withId: id, type: type))
+        .register(LLVMVirtualRegister(withId: id, type: type))
     }
     
     var identifier: String {
@@ -57,6 +45,21 @@ extension LLVMValue {
             return "null"
         case .void:
             return "void"
+        }
+    }
+}
+
+extension LLVMValue {
+    var llvmIdentifier: LLVMIdentifier {
+        switch(self) {
+        case let .register(register):
+            return .localValue(register.id, type: register.type)
+        case let .null(type):
+            return .null(type)
+        case .void:
+            return .void
+        case .literal:
+            fatalError("Literal values cannot be converted to identifiers.")
         }
     }
 }

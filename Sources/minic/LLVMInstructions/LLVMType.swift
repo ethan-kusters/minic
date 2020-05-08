@@ -25,13 +25,13 @@ extension LLVMType {
         case .i1, .i8, .i32, .i64:
             return .literal(0)
         case .void:
-            return .null(type: .void)
+            return .void
         case .null:
-            return .null(type: .null)
+            return .null(.null)
         case let .structure(name):
-            return .null(type: .structure(name: name))
+            return .null(.structure(name: name))
         case let .pointer(type):
-            return .null(type: .pointer(type))
+            return .null(.pointer(type))
         case .label:
             return .void
         }
