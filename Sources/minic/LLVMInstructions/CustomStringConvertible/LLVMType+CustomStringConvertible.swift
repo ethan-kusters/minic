@@ -1,5 +1,5 @@
 //
-//  InstructionType+ExpressibleAsLLVM.swift
+//  LLVMType+CustomStringConvertible.swift
 //  MiniCompiler
 //
 //  Created by Ethan Kusters on 4/27/20.
@@ -8,8 +8,8 @@
 import Foundation
 
 
-extension InstructionType: ExpressibleAsLLVM {
-    var llvmString: String {
+extension LLVMType: CustomStringConvertible {
+    var description: String {
         switch(self) {
         case .void:
             return "void"
@@ -26,7 +26,9 @@ extension InstructionType: ExpressibleAsLLVM {
         case let .structure(name):
             return "%struct.\(name)*"
         case let .pointer(type):
-            return "\(type.llvmString)*"
+            return "\(type)*"
+        case .label:
+            return "label"
         }
     }
 }

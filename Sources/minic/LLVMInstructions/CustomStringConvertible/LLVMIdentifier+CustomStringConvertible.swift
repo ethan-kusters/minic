@@ -1,5 +1,5 @@
 //
-//  InstructionPointer+ExpressibleAsLLVM.swift
+//  LLVMIdentifier+CustomStringConvertible.swift
 //  MiniCompiler
 //
 //  Created by Ethan Kusters on 4/27/20.
@@ -7,8 +7,8 @@
 
 import Foundation
 
-extension InstructionIdentifier: ExpressibleAsLLVM {
-    var llvmString: String {
+extension LLVMIdentifier: CustomStringConvertible {
+    var description: String {
         switch(self) {
         case let .function(value, _):
             return "@\(value)"
@@ -20,6 +20,8 @@ extension InstructionIdentifier: ExpressibleAsLLVM {
             return "null"
         case let .structureType(value):
             return "%struct.\(value)"
+        case let .label(value):
+            return "label %\(value)"
         }
     }
 }

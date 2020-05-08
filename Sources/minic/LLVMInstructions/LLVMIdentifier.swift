@@ -7,16 +7,17 @@
 
 import Foundation
 
-enum InstructionIdentifier: Equatable {
-    case function(String, retType: InstructionType)
-    case localValue(String, type: InstructionType)
-    case globalValue(String, type: InstructionType)
+enum LLVMIdentifier: Equatable {
+    case function(String, retType: LLVMType)
+    case localValue(String, type: LLVMType)
+    case globalValue(String, type: LLVMType)
     case structureType(String)
+    case label(String)
     case null
 }
 
-extension InstructionIdentifier {
-    var type: InstructionType {
+extension LLVMIdentifier {
+    var type: LLVMType {
         switch(self) {
         case let .function(_, retType):
             return retType
@@ -28,6 +29,8 @@ extension InstructionIdentifier {
             return .null
         case let .structureType(name):
             return .structure(name: name)
+        case .label:
+            return .label
         }
     }
 }

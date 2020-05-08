@@ -8,7 +8,7 @@
 import Foundation
 
 /// Used as an argument to the `icmp` instruction
-enum InstructionConditionCode: String, Equatable {
+enum LLVMConditionCode: String, Equatable {
     
     /// equal
     case eq

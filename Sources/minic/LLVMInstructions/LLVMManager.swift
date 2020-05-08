@@ -19,33 +19,33 @@ class LLVMManager {
     }
     
     private func getGlobalDeclarations() -> String {
-        let typeDeclarations = program.types.map {type -> Instruction in
-            let types = type.fields.map(\.type.equivalentInstructionType)
-            return Instruction.declareStructureType(types: types, destination: .structureType(type.name))
+        let typeDeclarations = program.types.map {type -> String in
+            let types = type.fields.map(\.type.llvmType)
+            return LLVMInstruction.declareStructureType(types: types,
+                                                        destination: .structureType(type.name)).description
         }
-        .map(\.llvmString)
         .joined(separator: "\n")
         
-        let declarations = program.declarations.map { declaration -> Instruction in
-            let type = declaration.type.equivalentInstructionType
-            return .declareGlobal(source: type.unitializedValue,
-                                  destination: .globalValue(declaration.name, type: type))
+        let declarations = program.declarations.map { declaration -> String in
+            let type = declaration.type.llvmType
+            return LLVMInstruction.declareGlobal(source: type.unitializedValue,
+                                                 destination: .globalValue(declaration.name,
+                                                                           type: type)).description
         }
-        .map(\.llvmString)
         .joined(separator: "\n")
         
         return [typeDeclarations, declarations].joined(separator: "\n")
     }
     
     private func getProgramHeader() -> String {
-        let header = "\(LLVMConstants.sourceFilenameHeader)\"\(filename).mini\""
-        let target = "\(LLVMConstants.targetHeader)\"x86_64-apple-macosx10.15.0\""
+        let header = "\(LLVMStringConstants.sourceFilenameHeader)\"\(filename).mini\""
+        let target = "\(LLVMStringConstants.targetHeader)\"x86_64-apple-macosx10.15.0\""
         
         return [header, target, getGlobalDeclarations()].joined(separator: "\n\n")
     }
     
     private func getProgramFooter() -> String {
-        return LLVMConstants.predefinedHelperFunctions
+        return LLVMStringConstants.predefinedHelperFunctions
     }
     
     func generateLLVM(printOutput: Bool = false, outputFilePath: URL? = nil) throws {

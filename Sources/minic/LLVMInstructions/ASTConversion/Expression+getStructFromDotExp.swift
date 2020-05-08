@@ -10,7 +10,7 @@ import Foundation
 extension Expression {
     func getStructFromDotExpression(_ context: TypeContext) -> TypeDeclaration {
         if case let .identifier(_, id) = self {
-            let structPointer = context.getInstructionPointer(from: id)
+            let structPointer = context.getllvmIdentifier(from: id)
             
             guard case let .structure(name: name) = structPointer.type else {
                 fatalError("Type checker should have caught this. Dot access on not-struct value.")
@@ -27,7 +27,7 @@ extension Expression {
             
             guard case let .identifier(_, baseID) = currentLeft else { fatalError() }
             
-            let structPointer = context.getInstructionPointer(from: baseID)
+            let structPointer = context.getllvmIdentifier(from: baseID)
             
             guard case let .structure(name: baseStructTypeName) = structPointer.type else {
                 fatalError("Type checker should have caught this. Dot access on not-struct value.")
@@ -36,7 +36,7 @@ extension Expression {
             var currentStruct = context.getStruct(baseStructTypeName)!
             
             idChain.reversed().forEach { id in
-                let currentStructPointer = currentStruct.fields[id]!.type.equivalentInstructionType
+                let currentStructPointer = currentStruct.fields[id]!.type.llvmType
                 
                 guard case let .structure(name: currentStructName) = currentStructPointer else {
                     fatalError("Type checker should have caught this. Dot access on not-struct value.")
@@ -47,7 +47,7 @@ extension Expression {
             
             return currentStruct
         } else if case let .invocation(_, functionName, _) = self {
-            let functionRetType = context.getFunction(functionName)!.retType.equivalentInstructionType
+            let functionRetType = context.getFunction(functionName)!.retType.llvmType
             
             guard case let .structure(name: name) = functionRetType else {
                 fatalError("Type checker should have caught this. Dot access on not-struct value.")

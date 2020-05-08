@@ -1,5 +1,5 @@
 //
-//  Type+equivalentInstructionType.swift
+//  Type+llvmType.swift
 //  MiniCompiler
 //
 //  Created by Ethan Kusters on 4/27/20.
@@ -8,16 +8,16 @@
 import Foundation
 
 extension Type {
-    var equivalentInstructionType: InstructionType {
+    var llvmType: LLVMType {
         switch(self) {
         case .int:
-            return InstructionConstants.defaultIntType
+            return LLVMInstructionConstants.defaultIntType
         case .void:
             return .void
         case let .struct(_, name):
             return .structure(name: name)
         case .bool:
-            return InstructionConstants.defaultIntType
+            return LLVMInstructionConstants.defaultIntType
         case .null:
             return .null
         }

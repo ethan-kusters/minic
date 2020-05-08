@@ -7,14 +7,14 @@
 
 import Foundation
 
-struct InstructionRegister: Equatable {
+struct VirtualRegister: Equatable {
     private static var currentIndex = 0
     
     let id: String
     
     init() {
-        InstructionRegister.currentIndex += 1
-        id = "_reg\(InstructionRegister.currentIndex)"
+        VirtualRegister.currentIndex += 1
+        id = "_reg\(VirtualRegister.currentIndex)"
     }
     
     init(withId id: String) {
@@ -22,7 +22,7 @@ struct InstructionRegister: Equatable {
     }
 }
 
-extension InstructionRegister: CustomStringConvertible {
+extension VirtualRegister: CustomStringConvertible {
     var description: String {
         id
     }

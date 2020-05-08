@@ -10,7 +10,7 @@ import Foundation
 
 class Block {
     let label: String
-    var instructions = [Instruction]()
+    var instructions = [LLVMInstruction]()
     var predecessors = [Block]()
     var successors = [Block]()
     
@@ -18,7 +18,7 @@ class Block {
         self.label = Block.getLabel(description)
     }
     
-    init(_ description: String, instructions: [Instruction]) {
+    init(_ description: String, instructions: [LLVMInstruction]) {
         self.label = Block.getLabel(description)
         self.instructions = instructions
     }
@@ -31,11 +31,11 @@ class Block {
         successors.append(block)
     }
     
-    func addInstructions(_ newInstructions: [Instruction]) {
+    func addInstructions(_ newInstructions: [LLVMInstruction]) {
         instructions.append(contentsOf: newInstructions)
     }
     
-    func addInstruction(_ newInstruction: Instruction) {
+    func addInstruction(_ newInstruction: LLVMInstruction) {
         instructions.append(newInstruction)
     }
 }

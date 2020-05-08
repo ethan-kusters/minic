@@ -7,19 +7,20 @@
 
 import Foundation
 
-enum InstructionType: Equatable {
+enum LLVMType: Equatable {
     case void
     case null
     case i1
     case i8
     case i32
     case i64
-    indirect case pointer(InstructionType)
+    case label
+    indirect case pointer(LLVMType)
     case structure(name: String)
 }
 
-extension InstructionType {
-    var unitializedValue: InstructionValue {
+extension LLVMType {
+    var unitializedValue: LLVMValue {
         switch(self) {
         case .i1, .i8, .i32, .i64:
             return .literal(0)
@@ -31,6 +32,8 @@ extension InstructionType {
             return .null(type: .structure(name: name))
         case let .pointer(type):
             return .null(type: .pointer(type))
+        case .label:
+            return .void
         }
     }
 }

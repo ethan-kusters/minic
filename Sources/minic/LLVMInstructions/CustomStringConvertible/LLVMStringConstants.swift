@@ -1,5 +1,5 @@
 //
-//  LLVMConstants.swift
+//  LLVMStringConstants.swift
 //  MiniCompiler
 //
 //  Created by Ethan Kusters on 4/27/20.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct LLVMConstants {
+struct LLVMStringConstants {
     static let targetHeader = "target triple= "
     static let sourceFilenameHeader = "source_filename = "
     
@@ -21,7 +21,7 @@ struct LLVMConstants {
         @.printlnFormatString = private unnamed_addr constant [4 x i8] c"%d\\0A\\00", align 1
         
         ; Print Helper Functions:
-        define void @\(InstructionConstants.printHelperFunction)(i32) #0 {
+        define void @\(LLVMInstructionConstants.printHelperFunction)(i32) #0 {
             %2 = alloca i32, align 4
             store i32 %0, i32* %2, align 4
             %3 = load i32, i32* %2, align 4
@@ -29,7 +29,7 @@ struct LLVMConstants {
             ret void
         }
 
-        define void @\(InstructionConstants.printlnHelperFunction)(i32) #0 {
+        define void @\(LLVMInstructionConstants.printlnHelperFunction)(i32) #0 {
             %2 = alloca i32, align 4
             store i32 %0, i32* %2, align 4
             %3 = load i32, i32* %2, align 4
@@ -43,7 +43,7 @@ struct LLVMConstants {
         @.scanFormatString = private unnamed_addr constant [3 x i8] c"%d\\00", align 1
         
         ; Scan Helper Function:
-        define i32 @\(InstructionConstants.readHelperFunction)() #0 {
+        define i32 @\(LLVMInstructionConstants.readHelperFunction)() #0 {
           %1 = alloca i32, align 4
           %2 = call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.scanFormatString, i64 0, i64 0), i32* %1)
           %3 = load i32, i32* %1, align 4

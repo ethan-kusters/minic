@@ -38,18 +38,18 @@ class ControlFlowGraphBuilder {
         let entryBlock = Block("FunctionEntry")
         
         if function.retType != .void {
-            entryBlock.addInstruction(.allocate(.localValue(InstructionConstants.returnPointer,
-                                                                    type: function.retType.equivalentInstructionType)))
+            entryBlock.addInstruction(.allocate(.localValue(LLVMInstructionConstants.returnPointer,
+                                                                    type: function.retType.llvmType)))
         }
         
-        let parameterInstructions = function.parameters.flatMap { param -> [Instruction] in
-            let type = param.type.equivalentInstructionType
-            let allocateInstruction = Instruction.allocate(.localValue(param.name, type: type))
+        let parameterInstructions = function.parameters.flatMap { param -> [LLVMInstruction] in
+            let type = param.type.llvmType
+            let allocateInstruction = LLVMInstruction.allocate(.localValue(param.name, type: type))
             
-            let existingParamValue = InstructionValue.existingRegister(withId: InstructionConstants.parameterPrefix + param.name,
+            let existingParamValue = LLVMValue.existingRegister(withId: LLVMInstructionConstants.parameterPrefix + param.name,
                                                                        type: type)
             
-            let storeInstruction = Instruction.store(souce: existingParamValue,
+            let storeInstruction = LLVMInstruction.store(souce: existingParamValue,
                                                      destination: .localValue(param.name, type: type))
             
             return [allocateInstruction, storeInstruction]
@@ -57,9 +57,9 @@ class ControlFlowGraphBuilder {
         
         entryBlock.addInstructions(parameterInstructions)
         
-        let localAllocations = function.locals.map { local -> Instruction in
+        let localAllocations = function.locals.map { local -> LLVMInstruction in
             .allocate(.localValue(local.name,
-                                          type: local.type.equivalentInstructionType))
+                                          type: local.type.llvmType))
         }
         
         entryBlock.addInstructions(localAllocations)
@@ -73,13 +73,13 @@ class ControlFlowGraphBuilder {
         if function.retType == .void {
             exitBlock.addInstruction(.returnVoid)
         } else {
-            let retType = function.retType.equivalentInstructionType
-            let retRegister = InstructionValue.newRegister(forType: retType)
+            let retType = function.retType.llvmType
+            let retRegister = LLVMValue.newRegister(forType: retType)
             
-            let load = Instruction.load(source: .localValue(InstructionConstants.returnPointer, type: retType),
+            let load = LLVMInstruction.load(source: .localValue(LLVMInstructionConstants.returnPointer, type: retType),
                                         destination: retRegister)
             
-            let ret = Instruction.returnValue(retRegister)
+            let ret = LLVMInstruction.returnValue(retRegister)
             
             exitBlock.addInstructions([load, ret])
         }
@@ -95,11 +95,11 @@ class ControlFlowGraphBuilder {
     private func build(_ statement: Statement, currentBlock: Block) -> Block? {
         switch(statement) {
         case let .assignment(_, lValue, source):
-            let (sourceInstructions, sourceValue) = source.getEquivalentInstructions(context)
+            let (sourceInstructions, sourceValue) = source.getLLVMInstructions(context)
             currentBlock.addInstructions(sourceInstructions)
             
             if let leftExpression = lValue.leftExpression {
-                let (leftInstructions, leftValue) = leftExpression.getEquivalentInstructions(context)
+                let (leftInstructions, leftValue) = leftExpression.getLLVMInstructions(context)
                 currentBlock.addInstructions(leftInstructions)
                 
                 let structTypeDeclaration = leftExpression.getStructFromDotExpression(context)
@@ -108,20 +108,20 @@ class ControlFlowGraphBuilder {
                     $0.name == lValue.id
                 })!
                 
-                let fieldType = structTypeDeclaration.fields[fieldIndex].type.equivalentInstructionType
+                let fieldType = structTypeDeclaration.fields[fieldIndex].type.llvmType
                 
-                let ptrResult = InstructionValue.newRegister(forType: fieldType)
-                let getPtrInstruction = Instruction.getElementPointer(structureType: .structureType(structTypeDeclaration.name),
+                let ptrResult = LLVMValue.newRegister(forType: fieldType)
+                let getPtrInstruction = LLVMInstruction.getElementPointer(structureType: .structureType(structTypeDeclaration.name),
                                                                       structurePointer: leftValue,
                                                                       elementIndex: fieldIndex,
                                                                       result: ptrResult)
                 
-                let setInstr = Instruction.store(souce: sourceValue,
+                let setInstr = LLVMInstruction.store(souce: sourceValue,
                                                  destination: .localValue(ptrResult.identifier, type: ptrResult.type))
                 
                 currentBlock.addInstructions([getPtrInstruction, setInstr])
             } else {
-                let pointer = context.getInstructionPointer(from: lValue.id)
+                let pointer = context.getllvmIdentifier(from: lValue.id)
                 currentBlock.addInstruction(.store(souce: sourceValue,
                                                    destination: pointer))
             }
@@ -140,7 +140,7 @@ class ControlFlowGraphBuilder {
             
             return block
         case let .conditional(_, guardExp, thenStmt, elseStmt):
-            let (guardInstructions, guardValue) = guardExp.getEquivalentInstructions(context)
+            let (guardInstructions, guardValue) = guardExp.getLLVMInstructions(context)
             currentBlock.addInstructions(guardInstructions)
             
             let condExit = Block("CondExit")
@@ -154,7 +154,7 @@ class ControlFlowGraphBuilder {
                 thenExit.addInstruction(.unconditionalBranch(condExit))
             }
             
-            let ifBranch: [Instruction]
+            let ifBranch: [LLVMInstruction]
             
             if let elseStmt = elseStmt {
                 let elseEntry = Block("ElseEntry")
@@ -186,15 +186,15 @@ class ControlFlowGraphBuilder {
                 return nil
             }
         case let .delete(_, expression):
-            let (instructions, value) = expression.getEquivalentInstructions(context)
+            let (instructions, value) = expression.getLLVMInstructions(context)
             currentBlock.addInstructions(instructions)
             
-            let destinationReg = InstructionValue.newRegister(forType: .pointer(.i8))
-            let cast = Instruction.bitcast(source: value,
+            let destinationReg = LLVMValue.newRegister(forType: .pointer(.i8))
+            let cast = LLVMInstruction.bitcast(source: value,
                                            destination: destinationReg)
             
-            let free = Instruction.call(returnType: .void,
-                                        functionPointer: .function(InstructionConstants.freeFunction,
+            let free = LLVMInstruction.call(returnType: .void,
+                                        functionPointer: .function(LLVMInstructionConstants.freeFunction,
                                                                    retType: .void),
                                         arguments: [destinationReg],
                                         result: nil)
@@ -203,15 +203,15 @@ class ControlFlowGraphBuilder {
             
             return currentBlock
         case let .invocation(_, expression):
-            let expressionInstructions = expression.getEquivalentInstructions(context).instructions
+            let expressionInstructions = expression.getLLVMInstructions(context).instructions
             currentBlock.addInstructions(expressionInstructions)
             
             return currentBlock
         case let .printLn(_, expression):
-            let (instructions, value) = expression.getEquivalentInstructions(context)
+            let (instructions, value) = expression.getLLVMInstructions(context)
             currentBlock.addInstructions(instructions)
             currentBlock.addInstruction(.call(returnType: .void,
-                                              functionPointer: .function(InstructionConstants.printlnHelperFunction,
+                                              functionPointer: .function(LLVMInstructionConstants.printlnHelperFunction,
                                                                          retType: .void),
                                         arguments: [value],
                                         result: nil))
@@ -219,23 +219,23 @@ class ControlFlowGraphBuilder {
             
             return currentBlock
         case let .print(_, expression):
-            let (instructions, value) = expression.getEquivalentInstructions(context)
+            let (instructions, value) = expression.getLLVMInstructions(context)
             currentBlock.addInstructions(instructions)
             currentBlock.addInstruction(.call(returnType: .void,
-                                              functionPointer: .function(InstructionConstants.printHelperFunction,
+                                              functionPointer: .function(LLVMInstructionConstants.printHelperFunction,
                                                                          retType: .void),
                                               arguments: [value],
                                               result: nil))
             
             return currentBlock
         case let .return(_, value):
-            if let (instructions, value) = value?.getEquivalentInstructions(context) {
+            if let (instructions, value) = value?.getLLVMInstructions(context) {
                 currentBlock.addInstructions(instructions)
                 
-                let retType = function.retType.equivalentInstructionType
+                let retType = function.retType.llvmType
                 
                 currentBlock.addInstruction(.store(souce: value,
-                                                   destination: .localValue(InstructionConstants.returnPointer,
+                                                   destination: .localValue(LLVMInstructionConstants.returnPointer,
                                                                         type: retType)))
             }
             
@@ -244,7 +244,7 @@ class ControlFlowGraphBuilder {
             
             return nil
         case let .while(_, guardExp, body):
-            let (guardInstructions, guardValue) = guardExp.getEquivalentInstructions(context)
+            let (guardInstructions, guardValue) = guardExp.getLLVMInstructions(context)
             currentBlock.addInstructions(guardInstructions)
             
             let whileBodyEntry = Block("WhileBodyEntrance")
@@ -259,7 +259,7 @@ class ControlFlowGraphBuilder {
             blocks.append(whileBodyEntry)
             
             if let whileBodyExit = build(body, currentBlock: whileBodyEntry) {
-                let (secondGuardInstructions, secondGuardValue) = guardExp.getEquivalentInstructions(context)
+                let (secondGuardInstructions, secondGuardValue) = guardExp.getLLVMInstructions(context)
                 whileBodyExit.addInstructions(secondGuardInstructions)
                 
                 link(whileBodyExit, whileBodyEntry)
@@ -274,16 +274,16 @@ class ControlFlowGraphBuilder {
         }
     }
     
-    func getConditionalBranch(conditional: InstructionValue, ifTrue: Block, ifFalse: Block) -> [Instruction] {
+    func getConditionalBranch(conditional: LLVMValue, ifTrue: Block, ifFalse: Block) -> [LLVMInstruction] {
         guard conditional.type != .i1 else {
             return [.conditionalBranch(conditional: conditional, ifTrue: ifTrue, ifFalse: ifFalse)]
         }
         
-        let castResult = InstructionValue.newRegister(forType: .i1)
-        let castInstruction = Instruction.truncate(source: conditional,
+        let castResult = LLVMValue.newRegister(forType: .i1)
+        let castInstruction = LLVMInstruction.truncate(source: conditional,
                                                    destination: castResult)
         
-        let branch = Instruction.conditionalBranch(conditional: castResult, ifTrue: ifTrue, ifFalse: ifFalse)
+        let branch = LLVMInstruction.conditionalBranch(conditional: castResult, ifTrue: ifTrue, ifFalse: ifFalse)
         return [castInstruction, branch]
     }
 }
