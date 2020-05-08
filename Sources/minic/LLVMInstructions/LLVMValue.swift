@@ -9,9 +9,9 @@ import Foundation
 
 enum LLVMValue: Equatable {
     case register(LLVMVirtualRegister)
+    case literal(Int)
     case null(LLVMType)
     case void
-    case literal(Int)
 }
 
 extension LLVMValue {
@@ -26,31 +26,11 @@ extension LLVMValue {
         case .void:
             return .void
         }
-        
     }
 }
 
 extension LLVMValue {
-    static func existingRegister(withId id: String, type: LLVMType) -> LLVMValue {
-        .register(LLVMVirtualRegister(withId: id, type: type))
-    }
-    
-    var identifier: String {
-        switch(self) {
-        case let .register(register):
-            return register.id
-        case let .literal(val):
-            return val.description
-        case .null:
-            return "null"
-        case .void:
-            return "void"
-        }
-    }
-}
-
-extension LLVMValue {
-    var llvmIdentifier: LLVMIdentifier {
+    var identifier: LLVMIdentifier {
         switch(self) {
         case let .register(register):
             return .localValue(register.id, type: register.type)

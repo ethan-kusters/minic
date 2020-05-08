@@ -17,10 +17,6 @@ struct LLVMVirtualRegister: Equatable {
         .localValue(id, type: type)
     }
     
-    var value: LLVMValue {
-        .register(self)
-    }
-    
     init(_ type: LLVMType) {
         LLVMVirtualRegister.currentIndex += 1
         id = "_reg\(LLVMVirtualRegister.currentIndex)"
