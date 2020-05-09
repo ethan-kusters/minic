@@ -74,7 +74,7 @@ enum LLVMInstruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#br-instruction)
-    indirect case conditionalBranch(conditional: LLVMValue, ifTrue: Block, ifFalse: Block)
+    case conditionalBranch(conditional: LLVMValue, ifTrue: Block, ifFalse: Block)
     
     /// The ‘br’ instruction is used to cause control flow to transfer to a different basic block in the current function.
     ///
@@ -99,9 +99,11 @@ enum LLVMInstruction: Equatable {
     /// The ‘getelementptr’ instruction is used to get the address of a subelement of an aggregate data structure.
     ///
     /// It performs address calculation only and does not access memory.
+    ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#getelementptr-instruction)
-    case getElementPointer(structureType: LLVMIdentifier, structurePointer: LLVMIdentifier, elementIndex: Int, destination: LLVMVirtualRegister)
+    case getElementPointer(structureType: LLVMIdentifier, structurePointer: LLVMIdentifier,
+        elementIndex: Int, destination: LLVMVirtualRegister)
     
     // MARK: - Invocation
     
@@ -132,7 +134,7 @@ enum LLVMInstruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#alloca-instruction)
-    case allocate(_ destination: LLVMIdentifier)
+    case allocate(_ destination: LLVMVirtualRegister)
     
     /// Global variables define regions of memory allocated at compilation time instead of run-time.
     ///

@@ -38,8 +38,10 @@ class ControlFlowGraphBuilder {
         let entryBlock = Block("FunctionEntry")
         
         if function.retType != .void {
-            entryBlock.addInstruction(.allocate(.localValue(LLVMInstructionConstants.returnPointer,
-                                                                    type: function.retType.llvmType)))
+            let retValReg = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer,
+                                                type: function.retType.llvmType)
+            
+            entryBlock.addInstruction(.allocate(retValReg))
         }
         
         let parameterInstructions = function.parameters.flatMap { param -> [LLVMInstruction] in
@@ -47,7 +49,7 @@ class ControlFlowGraphBuilder {
             let existingParam = LLVMVirtualRegister(withId: LLVMInstructionConstants.parameterPrefix + param.name,
                                                      type: param.type.llvmType)
             
-            let allocateInstruction = LLVMInstruction.allocate(paramReg.identifier)
+            let allocateInstruction = LLVMInstruction.allocate(paramReg)
             let storeInstruction = LLVMInstruction.store(source: .register(existingParam),
                                                          destination: paramReg.identifier)
             
@@ -57,8 +59,10 @@ class ControlFlowGraphBuilder {
         entryBlock.addInstructions(parameterInstructions)
         
         let localAllocations = function.locals.map { local -> LLVMInstruction in
-            .allocate(.localValue(local.name,
-                                          type: local.type.llvmType))
+            let paramReg = LLVMVirtualRegister(withId: local.name,
+                                               type: local.type.llvmType)
+            
+            return .allocate(paramReg)
         }
         
         entryBlock.addInstructions(localAllocations)
