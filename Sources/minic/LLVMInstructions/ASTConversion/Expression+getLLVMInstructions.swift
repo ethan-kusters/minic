@@ -33,11 +33,11 @@ extension Expression {
             let getPtrInstruction = LLVMInstruction.getElementPointer(structureType: .structureType(structTypeDeclaration.name),
                                                                       structurePointer: leftValue.identifier,
                                                                       elementIndex: fieldIndex,
-                                                                      destination: getPtrDestReg.identifier)
+                                                                      destination: getPtrDestReg)
             
             let ldDestReg = LLVMVirtualRegister(ofType: fieldType)
             let loadInstr = LLVMInstruction.load(source: getPtrDestReg.identifier,
-                                                 destination: ldDestReg.identifier)
+                                                 destination: ldDestReg)
             
             return (leftInstructions + [getPtrInstruction, loadInstr], .register(ldDestReg))
         case .false:
@@ -47,7 +47,7 @@ extension Expression {
             let destinationRegister = LLVMVirtualRegister(ofType: pointerVal.type)
             
             let loadInstruction = LLVMInstruction.load(source: pointerVal,
-                                                       destination: destinationRegister.identifier)
+                                                       destination: destinationRegister)
             
             return ([loadInstruction], .register(destinationRegister))
         case let .integer(_, value):
@@ -64,8 +64,7 @@ extension Expression {
             let returnType = context.getFunction(functionName)!.retType.llvmType
             
             if returnType == .void {
-                let callInstruction = LLVMInstruction.call(returnType: returnType,
-                                                           functionPointer: .function(functionName, retType: returnType),
+                let callInstruction = LLVMInstruction.call(functionIdentifier: .function(functionName, retType: returnType),
                                                            arguments: argumentValues,
                                                            destination: nil)
                 
@@ -75,10 +74,9 @@ extension Expression {
             } else {
                 let returnRegister = LLVMVirtualRegister(ofType: returnType)
                 
-                let callInstruction = LLVMInstruction.call(returnType: returnType,
-                                                           functionPointer: .function(functionName, retType: returnType),
+                let callInstruction = LLVMInstruction.call(functionIdentifier: .function(functionName, retType: returnType),
                                                            arguments: argumentValues,
-                                                           destination: returnRegister.identifier)
+                                                           destination: returnRegister)
                 
                 instructions.append(callInstruction)
                 
@@ -88,27 +86,25 @@ extension Expression {
             let numFieldsInType = context.getStruct(id)!.fields.count
             
             let mallocDestReg = LLVMVirtualRegister(ofType: .pointer(.i8))
-            let mallocInstr = LLVMInstruction.call(returnType: mallocDestReg.type,
-                                               functionPointer: .function(LLVMInstructionConstants.mallocFunction,
+            let mallocInstr = LLVMInstruction.call(functionIdentifier: .function(LLVMInstructionConstants.mallocFunction,
                                                                           retType: mallocDestReg.type),
-                                               arguments: [.literal(numFieldsInType * LLVMInstructionConstants.numberOfBytesPerStructField)],
-                                               destination: mallocDestReg.identifier)
+                                                   arguments: [.literal(numFieldsInType * LLVMInstructionConstants.numberOfBytesPerStructField)],
+                                                   destination: mallocDestReg)
             
             let bitCastDestReg = LLVMVirtualRegister(ofType: .structure(name: id))
             
-            let bitCastInstr = LLVMInstruction.bitcast(source: mallocDestReg.identifier,
-                                                       destination: bitCastDestReg.identifier)
+            let bitCastInstr = LLVMInstruction.bitcast(source: .register(mallocDestReg),
+                                                       destination: bitCastDestReg)
             
             return ([mallocInstr, bitCastInstr], .register(bitCastDestReg))
         case let .null(_, typeIndex):
             return ([], .null(NullTypeManager.getNullType(forIndex: typeIndex).llvmType))
         case .read:
             let destReg = LLVMVirtualRegister.newIntRegister()
-            let readInstruction = LLVMInstruction.call(returnType: destReg.type,
-                                                   functionPointer: .function(LLVMInstructionConstants.readHelperFunction,
+            let readInstruction = LLVMInstruction.call(functionIdentifier: .function(LLVMInstructionConstants.readHelperFunction,
                                                                               retType: destReg.type),
-                                                   arguments: [],
-                                                   destination: destReg.identifier)
+                                                       arguments: [],
+                                                       destination: destReg)
             
             return ([readInstruction], .register(destReg))
         case .true:
@@ -127,16 +123,16 @@ extension Expression {
         switch(binaryOp) {
         case .times:
             let destReg = LLVMVirtualRegister(ofType: firstOp.type)
-            return ([.multiply(firstOp: firstOp, secondOp: secondOp, destination: destReg.identifier)], .register(destReg))
+            return ([.multiply(firstOp: firstOp, secondOp: secondOp, destination: destReg)], .register(destReg))
         case .divide:
             let destReg = LLVMVirtualRegister(ofType: firstOp.type)
-            return ([.signedDivide(firstOp: firstOp, secondOp: secondOp, destination: destReg.identifier)], .register(destReg))
+            return ([.signedDivide(firstOp: firstOp, secondOp: secondOp, destination: destReg)], .register(destReg))
         case .plus:
             let destReg = LLVMVirtualRegister(ofType: firstOp.type)
-            return ([.add(firstOp: firstOp, secondOp: secondOp, destination: destReg.identifier)], .register(destReg))
+            return ([.add(firstOp: firstOp, secondOp: secondOp, destination: destReg)], .register(destReg))
         case .minus:
             let destReg = LLVMVirtualRegister(ofType: firstOp.type)
-            return ([.subtract(firstOp: firstOp, secondOp: secondOp, destination: destReg.identifier)], .register(destReg))
+            return ([.subtract(firstOp: firstOp, secondOp: secondOp, destination: destReg)], .register(destReg))
         case .lessThan:
             return compareInstruction(condCode: .slt, firstOp: firstOp, secondOp: secondOp)
         case .lessThanOrEqualTo:
@@ -151,19 +147,19 @@ extension Expression {
             return compareInstruction(condCode: .ne, firstOp: firstOp, secondOp: secondOp)
         case .and:
             let destReg = LLVMVirtualRegister(ofType: firstOp.type)
-            return ([.and(firstOp: firstOp, secondOp: secondOp, destination: destReg.identifier)], .register(destReg))
+            return ([.and(firstOp: firstOp, secondOp: secondOp, destination: destReg)], .register(destReg))
         case .or:
             let destReg = LLVMVirtualRegister(ofType: firstOp.type)
-            return ([.or(firstOp: firstOp, secondOp: secondOp, destination: destReg.identifier)], .register(destReg))
+            return ([.or(firstOp: firstOp, secondOp: secondOp, destination: destReg)], .register(destReg))
         }
     }
     
     private func compareInstruction(condCode: LLVMConditionCode, firstOp: LLVMValue, secondOp: LLVMValue) -> ([LLVMInstruction], LLVMValue) {
         let cmpDestReg = LLVMVirtualRegister(ofType: .i1)
-        let comp = LLVMInstruction.comparison(condCode: condCode, firstOp: firstOp, secondOp: secondOp, destination: cmpDestReg.identifier)
+        let comp = LLVMInstruction.comparison(condCode: condCode, firstOp: firstOp, secondOp: secondOp, destination: cmpDestReg)
         
         let extDestReg = LLVMVirtualRegister.newBoolRegister()
-        let ext = LLVMInstruction.zeroExtend(source: cmpDestReg.identifier, destination: extDestReg.identifier)
+        let ext = LLVMInstruction.zeroExtend(source: .register(cmpDestReg), destination: extDestReg)
         return ([comp, ext], .register(extDestReg))
     }
     
@@ -173,14 +169,14 @@ extension Expression {
             let destReg = LLVMVirtualRegister(ofType: operand.type)
             let xorInstr = LLVMInstruction.exclusiveOr(firstOp: operand,
                                                        secondOp: .literal(LLVMInstructionConstants.trueValue),
-                                                       destination: destReg.identifier)
+                                                       destination: destReg)
             
             return (xorInstr, .register(destReg))
         case .minus:
             let destReg = LLVMVirtualRegister(ofType: operand.type)
             let subInstr = LLVMInstruction.subtract(firstOp: .literal(0),
                                                     secondOp: operand,
-                                                    destination: destReg.identifier)
+                                                    destination: destReg)
             
             return (subInstr, .register(destReg))
         }

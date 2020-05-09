@@ -9,6 +9,6 @@ import Foundation
 
 extension LLVMVirtualRegister: CustomStringConvertible {
     var description: String {
-        id
+        identifier.description
     }
 }

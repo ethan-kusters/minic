@@ -10,7 +10,7 @@ import Foundation
 struct LLVMVirtualRegister: Equatable {
     private static var currentIndex = 0
     
-    let id: String
+    private let id: String
     let type: LLVMType
     
     var identifier: LLVMIdentifier {

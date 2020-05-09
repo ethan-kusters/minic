@@ -1,51 +1,10 @@
 import XCTest
 import class Foundation.Bundle
 
+//@testable import minic
+
 final class MiniCompilerTests: XCTestCase {
     let clangURL = URL(fileURLWithPath: "/usr/bin/clang")
-    
-//    func testExample() throws {
-//        // This is an example of a functional test case.
-//        // Use XCTAssert and related functions to verify your tests produce the correct
-//        // results.
-//
-//        // Some of the APIs that we use below are available in macOS 10.13 and above.
-//        guard #available(macOS 10.13, *) else {
-//            return
-//        }
-//
-//        let fooBinary =
-//
-//        let benchmarks = try FileManager.default.contentsOfDirectory(at: benchmarksDirectory,
-//                                                                     includingPropertiesForKeys: .none,
-//                                                                     options: .skipsHiddenFiles).map {
-//            try FileManager.default.contentsOfDirectory(at: $0,
-//                                                        includingPropertiesForKeys: .none,
-//                                                        options: .skipsHiddenFiles)
-//        }
-//
-//        benchmarks.forEach { benchmarkFiles in
-//            let miniFile = benchmarkFiles.first(where: {$0.pathExtension == "mini"})
-//            let firstInput
-//        }
-//
-//        benchmarks.forEach
-//
-//        let process = Process()
-//        process.executableURL = fooBinary
-//
-//        let pipe = Pipe()
-//        process.standardOutput = pipe
-//
-//        try process.run()
-//        process.waitUntilExit()
-//
-//        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-//        let output = String(data: data, encoding: .utf8)
-//
-//        XCTAssertEqual(output, "Hello, world!\n")
-//    }
-//
     
     func test_BenchMarkishTopics_Benchmark() throws {
         try runBenchmarkTest(named: "BenchMarkishTopics", longerInput: false)
@@ -229,13 +188,17 @@ final class MiniCompilerTests: XCTestCase {
         minicProcess.executableURL = minicBinary
         minicProcess.arguments = [miniFile.path, "-o", compiledMiniFile.path]
         minicProcess.standardOutput = minicProcessOutput
+        minicProcess.standardError = minicProcessOutput
         try minicProcess.run()
         minicProcess.waitUntilExit()
+        
+//        XCTAssertNoThrow(try CompilerManager.compile(sourceFile: miniFile, outputFile: compiledMiniFile), "Compiler error.")
         
         let minicProcessOutputData = minicProcessOutput.fileHandleForReading.readDataToEndOfFile()
         let minicProcessOutputString = String(data: minicProcessOutputData, encoding: .utf8)!
         
-        guard !minicProcessOutputString.hasPrefix("Type check failure") else {
+        
+        guard minicProcessOutputString.isEmpty else {
             XCTFail("\n\n\(minicProcessOutputString)")
             return
         }
@@ -245,6 +208,7 @@ final class MiniCompilerTests: XCTestCase {
         let clangProcess = Process()
         clangProcess.executableURL = clangURL
         clangProcess.arguments = [compiledMiniFile.path, "-o", executableMiniFile.path]
+        clangProcess.standardOutput = clangProcessOutput
         clangProcess.standardError = clangProcessOutput
         try clangProcess.run()
         clangProcess.waitUntilExit()
@@ -265,6 +229,7 @@ final class MiniCompilerTests: XCTestCase {
         miniProgramProcess.executableURL = executableMiniFile
         miniProgramProcess.standardInput = try FileHandle(forReadingFrom: inputFileURL)
         miniProgramProcess.standardOutput = miniProgramOutput
+        miniProgramProcess.standardError = miniProgramOutput
         try miniProgramProcess.run()
         clangProcess.waitUntilExit()
         

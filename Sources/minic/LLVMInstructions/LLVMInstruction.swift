@@ -18,25 +18,25 @@ enum LLVMInstruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#add-instruction)
-    case add(firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMIdentifier)
+    case add(firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMVirtualRegister)
     
     /// The ‘sub’ instruction returns the difference of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#sub-instruction)
-    case subtract(firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMIdentifier)
+    case subtract(firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMVirtualRegister)
     
     /// The ‘mul’ instruction returns the product of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#mul-instruction)
-    case multiply(firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMIdentifier)
+    case multiply(firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMVirtualRegister)
     
     /// The ‘sdiv’ instruction returns the quotient of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#sdiv-instruction)
-    case signedDivide(firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMIdentifier)
+    case signedDivide(firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMVirtualRegister)
     
     // MARK: - Boolean Instructions
     
@@ -44,13 +44,13 @@ enum LLVMInstruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#and-instruction)
-    case and(firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMIdentifier)
+    case and(firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMVirtualRegister)
     
     /// The ‘or’ instruction returns the bitwise logical inclusive or of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#or-instruction)
-    case or(firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMIdentifier)
+    case or(firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMVirtualRegister)
     
     /// The ‘xor’ instruction returns the bitwise logical exclusive or of its two operands.
     ///
@@ -58,7 +58,7 @@ enum LLVMInstruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#xor-instruction)
-    case exclusiveOr(firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMIdentifier)
+    case exclusiveOr(firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMVirtualRegister)
     
     // MARK: - Comparison
     
@@ -66,7 +66,7 @@ enum LLVMInstruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#icmp-instruction)
-    case comparison(condCode: LLVMConditionCode, firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMIdentifier)
+    case comparison(condCode: LLVMConditionCode, firstOp: LLVMValue, secondOp: LLVMValue, destination: LLVMVirtualRegister)
     
     // MARK: - Branch
     
@@ -88,20 +88,20 @@ enum LLVMInstruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#load-instruction)
-    case load(source: LLVMIdentifier, destination: LLVMIdentifier)
+    case load(source: LLVMIdentifier, destination: LLVMVirtualRegister)
     
     /// The ‘store’ instruction is used to write to memory.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#store-instruction)
-    case store(souce: LLVMValue, destination: LLVMIdentifier)
+    case store(source: LLVMValue, destination: LLVMIdentifier)
     
     /// The ‘getelementptr’ instruction is used to get the address of a subelement of an aggregate data structure.
     ///
     /// It performs address calculation only and does not access memory.
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#getelementptr-instruction)
-    case getElementPointer(structureType: LLVMIdentifier, structurePointer: LLVMIdentifier, elementIndex: Int, destination: LLVMIdentifier)
+    case getElementPointer(structureType: LLVMIdentifier, structurePointer: LLVMIdentifier, elementIndex: Int, destination: LLVMVirtualRegister)
     
     // MARK: - Invocation
     
@@ -109,7 +109,7 @@ enum LLVMInstruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#call-instruction)
-    case call(returnType: LLVMType, functionPointer: LLVMIdentifier, arguments: [LLVMValue], destination: LLVMIdentifier?)
+    case call(functionIdentifier: LLVMIdentifier, arguments: [LLVMValue], destination: LLVMVirtualRegister?)
     
     /// The ‘ret’ instruction is used to return control flow (and optionally a value) from a function back to the caller.
     ///
@@ -155,7 +155,7 @@ enum LLVMInstruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#bitcast-to-instruction)
-    case bitcast(source: LLVMIdentifier, destination: LLVMIdentifier)
+    case bitcast(source: LLVMValue, destination: LLVMVirtualRegister)
     
     /// The ‘trunc’ instruction truncates its operand to the type ty2.
     ///
@@ -164,7 +164,7 @@ enum LLVMInstruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#trunc-to-instruction)
-    case truncate(source: LLVMIdentifier, destination: LLVMIdentifier)
+    case truncate(source: LLVMValue, destination: LLVMVirtualRegister)
     
     /// The ‘zext’ instruction zero extends its operand to type ty2.
     ///
@@ -173,5 +173,5 @@ enum LLVMInstruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#zext-to-instruction)
-    case zeroExtend(source: LLVMIdentifier, destination: LLVMIdentifier)
+    case zeroExtend(source: LLVMValue, destination: LLVMVirtualRegister)
 }

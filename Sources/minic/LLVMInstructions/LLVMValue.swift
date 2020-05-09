@@ -33,7 +33,7 @@ extension LLVMValue {
     var identifier: LLVMIdentifier {
         switch(self) {
         case let .register(register):
-            return .localValue(register.id, type: register.type)
+            return register.identifier
         case let .null(type):
             return .null(type)
         case .void:

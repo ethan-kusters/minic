@@ -50,13 +50,13 @@ extension LLVMInstruction: CustomStringConvertible {
         case let .getElementPointer(structureType, structurePointer, elementIndex, destination):
             return "\(destination) = getelementptr \(structureType), \(structureType)* \(structurePointer), i1 0, i32 \(elementIndex)"
             
-        case let .call(returnType, functionPointer, arguments, destination):
+        case let .call(functionIdentifier, arguments, destination):
             let argumentString = arguments.map { arg -> String in
                 guard arg.type != .null else { return "null" }
                 return "\(arg.type) \(arg)"
             }.joined(separator: ", ")
             
-            let call = "call \(returnType) \(functionPointer)(\(argumentString))"
+            let call = "call \(destination?.type ?? .void) \(functionIdentifier)(\(argumentString))"
             
             if let destination = destination {
                 return "\(destination) = \(call)"

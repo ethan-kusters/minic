@@ -11,7 +11,7 @@ extension LLVMValue: CustomStringConvertible {
     var description: String {
         switch(self) {
         case let .register(register):
-            return "%\(register)"
+            return register.description
         case let .literal(value):
             return String(value)
         case .null:

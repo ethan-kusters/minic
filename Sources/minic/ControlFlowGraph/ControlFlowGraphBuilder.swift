@@ -43,13 +43,13 @@ class ControlFlowGraphBuilder {
         }
         
         let parameterInstructions = function.parameters.flatMap { param -> [LLVMInstruction] in
-            let paramIdentifier = LLVMIdentifier.localValue(param.name, type: param.type.llvmType)
-            let exisitingParam = LLVMVirtualRegister(withId: LLVMInstructionConstants.parameterPrefix + param.name,
+            let paramReg = LLVMVirtualRegister(withId: param.name, type: param.type.llvmType)
+            let existingParam = LLVMVirtualRegister(withId: LLVMInstructionConstants.parameterPrefix + param.name,
                                                      type: param.type.llvmType)
             
-            let allocateInstruction = LLVMInstruction.allocate(paramIdentifier)
-            let storeInstruction = LLVMInstruction.store(souce: .register(exisitingParam),
-                                                         destination: paramIdentifier)
+            let allocateInstruction = LLVMInstruction.allocate(paramReg.identifier)
+            let storeInstruction = LLVMInstruction.store(source: .register(existingParam),
+                                                         destination: paramReg.identifier)
             
             return [allocateInstruction, storeInstruction]
         }
@@ -76,7 +76,7 @@ class ControlFlowGraphBuilder {
             let returnReg = LLVMVirtualRegister(ofType: retType)
             
             let loadInstr = LLVMInstruction.load(source: .localValue(LLVMInstructionConstants.returnPointer, type: retType),
-                                            destination: returnReg.identifier)
+                                            destination: returnReg)
             
             let returnInstr = LLVMInstruction.returnValue(.register(returnReg))
             
@@ -113,15 +113,15 @@ class ControlFlowGraphBuilder {
                 let getPtrInstruction = LLVMInstruction.getElementPointer(structureType: .structureType(structTypeDeclaration.name),
                                                                           structurePointer: leftValue.identifier,
                                                                           elementIndex: fieldIndex,
-                                                                          destination: getPtrDestReg.identifier)
+                                                                          destination: getPtrDestReg)
                 
-                let setInstr = LLVMInstruction.store(souce: sourceValue,
+                let storeInstr = LLVMInstruction.store(source: sourceValue,
                                                      destination: getPtrDestReg.identifier)
                 
-                currentBlock.addInstructions([getPtrInstruction, setInstr])
+                currentBlock.addInstructions([getPtrInstruction, storeInstr])
             } else {
                 let pointer = context.getllvmIdentifier(from: lValue.id)
-                currentBlock.addInstruction(.store(souce: sourceValue,
+                currentBlock.addInstruction(.store(source: sourceValue,
                                                    destination: pointer))
             }
             
@@ -189,14 +189,13 @@ class ControlFlowGraphBuilder {
             currentBlock.addInstructions(instructions)
             
             let castDestReg = LLVMVirtualRegister(ofType: .pointer(.i8))
-            let castInstr = LLVMInstruction.bitcast(source: value.identifier,
-                                                    destination: castDestReg.identifier)
+            let castInstr = LLVMInstruction.bitcast(source: value,
+                                                    destination: castDestReg)
             
-            let freeInstr = LLVMInstruction.call(returnType: .void,
-                                                functionPointer: .function(LLVMInstructionConstants.freeFunction,
+            let freeInstr = LLVMInstruction.call(functionIdentifier: .function(LLVMInstructionConstants.freeFunction,
                                                                            retType: .void),
-                                                arguments: [.register(castDestReg)],
-                                                destination: nil)
+                                                 arguments: [.register(castDestReg)],
+                                                 destination: nil)
             
             currentBlock.addInstructions([castInstr, freeInstr])
             
@@ -210,23 +209,24 @@ class ControlFlowGraphBuilder {
             let (instructions, value) = expression.getLLVMInstructions(context)
             currentBlock.addInstructions(instructions)
             
-            currentBlock.addInstruction(.call(returnType: .void,
-                                              functionPointer: .function(LLVMInstructionConstants.printlnHelperFunction,
+            let printlnCallInstr = LLVMInstruction.call(functionIdentifier: .function(LLVMInstructionConstants.printlnHelperFunction,
                                                                          retType: .void),
-                                        arguments: [value],
-                                        destination: nil))
+                                                        arguments: [value],
+                                                        destination: nil)
             
+            currentBlock.addInstruction(printlnCallInstr)
             
             return currentBlock
         case let .print(_, expression):
             let (instructions, value) = expression.getLLVMInstructions(context)
             currentBlock.addInstructions(instructions)
             
-            currentBlock.addInstruction(.call(returnType: .void,
-                                              functionPointer: .function(LLVMInstructionConstants.printHelperFunction,
+            let printlnCallInstr = LLVMInstruction.call(functionIdentifier: .function(LLVMInstructionConstants.printHelperFunction,
                                                                          retType: .void),
-                                              arguments: [value],
-                                              destination: nil))
+                                                        arguments: [value],
+                                                        destination: nil)
+            
+            currentBlock.addInstruction(printlnCallInstr)
             
             return currentBlock
         case let .return(_, value):
@@ -235,7 +235,7 @@ class ControlFlowGraphBuilder {
                 
                 let retType = function.retType.llvmType
                 
-                currentBlock.addInstruction(.store(souce: value,
+                currentBlock.addInstruction(.store(source: value,
                                                    destination: .localValue(LLVMInstructionConstants.returnPointer,
                                                                         type: retType)))
             }
@@ -281,8 +281,8 @@ class ControlFlowGraphBuilder {
         }
         
         let castDestReg = LLVMVirtualRegister(ofType: .i1)
-        let castInstruction = LLVMInstruction.truncate(source: conditional.identifier,
-                                                       destination: castDestReg.identifier)
+        let castInstruction = LLVMInstruction.truncate(source: conditional,
+                                                       destination: castDestReg)
         
         let branch = LLVMInstruction.conditionalBranch(conditional: .register(castDestReg),
                                                        ifTrue: ifTrue,
