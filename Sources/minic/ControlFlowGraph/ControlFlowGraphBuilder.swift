@@ -79,8 +79,9 @@ class ControlFlowGraphBuilder {
             let retType = function.retType.llvmType
             let returnReg = LLVMVirtualRegister(ofType: retType)
             
-            let loadInstr = LLVMInstruction.load(source: .localValue(LLVMInstructionConstants.returnPointer, type: retType),
-                                            destination: returnReg)
+            let loadInstr = LLVMInstruction.load(source: .localValue(LLVMInstructionConstants.returnPointer,
+                                                                     type: retType),
+                                                 destination: returnReg)
             
             let returnInstr = LLVMInstruction.returnValue(.register(returnReg))
             

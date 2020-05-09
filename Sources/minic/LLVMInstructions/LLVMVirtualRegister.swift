@@ -7,11 +7,16 @@
 
 import Foundation
 
-struct LLVMVirtualRegister: Equatable {
+class LLVMVirtualRegister: Equatable {
     private static var currentIndex = 0
     
     private let id: String
     let type: LLVMType
+    
+    private(set) var definingInstruction: LLVMInstruction?
+    
+    /// Instructions that uses this register as a source
+    private(set) var uses = [LLVMInstruction]()
     
     var identifier: LLVMIdentifier {
         .localValue(id, type: type)
@@ -28,11 +33,27 @@ struct LLVMVirtualRegister: Equatable {
         self.type = type
     }
     
+    func setDefiningInstruction(_ instruction: LLVMInstruction) {
+        guard definingInstruction == nil else {
+            fatalError("\(#function): Virtual Register's defining instruction can only be set once.")
+        }
+        
+        definingInstruction = instruction
+    }
+    
+    func addUse(by instruction: LLVMInstruction) {
+        uses.append(instruction)
+    }
+    
     static func newIntRegister() -> LLVMVirtualRegister {
         LLVMVirtualRegister(ofType: LLVMInstructionConstants.defaultIntType)
     }
     
     static func newBoolRegister() -> LLVMVirtualRegister {
         LLVMVirtualRegister(ofType: LLVMInstructionConstants.defaultBoolType)
+    }
+    
+    static func == (lhs: LLVMVirtualRegister, rhs: LLVMVirtualRegister) -> Bool {
+        lhs.id == rhs.id
     }
 }

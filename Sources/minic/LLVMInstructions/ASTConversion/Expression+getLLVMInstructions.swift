@@ -123,16 +123,32 @@ extension Expression {
         switch(binaryOp) {
         case .times:
             let destReg = LLVMVirtualRegister(ofType: firstOp.type)
-            return ([.multiply(firstOp: firstOp, secondOp: secondOp, destination: destReg)], .register(destReg))
+            let multInstr = LLVMInstruction.multiply(firstOp: firstOp, secondOp: secondOp, destination: destReg)
+            
+            destReg.setDefiningInstruction(multInstr)
+            
+            return ([multInstr], .register(destReg))
         case .divide:
             let destReg = LLVMVirtualRegister(ofType: firstOp.type)
-            return ([.signedDivide(firstOp: firstOp, secondOp: secondOp, destination: destReg)], .register(destReg))
+            let divInstr = LLVMInstruction.signedDivide(firstOp: firstOp, secondOp: secondOp, destination: destReg)
+            
+            destReg.setDefiningInstruction(divInstr)
+            
+            return ([divInstr], .register(destReg))
         case .plus:
             let destReg = LLVMVirtualRegister(ofType: firstOp.type)
-            return ([.add(firstOp: firstOp, secondOp: secondOp, destination: destReg)], .register(destReg))
+            let addInstr = LLVMInstruction.add(firstOp: firstOp, secondOp: secondOp, destination: destReg)
+            
+            destReg.setDefiningInstruction(addInstr)
+            
+            return ([addInstr], .register(destReg))
         case .minus:
             let destReg = LLVMVirtualRegister(ofType: firstOp.type)
-            return ([.subtract(firstOp: firstOp, secondOp: secondOp, destination: destReg)], .register(destReg))
+            let subInstr = LLVMInstruction.subtract(firstOp: firstOp, secondOp: secondOp, destination: destReg)
+            
+            destReg.setDefiningInstruction(subInstr)
+            
+            return ([subInstr], .register(destReg))
         case .lessThan:
             return compareInstruction(condCode: .slt, firstOp: firstOp, secondOp: secondOp)
         case .lessThanOrEqualTo:
@@ -147,20 +163,32 @@ extension Expression {
             return compareInstruction(condCode: .ne, firstOp: firstOp, secondOp: secondOp)
         case .and:
             let destReg = LLVMVirtualRegister(ofType: firstOp.type)
-            return ([.and(firstOp: firstOp, secondOp: secondOp, destination: destReg)], .register(destReg))
+            let andInstr = LLVMInstruction.and(firstOp: firstOp, secondOp: secondOp, destination: destReg)
+            
+            destReg.setDefiningInstruction(andInstr)
+            
+            return ([andInstr], .register(destReg))
         case .or:
             let destReg = LLVMVirtualRegister(ofType: firstOp.type)
-            return ([.or(firstOp: firstOp, secondOp: secondOp, destination: destReg)], .register(destReg))
+            let orInstr = LLVMInstruction.or(firstOp: firstOp, secondOp: secondOp, destination: destReg)
+            
+            destReg.setDefiningInstruction(orInstr)
+            
+            return ([orInstr], .register(destReg))
         }
     }
     
     private func compareInstruction(condCode: LLVMConditionCode, firstOp: LLVMValue, secondOp: LLVMValue) -> ([LLVMInstruction], LLVMValue) {
         let cmpDestReg = LLVMVirtualRegister(ofType: .i1)
-        let comp = LLVMInstruction.comparison(condCode: condCode, firstOp: firstOp, secondOp: secondOp, destination: cmpDestReg)
+        let cmpInstr = LLVMInstruction.comparison(condCode: condCode, firstOp: firstOp, secondOp: secondOp, destination: cmpDestReg)
+        cmpDestReg.setDefiningInstruction(cmpInstr)
         
         let extDestReg = LLVMVirtualRegister.newBoolRegister()
-        let ext = LLVMInstruction.zeroExtend(source: .register(cmpDestReg), destination: extDestReg)
-        return ([comp, ext], .register(extDestReg))
+        let extInstr = LLVMInstruction.zeroExtend(source: .register(cmpDestReg), destination: extDestReg)
+        extDestReg.setDefiningInstruction(extInstr)
+        cmpDestReg.addUse(by: extInstr)
+        
+        return ([cmpInstr, extInstr], .register(extDestReg))
     }
     
     private func fromUnaryExpression(unaryOp: Expression.UnaryOperator, operand: LLVMValue) -> (LLVMInstruction, LLVMValue) {
@@ -171,12 +199,16 @@ extension Expression {
                                                        secondOp: .literal(LLVMInstructionConstants.trueValue),
                                                        destination: destReg)
             
+            destReg.setDefiningInstruction(xorInstr)
+            
             return (xorInstr, .register(destReg))
         case .minus:
             let destReg = LLVMVirtualRegister(ofType: operand.type)
             let subInstr = LLVMInstruction.subtract(firstOp: .literal(0),
                                                     secondOp: operand,
                                                     destination: destReg)
+            
+            destReg.setDefiningInstruction(subInstr)
             
             return (subInstr, .register(destReg))
         }
