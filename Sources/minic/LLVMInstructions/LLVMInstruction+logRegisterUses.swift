@@ -20,6 +20,7 @@ extension LLVMInstruction {
              let .comparison(_, firstOp, secondOp, destination):
             firstOp.addUse(by: self)
             secondOp.addUse(by: self)
+            destination
             destination.setDefiningInstruction(self)
         case let .conditionalBranch(conditional, _, _):
             conditional.addUse(by: self)

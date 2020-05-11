@@ -30,7 +30,7 @@ class LLVMVirtualRegister: Equatable {
     
     init(withPrefix prefix: String, type: LLVMType) {
         LLVMVirtualRegister.currentIndex += 1
-        id = "_\(prefix)\(LLVMVirtualRegister.currentIndex)"
+        id = "_\(prefix)_\(LLVMVirtualRegister.currentIndex)"
         self.type = type
     }
     

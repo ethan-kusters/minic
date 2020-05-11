@@ -20,7 +20,7 @@ class LLVMPhiInstruction: LLVMInstructionProtocol {
     
     init(inBlock block: Block, forID id: LLVMIdentifier, incomplete: Bool = false) {
         self.block = block
-        self.destination = LLVMVirtualRegister(withPrefix: id.descriptiveString, type: id.type)
+        self.destination = LLVMVirtualRegister(withPrefix: id.rawIdentifier, type: id.type)
         self.incomplete = incomplete
         self.associatedIdentifier = id
         self.destination.setDefiningInstruction(self)
