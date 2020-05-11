@@ -88,14 +88,6 @@ extension LLVMInstruction: CustomStringConvertible {
             
         case let .zeroExtend(source, destination):
             return "\(destination) = zext \(source.type) \(source) to \(destination.type)"
-            
-        case let .phi(valuePairs, destination):
-            let valuePairString = valuePairs.map { valuePair in
-                "[ \(valuePair.value), \(valuePair.label) ]"
-            }.joined(separator: ", ")
-            
-            return "\(destination) = phi \(destination.type) \(valuePairString)"
-        
         }
     }
 }

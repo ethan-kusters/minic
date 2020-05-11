@@ -20,8 +20,9 @@ class Block {
     
     private(set) var sealed = false
     
-    init(_ description: String) {
+    init(_ description: String, sealed: Bool = true) {
         self.label = Block.getLabel(description)
+        self.sealed = sealed
     }
     
     init(_ description: String, instructions: [LLVMInstruction]) {
@@ -79,16 +80,18 @@ class Block {
             value = .register(phiInstruction.destination)
             
             // variable maps to new value which breaks cycles
-            writeVariable(id, asValue: .register(phiInstruction.destination))
+            writeVariable(id, asValue: value)
             
             // Complete the phi instruction
             phiInstruction.addOperands()
         }
         
+        writeVariable(id, asValue: value )
         return value
     }
  
     func seal() {
+        guard !sealed else { return }
         sealed = true
         
         for phi in phiInstructions where phi.incomplete {

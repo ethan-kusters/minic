@@ -13,10 +13,10 @@ class LLVMVirtualRegister: Equatable {
     private let id: String
     let type: LLVMType
     
-    private(set) var definingInstruction: LLVMInstruction?
+    private(set) var definingInstruction: LLVMInstructionProtocol?
     
     /// Instructions that uses this register as a source
-    private(set) var uses = [LLVMInstruction]()
+    private(set) var uses = [LLVMInstructionProtocol]()
     
     var identifier: LLVMIdentifier {
         .localValue(id, type: type)
@@ -28,12 +28,18 @@ class LLVMVirtualRegister: Equatable {
         self.type = type
     }
     
+    init(withPrefix prefix: String, type: LLVMType) {
+        LLVMVirtualRegister.currentIndex += 1
+        id = "_\(prefix)\(LLVMVirtualRegister.currentIndex)"
+        self.type = type
+    }
+    
     init(withId id: String, type: LLVMType) {
         self.id = id
         self.type = type
     }
     
-    func setDefiningInstruction(_ instruction: LLVMInstruction) {
+    func setDefiningInstruction(_ instruction: LLVMInstructionProtocol) {
         if definingInstruction == nil {
             definingInstruction = instruction
         } else {
@@ -41,7 +47,7 @@ class LLVMVirtualRegister: Equatable {
         }
     }
     
-    func addUse(by instruction: LLVMInstruction) {
+    func addUse(by instruction: LLVMInstructionProtocol) {
         if definingInstruction == nil {
             fatalError("\(#function): Virtual register must have defining instruction set before it can be used.")
         }

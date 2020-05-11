@@ -10,4 +10,5 @@ import Foundation
 struct ControlFlowGraph {
     let blocks: [Block]
     let function: Function
+    let enableSSA: Bool
 }

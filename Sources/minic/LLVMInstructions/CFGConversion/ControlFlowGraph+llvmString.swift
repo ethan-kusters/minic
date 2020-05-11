@@ -9,15 +9,29 @@ import Foundation
 
 extension ControlFlowGraph {
     var llvmString: String {
-        let paramString = function.parameters.map { param in
-            "\(param.type.llvmType) %\(LLVMInstructionConstants.parameterPrefix)\(param.name)"
-        }.joined(separator: ", ")
+        let paramString: String
+        
+        if enableSSA {
+            paramString = function.parameters.map { param in
+                "\(param.type.llvmType) %\(param.name)"
+            }.joined(separator: ", ")
+        } else {
+            paramString = function.parameters.map { param in
+                "\(param.type.llvmType) %\(LLVMInstructionConstants.parameterPrefix)\(param.name)"
+            }.joined(separator: ", ")
+        }
         
         var llvmString = "define \(function.retType.llvmType) @\(function.name)(\(paramString))"
         llvmString += "\n{"
         
         blocks.forEach { block in
             llvmString += "\n\(block.label):\n\t"
+            llvmString += block.phiInstructions.map(\.description).joined(separator: "\n\t")
+            
+            if !block.phiInstructions.isEmpty {
+                llvmString += "\n\t"
+            }
+            
             llvmString += block.instructions.map(\.description).joined(separator: "\n\t")
         }
         

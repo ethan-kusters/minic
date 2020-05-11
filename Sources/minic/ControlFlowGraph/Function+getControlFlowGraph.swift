@@ -13,6 +13,7 @@ extension Function {
         return ControlFlowGraph(blocks: ControlFlowGraphBuilder(self,
                                                                 context: context,
                                                                 useSSA: useSSA).blocks,
-                                function: self)
+                                function: self,
+                                enableSSA: useSSA)
     }
 }

@@ -18,7 +18,7 @@ class ControlFlowGraphBuilder {
     }()
     
     private lazy var functionExit = {
-       Block("FunctionExit")
+       Block("FunctionExit", sealed: false)
     }()
     
     init(_ function: Function, context: TypeContext, useSSA: Bool) {
@@ -33,6 +33,7 @@ class ControlFlowGraphBuilder {
             final.addInstruction(.unconditionalBranch(functionExit))
         }
         
+        functionExit.seal()
         buildExitBlock(functionExit)
         blocks.append(functionExit)
     }
@@ -64,7 +65,7 @@ class ControlFlowGraphBuilder {
                                                      type: param.type.llvmType)
             
             /// We manually set the def instruction for the parameter since LLVM defined it
-            existingParam.setDefiningInstruction(.allocate(destination: existingParam))
+            existingParam.setDefiningInstruction(LLVMInstruction.allocate(destination: existingParam))
             
             let allocateInstruction = LLVMInstruction.allocate(destination: paramReg).logRegisterUses()
             let storeInstruction = LLVMInstruction.store(source: .register(existingParam),
@@ -97,10 +98,10 @@ class ControlFlowGraphBuilder {
             let paramID = LLVMIdentifier.localValue(param.name,
                                                     type: param.type.llvmType)
             
-            let existingParam = LLVMVirtualRegister(withId: LLVMInstructionConstants.parameterPrefix + param.name,
+            let existingParam = LLVMVirtualRegister(withId: param.name,
                                                     type: param.type.llvmType)
             
-            existingParam.setDefiningInstruction(.allocate(destination: existingParam))
+            existingParam.setDefiningInstruction(LLVMInstruction.allocate(destination: existingParam))
             
             entryBlock.writeVariable(paramID, asValue: .register(existingParam))
         }
@@ -120,7 +121,7 @@ class ControlFlowGraphBuilder {
         } else if ssaEnabled {
             buildExitBlockWithSSA(exitBlock)
         } else {
-            buildExitBlockWithSSA(exitBlock)
+            buildExitBlockWithoutSSA(exitBlock)
         }
     }
     
@@ -154,11 +155,11 @@ class ControlFlowGraphBuilder {
     private func build(_ statement: Statement, currentBlock: Block) -> Block? {
         switch(statement) {
         case let .assignment(_, lValue, source):
-            let (sourceInstructions, sourceValue) = source.getLLVMInstructions(context)
+            let (sourceInstructions, sourceValue) = source.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
             currentBlock.addInstructions(sourceInstructions)
             
             if let leftExpression = lValue.leftExpression {
-                let (leftInstructions, leftValue) = leftExpression.getLLVMInstructions(context)
+                let (leftInstructions, leftValue) = leftExpression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
                 currentBlock.addInstructions(leftInstructions)
                 
                 let structTypeDeclaration = leftExpression.getStructFromDotExpression(context)
@@ -180,9 +181,14 @@ class ControlFlowGraphBuilder {
                 
                 currentBlock.addInstructions([getPtrInstruction, storeInstr])
             } else {
-                let pointer = context.getllvmIdentifier(from: lValue.id)
-                let storeInstr = LLVMInstruction.store(source: sourceValue, destination: pointer).logRegisterUses()
-                currentBlock.addInstruction(storeInstr)
+                let identifier = context.getllvmIdentifier(from: lValue.id)
+                
+                if ssaEnabled, case .localValue = identifier {
+                    currentBlock.writeVariable(identifier, asValue: sourceValue)
+                } else {
+                    let storeInstr = LLVMInstruction.store(source: sourceValue, destination: identifier).logRegisterUses()
+                    currentBlock.addInstruction(storeInstr)
+                }
             }
             
             return currentBlock
@@ -199,7 +205,7 @@ class ControlFlowGraphBuilder {
             
             return block
         case let .conditional(_, guardExp, thenStmt, elseStmt):
-            let (guardInstructions, guardValue) = guardExp.getLLVMInstructions(context)
+            let (guardInstructions, guardValue) = guardExp.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
             currentBlock.addInstructions(guardInstructions)
             
             let condExit = Block("CondExit")
@@ -245,7 +251,7 @@ class ControlFlowGraphBuilder {
                 return nil
             }
         case let .delete(_, expression):
-            let (instructions, value) = expression.getLLVMInstructions(context)
+            let (instructions, value) = expression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
             currentBlock.addInstructions(instructions)
             
             let castDestReg = LLVMVirtualRegister(ofType: .pointer(.i8))
@@ -263,12 +269,12 @@ class ControlFlowGraphBuilder {
             
             return currentBlock
         case let .invocation(_, expression):
-            let expressionInstructions = expression.getLLVMInstructions(context).instructions
+            let expressionInstructions = expression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled).instructions
             currentBlock.addInstructions(expressionInstructions)
             
             return currentBlock
         case let .printLn(_, expression):
-            let (instructions, value) = expression.getLLVMInstructions(context)
+            let (instructions, value) = expression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
             currentBlock.addInstructions(instructions)
             
             let printlnFuncId = LLVMIdentifier.function(LLVMInstructionConstants.printlnHelperFunction,
@@ -282,7 +288,7 @@ class ControlFlowGraphBuilder {
             
             return currentBlock
         case let .print(_, expression):
-            let (instructions, value) = expression.getLLVMInstructions(context)
+            let (instructions, value) = expression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
             currentBlock.addInstructions(instructions)
             
             let printFuncId = LLVMIdentifier.function(LLVMInstructionConstants.printHelperFunction,
@@ -296,16 +302,22 @@ class ControlFlowGraphBuilder {
             
             return currentBlock
         case let .return(_, value):
-            if let (instructions, value) = value?.getLLVMInstructions(context) {
+            if let (instructions, value) = value?.getLLVMInstructions(withContext: context,
+                                                                      forBlock: currentBlock,
+                                                                      usingSSA: ssaEnabled) {
                 currentBlock.addInstructions(instructions)
                 
                 let returnValId = LLVMIdentifier.localValue(LLVMInstructionConstants.returnPointer,
                                                               type: function.retType.llvmType)
                 
-                let storeInstr = LLVMInstruction.store(source: value,
-                                                       destination: returnValId).logRegisterUses()
-                
-                currentBlock.addInstruction(storeInstr)
+                if ssaEnabled {
+                    currentBlock.writeVariable(returnValId, asValue: value)
+                } else {
+                    let storeInstr = LLVMInstruction.store(source: value,
+                                                           destination: returnValId).logRegisterUses()
+                    
+                    currentBlock.addInstruction(storeInstr)
+                }
             }
             
             link(currentBlock, functionExit)
@@ -313,11 +325,11 @@ class ControlFlowGraphBuilder {
             
             return nil
         case let .while(_, guardExp, body):
-            let (guardInstructions, guardValue) = guardExp.getLLVMInstructions(context)
+            let (guardInstructions, guardValue) = guardExp.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
             currentBlock.addInstructions(guardInstructions)
             
-            let whileBodyEntry = Block("WhileBodyEntrance")
-            let whileExit = Block("WhileExit")
+            let whileBodyEntry = Block("WhileBodyEntrance", sealed: false)
+            let whileExit = Block("WhileExit", sealed: false)
             
             link(currentBlock, whileBodyEntry)
             link(currentBlock, whileExit)
@@ -328,15 +340,21 @@ class ControlFlowGraphBuilder {
             blocks.append(whileBodyEntry)
             
             if let whileBodyExit = build(body, currentBlock: whileBodyEntry) {
-                let (secondGuardInstructions, secondGuardValue) = guardExp.getLLVMInstructions(context)
-                whileBodyExit.addInstructions(secondGuardInstructions)
-                
                 link(whileBodyExit, whileBodyEntry)
                 link(whileBodyExit, whileExit)
+                whileBodyEntry.seal()
+                whileExit.seal()
+                
+                let (secondGuardInstructions, secondGuardValue) = guardExp.getLLVMInstructions(withContext: context, forBlock: whileBodyExit, usingSSA: ssaEnabled)
+                whileBodyExit.addInstructions(secondGuardInstructions)
+                
                 whileBodyExit.addInstructions(getConditionalBranch(conditional: secondGuardValue,
                                                                    ifTrue: whileBodyEntry,
                                                                    ifFalse: whileExit))
             }
+            
+            whileBodyEntry.seal()
+            whileExit.seal()
             
             blocks.append(whileExit)
             return whileExit

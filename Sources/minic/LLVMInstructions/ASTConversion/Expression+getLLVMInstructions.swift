@@ -8,18 +8,18 @@
 import Foundation
 
 extension Expression {
-    func getLLVMInstructions(_ context: TypeContext) -> (instructions: [LLVMInstruction], value: LLVMValue) {
+    func getLLVMInstructions(withContext context: TypeContext, forBlock block: Block, usingSSA ssaEnabled: Bool) -> (instructions: [LLVMInstruction], value: LLVMValue) {
         switch(self) {
         case let .binary(_, op, left, right):
-            let (leftInstructions, leftValue) = left.getLLVMInstructions(context)
-            let (rightInstructions, rightValue) = right.getLLVMInstructions(context)
+            let (leftInstructions, leftValue) = left.getLLVMInstructions(withContext: context, forBlock: block, usingSSA: ssaEnabled)
+            let (rightInstructions, rightValue) = right.getLLVMInstructions(withContext: context, forBlock: block, usingSSA: ssaEnabled)
             
             let (expInstructions, value) = fromBinaryExpression(binaryOp: op, firstOp: leftValue, secondOp: rightValue)
             
             let instructions = leftInstructions + rightInstructions + expInstructions
             return (instructions, value)
         case let .dot(_, left, id):
-            let (leftInstructions, leftValue) = left.getLLVMInstructions(context)
+            let (leftInstructions, leftValue) = left.getLLVMInstructions(withContext: context, forBlock: block, usingSSA: ssaEnabled)
             
             let structTypeDeclaration = left.getStructFromDotExpression(context)
             
@@ -43,20 +43,26 @@ extension Expression {
         case .false:
             return ([], .literal(LLVMInstructionConstants.falseValue))
         case let .identifier(_, id):
-            let pointerVal = context.getllvmIdentifier(from: id)
-            let destinationRegister = LLVMVirtualRegister(ofType: pointerVal.type)
+            let identifier = context.getllvmIdentifier(from: id)
             
-            let loadInstruction = LLVMInstruction.load(source: pointerVal,
-                                                       destination: destinationRegister).logRegisterUses()
-            
-            return ([loadInstruction], .register(destinationRegister))
+            if ssaEnabled, case .localValue = identifier {
+                let value = block.readVariable(identifier)
+                return ([], value)
+            } else {
+                let destinationRegister = LLVMVirtualRegister(ofType: identifier.type)
+                
+                let loadInstruction = LLVMInstruction.load(source: identifier,
+                                                           destination: destinationRegister).logRegisterUses()
+                
+                return ([loadInstruction], .register(destinationRegister))
+            }
         case let .integer(_, value):
             return ([], .literal(value))
         case let .invocation(_, functionName, arguments):
             var instructions = [LLVMInstruction]()
             
             let argumentValues = arguments.map { expression -> LLVMValue in
-                let (newInstructions, newValue) = expression.getLLVMInstructions(context)
+                let (newInstructions, newValue) = expression.getLLVMInstructions(withContext: context, forBlock: block, usingSSA: ssaEnabled)
                 instructions.append(contentsOf: newInstructions)
                 return newValue
             }
@@ -116,7 +122,7 @@ extension Expression {
         case .true:
             return ([], .literal(LLVMInstructionConstants.trueValue))
         case let .unary(_, op, operand):
-            let (operandInstructions, operandValue) = operand.getLLVMInstructions(context)
+            let (operandInstructions, operandValue) = operand.getLLVMInstructions(withContext: context, forBlock: block, usingSSA: ssaEnabled)
             let (instruction, value) = fromUnaryExpression(unaryOp: op, operand: operandValue)
             
             return (operandInstructions + [instruction], value)

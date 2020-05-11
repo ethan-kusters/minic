@@ -52,12 +52,6 @@ extension LLVMInstruction {
         case let .call(_, arguments, destination):
             arguments.forEach({$0.addUse(by: self)})
             destination?.setDefiningInstruction(self)
-        case let .phi(valuePairs, destination):
-            valuePairs.forEach { valuePair in
-                valuePair.value.addUse(by: self)
-            }
-            
-            destination.setDefiningInstruction(self)
         }
         
         return self
