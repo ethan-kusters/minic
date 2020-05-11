@@ -10,7 +10,7 @@ import Foundation
 class LLVMVirtualRegister: Equatable {
     private static var currentIndex = 0
     
-    private let id: String
+    var rawIdentifier: String
     let type: LLVMType
     
     private(set) var definingInstruction: LLVMInstructionProtocol?
@@ -19,23 +19,23 @@ class LLVMVirtualRegister: Equatable {
     private(set) var uses = [LLVMInstructionProtocol]()
     
     var identifier: LLVMIdentifier {
-        .localValue(id, type: type)
+        .localValue(rawIdentifier, type: type)
     }
     
     init(ofType type: LLVMType) {
         LLVMVirtualRegister.currentIndex += 1
-        id = "_reg\(LLVMVirtualRegister.currentIndex)"
+        rawIdentifier = "_reg\(LLVMVirtualRegister.currentIndex)"
         self.type = type
     }
     
     init(withPrefix prefix: String, type: LLVMType) {
         LLVMVirtualRegister.currentIndex += 1
-        id = "_\(prefix)\(LLVMVirtualRegister.currentIndex)"
+        rawIdentifier = "_\(prefix)\(LLVMVirtualRegister.currentIndex)"
         self.type = type
     }
     
     init(withId id: String, type: LLVMType) {
-        self.id = id
+        self.rawIdentifier = id
         self.type = type
     }
     
@@ -64,6 +64,6 @@ class LLVMVirtualRegister: Equatable {
     }
     
     static func == (lhs: LLVMVirtualRegister, rhs: LLVMVirtualRegister) -> Bool {
-        lhs.id == rhs.id
+        lhs.rawIdentifier == rhs.rawIdentifier
     }
 }
