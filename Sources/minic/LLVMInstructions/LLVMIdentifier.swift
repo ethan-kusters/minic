@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum LLVMIdentifier: Equatable {
+enum LLVMIdentifier: Equatable, Hashable {
     
     case function(String, retType: LLVMType)
     

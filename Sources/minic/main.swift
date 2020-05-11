@@ -19,6 +19,9 @@ struct minic: ParsableCommand {
     @Flag(help: "Generate a GraphViz DOT file of the program's control flow graph.")
     var generateCfg: Bool
     
+    @Flag(help: "Favor the stack and disable the use of static single assignment")
+    var disableSSA: Bool
+    
     @Flag(help: "Use GraphViz to generate a PDF of the program's control flow graph.")
     var generateCfgPdf: Bool
     
@@ -42,7 +45,8 @@ struct minic: ParsableCommand {
                                     outputFile: outputFilePath,
                                     generateCfg: generateCfg,
                                     generateCfgPdf: generateCfgPdf,
-                                    printLlvm: printLlvm)
+                                    printLlvm: printLlvm,
+                                    useSSA: !disableSSA)
     }
 }
 

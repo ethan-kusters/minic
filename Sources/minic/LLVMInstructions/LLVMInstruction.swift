@@ -134,7 +134,7 @@ enum LLVMInstruction: Equatable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#alloca-instruction)
-    case allocate(_ destination: LLVMVirtualRegister)
+    case allocate(destination: LLVMVirtualRegister)
     
     /// Global variables define regions of memory allocated at compilation time instead of run-time.
     ///
@@ -176,4 +176,18 @@ enum LLVMInstruction: Equatable {
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#zext-to-instruction)
     case zeroExtend(source: LLVMValue, destination: LLVMVirtualRegister)
+    
+    // MARK: - Single Static Assignment
+    
+    /// The ‘phi’ instruction is used to implement the φ node in the SSA graph representing the function.
+    ///
+    /// # Reference
+    /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#phi-instruction)
+    case phi(valuePairs: [ValuePair], destination: LLVMVirtualRegister)
+    
+    
+    struct ValuePair: Equatable {
+        let value: LLVMValue
+        let label: LLVMIdentifier
+    }
 }

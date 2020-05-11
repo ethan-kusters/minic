@@ -8,7 +8,7 @@
 import Foundation
 
 class CompilerManager {
-    static func compile(sourceFile: URL, outputFile: URL? = nil, generateCfg: Bool = false, generateCfgPdf: Bool = false, printLlvm: Bool = false) throws {
+    static func compile(sourceFile: URL, outputFile: URL? = nil, generateCfg: Bool = false, generateCfgPdf: Bool = false, printLlvm: Bool = false, useSSA: Bool) throws {
         let program = try ParsingManager().parseFileAtURL(sourceFile)
         
         let sourceFileName = sourceFile.deletingPathExtension().lastPathComponent
@@ -16,7 +16,7 @@ class CompilerManager {
         guard let functionsWithContexts = try TypeCheckingManager().check(program) else { return }
         
         let functionGraphs = functionsWithContexts.map { (function, context) in
-            function.getControlFlowGraph(context: context)
+            function.getControlFlowGraph(context: context, useSSA: useSSA)
         }
         
         if generateCfgPdf || generateCfg {

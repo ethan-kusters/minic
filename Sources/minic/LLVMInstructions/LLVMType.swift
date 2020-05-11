@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum LLVMType: Equatable {
+enum LLVMType: Equatable, Hashable {
     case void
     case null
     case i1

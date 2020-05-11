@@ -34,14 +34,18 @@ class LLVMVirtualRegister: Equatable {
     }
     
     func setDefiningInstruction(_ instruction: LLVMInstruction) {
-        guard definingInstruction == nil else {
-            fatalError("\(#function): Virtual Register's defining instruction can only be set once.")
+        if definingInstruction == nil {
+            definingInstruction = instruction
+        } else {
+            uses.append(instruction)
         }
-        
-        definingInstruction = instruction
     }
     
     func addUse(by instruction: LLVMInstruction) {
+        if definingInstruction == nil {
+            fatalError("\(#function): Virtual register must have defining instruction set before it can be used.")
+        }
+        
         uses.append(instruction)
     }
     

@@ -9,7 +9,10 @@
 import Foundation
 
 extension Function {
-    func getControlFlowGraph(context: TypeContext) -> ControlFlowGraph {
-        return ControlFlowGraph(blocks: ControlFlowGraphBuilder(self, context: context).blocks, function: self)
+    func getControlFlowGraph(context: TypeContext, useSSA: Bool) -> ControlFlowGraph {
+        return ControlFlowGraph(blocks: ControlFlowGraphBuilder(self,
+                                                                context: context,
+                                                                useSSA: useSSA).blocks,
+                                function: self)
     }
 }

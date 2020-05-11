@@ -43,3 +43,10 @@ extension LLVMValue {
         }
     }
 }
+
+extension LLVMValue {
+    func addUse(by instruction: LLVMInstruction) {
+        guard case let .register(register) = self else { return }
+        register.addUse(by: instruction)
+    }
+}
