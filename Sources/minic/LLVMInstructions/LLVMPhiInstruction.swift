@@ -14,16 +14,16 @@ import Foundation
 class LLVMPhiInstruction: LLVMInstructionProtocol {
     var operands = [PhiOperand]()
     let block: Block
-    let destination: LLVMVirtualRegister
+    let target: LLVMVirtualRegister
     let associatedIdentifier: LLVMIdentifier
     var incomplete: Bool
     
     init(inBlock block: Block, forID id: LLVMIdentifier, incomplete: Bool = false) {
         self.block = block
-        self.destination = LLVMVirtualRegister(withPrefix: id.descriptiveString, type: id.type)
+        self.target = LLVMVirtualRegister(withPrefix: id.descriptiveString, type: id.type)
         self.incomplete = incomplete
         self.associatedIdentifier = id
-        self.destination.setDefiningInstruction(self)
+        self.target.setDefiningInstruction(self)
     }
     
     func addOperands() {

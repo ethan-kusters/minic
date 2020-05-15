@@ -1,8 +1,6 @@
 import XCTest
 import class Foundation.Bundle
 
-//@testable import minic
-
 final class MiniCompilerTests: XCTestCase {
     let clangURL = URL(fileURLWithPath: "/usr/bin/clang")
     
@@ -207,7 +205,7 @@ final class MiniCompilerTests: XCTestCase {
         
         let clangProcess = Process()
         clangProcess.executableURL = clangURL
-        clangProcess.arguments = [compiledMiniFile.path, "-o", executableMiniFile.path]
+        clangProcess.arguments = ["-Wno-override-module", compiledMiniFile.path, "-o", executableMiniFile.path]
         clangProcess.standardOutput = clangProcessOutput
         clangProcess.standardError = clangProcessOutput
         try clangProcess.run()
@@ -265,8 +263,4 @@ final class MiniCompilerTests: XCTestCase {
         return Bundle.main.bundleURL
       #endif
     }
-
-    static var allTests = [
-        ("testBenchMarkishTopics", test_BenchMarkishTopics_Benchmark),
-    ]
 }

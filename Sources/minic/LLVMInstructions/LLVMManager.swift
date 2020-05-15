@@ -21,16 +21,16 @@ class LLVMManager {
     private func getGlobalDeclarations() -> String {
         let typeDeclarations = program.types.map {type -> String in
             let types = type.fields.map(\.type.llvmType)
-            return LLVMInstruction.declareStructureType(types: types,
-                                                        destination: .structureType(type.name)).description
+            return LLVMInstruction.declareStructureType(target: .structureType(type.name),
+                                                        types: types).description
         }
         .joined(separator: "\n")
         
         let declarations = program.declarations.map { declaration -> String in
             let type = declaration.type.llvmType
-            return LLVMInstruction.declareGlobal(source: type.unitializedValue,
-                                                 destination: .globalValue(declaration.name,
-                                                                           type: type)).description
+            return LLVMInstruction.declareGlobal(target: .globalValue(declaration.name,
+                                                                           type: type),
+                                                 source: type.unitializedValue).description
         }
         .joined(separator: "\n")
         

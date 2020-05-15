@@ -11,83 +11,83 @@ extension LLVMInstruction: CustomStringConvertible {
     var description: String {
         switch(self) {
             
-        case let .add(firstOp, secondOp, destination):
-            return "\(destination) = add \(firstOp.type) \(firstOp), \(secondOp)"
+        case let .add(target, firstOp, secondOp, _):
+            return "\(target) = add \(firstOp.type) \(firstOp), \(secondOp)"
             
-        case let .subtract(firstOp, secondOp, destination):
-            return "\(destination) = sub \(firstOp.type) \(firstOp), \(secondOp)"
+        case let .subtract(target, firstOp, secondOp, _):
+            return "\(target) = sub \(firstOp.type) \(firstOp), \(secondOp)"
             
-        case let .multiply(firstOp, secondOp, destination):
-            return "\(destination) = mul \(firstOp.type) \(firstOp), \(secondOp)"
+        case let .multiply(target, firstOp, secondOp, _):
+            return "\(target) = mul \(firstOp.type) \(firstOp), \(secondOp)"
             
-        case let .signedDivide(firstOp, secondOp, destination):
-            return "\(destination) = sdiv \(firstOp.type) \(firstOp), \(secondOp)"
+        case let .signedDivide(target, firstOp, secondOp, _):
+            return "\(target) = sdiv \(firstOp.type) \(firstOp), \(secondOp)"
             
-        case let .and(firstOp, secondOp, destination):
-            return "\(destination) = and \(firstOp.type) \(firstOp), \(secondOp)"
+        case let .and(target, firstOp, secondOp, _):
+            return "\(target) = and \(firstOp.type) \(firstOp), \(secondOp)"
             
-        case let .or(firstOp, secondOp, destination):
-            return "\(destination) = or \(firstOp.type) \(firstOp), \(secondOp)"
+        case let .or(target, firstOp, secondOp, _):
+            return "\(target) = or \(firstOp.type) \(firstOp), \(secondOp)"
             
-        case let .exclusiveOr(firstOp, secondOp, destination):
-            return "\(destination) = xor \(firstOp.type) \(firstOp), \(secondOp)"
+        case let .exclusiveOr(target, firstOp, secondOp, _):
+            return "\(target) = xor \(firstOp.type) \(firstOp), \(secondOp)"
             
-        case let .comparison(condCode, firstOp, secondOp, destination):
-            return "\(destination) = icmp \(condCode) \(firstOp.type) \(firstOp), \(secondOp)"
+        case let .comparison(target, condCode, firstOp, secondOp, _):
+            return "\(target) = icmp \(condCode) \(firstOp.type) \(firstOp), \(secondOp)"
             
-        case let .conditionalBranch(conditional, ifTrue, ifFalse):
-            return "br i1 \(conditional), \(ifTrue.llvmIdentifier), \(ifFalse.llvmIdentifier)"
+        case let .conditionalBranch(conditional, ifTrue, ifFalse, _):
+            return "br i1 \(conditional), \(ifTrue), \(ifFalse)"
             
-        case let .unconditionalBranch(destination):
-            return "br \(destination.llvmIdentifier)"
+        case let .unconditionalBranch(destination, _):
+            return "br \(destination)"
             
-        case let .load(source, destination):
-            return "\(destination) = load \(destination.type), \(source.type)* \(source)"
+        case let .load(target, srcPointer, _):
+            return "\(target) = load \(target.type), \(srcPointer.type)* \(srcPointer)"
             
-        case let .store(source, destination):
-            return "store \(source.type) \(source), \(destination.type)* \(destination)"
+        case let .store(source, destPointer, _):
+            return "store \(source.type) \(source), \(destPointer.type)* \(destPointer)"
             
-        case let .getElementPointer(structureType, structurePointer, elementIndex, destination):
-            return "\(destination) = getelementptr \(structureType), \(structureType)* \(structurePointer), i1 0, i32 \(elementIndex)"
+        case let .getElementPointer(target, structureType, structurePointer, elementIndex, _):
+            return "\(target) = getelementptr \(structureType), \(structureType)* \(structurePointer), i1 0, i32 \(elementIndex)"
             
-        case let .call(functionIdentifier, arguments, destination):
+        case let .call(target, functionIdentifier, arguments, _):
             let argumentString = arguments.map { arg -> String in
                 guard arg.type != .null else { return "null" }
                 return "\(arg.type) \(arg)"
             }.joined(separator: ", ")
             
-            let call = "call \(destination?.type ?? .void) \(functionIdentifier)(\(argumentString))"
+            let callString = "call \(target?.type ?? .void) \(functionIdentifier)(\(argumentString))"
             
-            if let destination = destination {
-                return "\(destination) = \(call)"
+            if let target = target {
+                return "\(target) = \(callString)"
             } else {
-                return call
+                return callString
             }
             
-        case let .returnValue(value):
+        case let .returnValue(value, _):
             return "ret \(value.type) \(value)"
             
         case .returnVoid:
             return "ret void"
             
-        case let .allocate(destination):
-            return "\(destination) = alloca \(destination.type)"
+        case let .allocate(target, _):
+            return "\(target) = alloca \(target.type)"
             
-        case let .declareGlobal(source, destination):
-            return "\(destination) = common global \(source.type) \(source), align 4"
+        case let .declareGlobal(target, source):
+            return "\(target) = common global \(source.type) \(source), align 4"
             
-        case let .declareStructureType(types, destination):
+        case let .declareStructureType(target, types):
             let typeList = types.map(\.description).joined(separator: ", ")
-            return "\(destination) = type { \(typeList) }"
+            return "\(target) = type { \(typeList) }"
             
-        case let .bitcast(source, destination):
-            return "\(destination) = bitcast \(source.type) \(source) to \(destination.type)"
+        case let .bitcast(target, source, _):
+            return "\(target) = bitcast \(source.type) \(source) to \(target.type)"
             
-        case let .truncate(source, destination):
-            return "\(destination) = trunc \(source.type) \(source) to \(destination.type)"
+        case let .truncate(target, source, _):
+            return "\(target) = trunc \(source.type) \(source) to \(target.type)"
             
-        case let .zeroExtend(source, destination):
-            return "\(destination) = zext \(source.type) \(source) to \(destination.type)"
+        case let .zeroExtend(target, source, _):
+            return "\(target) = zext \(source.type) \(source) to \(target.type)"
         }
     }
 }

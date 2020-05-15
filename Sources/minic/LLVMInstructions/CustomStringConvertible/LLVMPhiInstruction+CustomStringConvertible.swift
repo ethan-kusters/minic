@@ -17,6 +17,6 @@ extension LLVMPhiInstruction: CustomStringConvertible {
             "[ \(operand.value), %\(operand.block.label) ]"
         }.joined(separator: ", ")
                    
-        return "\(destination) = phi \(destination.type) \(operandsString)"
+        return "\(target) = phi \(target.type) \(operandsString)"
     }
 }

@@ -66,7 +66,7 @@ class Block {
             // thus the need for a phi is unclear, so let’s assume it is needed
             let phiInstruction = LLVMPhiInstruction(inBlock: self, forID: id, incomplete: true)
             phiInstructions.append(phiInstruction)
-            value = .register(phiInstruction.destination)
+            value = .register(phiInstruction.target)
         } else if predecessors.isEmpty {
             value = .null(id.type)
         } else if predecessors.count == 1 {
@@ -77,7 +77,7 @@ class Block {
             // with a phi instruction at the beginning of this block
             let phiInstruction = LLVMPhiInstruction(inBlock: self, forID: id)
             phiInstructions.append(phiInstruction)
-            value = .register(phiInstruction.destination)
+            value = .register(phiInstruction.target)
             
             // variable maps to new value which breaks cycles
             writeVariable(id, asValue: value)

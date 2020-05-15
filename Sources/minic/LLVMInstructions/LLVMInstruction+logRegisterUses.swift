@@ -10,48 +10,46 @@ import Foundation
 extension LLVMInstruction {
     func logRegisterUses() -> LLVMInstruction {
         switch(self) {
-        case let .add(firstOp, secondOp, destination),
-             let .subtract(firstOp, secondOp, destination),
-             let .multiply(firstOp, secondOp, destination),
-             let .signedDivide(firstOp, secondOp, destination),
-             let .and(firstOp, secondOp, destination),
-             let .or(firstOp, secondOp, destination),
-             let .exclusiveOr(firstOp, secondOp, destination),
-             let .comparison(_, firstOp, secondOp, destination):
+        case let .add(target, firstOp, secondOp, _),
+             let .subtract(target, firstOp, secondOp, _),
+             let .multiply(target, firstOp, secondOp, _),
+             let .signedDivide(target, firstOp, secondOp, _),
+             let .and(target, firstOp, secondOp, _),
+             let .or(target, firstOp, secondOp, _),
+             let .exclusiveOr(target, firstOp, secondOp, _),
+             let .comparison(target, _, firstOp, secondOp, _):
+            
             firstOp.addUse(by: self)
             secondOp.addUse(by: self)
-            destination.setDefiningInstruction(self)
-        case let .conditionalBranch(conditional, _, _):
+            target.setDefiningInstruction(self)
+        case let .conditionalBranch(conditional, _, _, _):
             conditional.addUse(by: self)
         case .unconditionalBranch:
             return self
-        case let .load(_, destination):
-            destination.setDefiningInstruction(self)
-        case let .store(source, _):
+        case let .load(target, _, _):
+            target.setDefiningInstruction(self)
+        case let .store(source, _, _):
             source.addUse(by: self)
-        case let .getElementPointer(_, _, _, destination):
-            destination.setDefiningInstruction(self)
-        case let .returnValue(value):
+        case let .getElementPointer(target, _, _, _, _):
+            target.setDefiningInstruction(self)
+        case let .returnValue(value, _):
             value.addUse(by: self)
-        case .returnVoid:
-            return self
-        case let .allocate(destination):
-            destination.setDefiningInstruction(self)
-        case .declareGlobal,
-             .declareStructureType:
-            return self
-        case let .bitcast(source, destination):
+        case let .allocate(target, _):
+            target.setDefiningInstruction(self)
+        case let .bitcast(target, source, _):
             source.addUse(by: self)
-            destination.setDefiningInstruction(self)
-        case let .truncate(source, destination):
+            target.setDefiningInstruction(self)
+        case let .truncate(target, source, _):
             source.addUse(by: self)
-            destination.setDefiningInstruction(self)
-        case let .zeroExtend(source, destination):
+            target.setDefiningInstruction(self)
+        case let .zeroExtend(target, source, _):
             source.addUse(by: self)
-            destination.setDefiningInstruction(self)
-        case let .call(_, arguments, destination):
+            target.setDefiningInstruction(self)
+        case let .call(target, _, arguments, _):
             arguments.forEach({$0.addUse(by: self)})
-            destination?.setDefiningInstruction(self)
+            target?.setDefiningInstruction(self)
+        case .declareGlobal, .declareStructureType, .returnVoid:
+            return self
         }
         
         return self
