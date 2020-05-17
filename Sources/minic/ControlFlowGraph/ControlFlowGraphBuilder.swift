@@ -38,7 +38,7 @@ class ControlFlowGraphBuilder {
         blocks.append(functionExit)
         
         if useSSA {
-            blocks.removeTrivialPhis()
+            blocks.forEach({$0.removeTrivialPhis()})
         }
     }
     

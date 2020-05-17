@@ -8,10 +8,10 @@
 
 import Foundation
 
-class Block: Hashable {
+class Block {
     let label: String
-    private let id = UUID()
-    var instructions = [LLVMInstruction]()
+    let uuid = UUID()
+    private(set) var instructions = [LLVMInstruction]()
     var predecessors = [Block]()
     var successors = [Block]()
     
@@ -27,13 +27,8 @@ class Block: Hashable {
     private(set) var sealed = false
     
     init(_ description: String, sealed: Bool = true) {
-        self.label = Block.getLabel(description)
+        self.label = Block.getUniqueLabel(description)
         self.sealed = sealed
-    }
-    
-    init(_ description: String, instructions: [LLVMInstruction]) {
-        self.label = Block.getLabel(description)
-        self.instructions = instructions
     }
     
     var firstTrivialPhi: (index: Int, phi: LLVMPhiInstruction)? {
@@ -120,30 +115,24 @@ class Block: Hashable {
         }
     }
     
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(label)
-        hasher.combine(sealed)
-        hasher.combine(id)
+    func removeTrivialPhis() {
+        while let (index, currentPhi) = firstTrivialPhi {
+            guard let firstElement = currentPhi.operands.first else { continue }
+            
+            currentPhi.target.uses.forEach { instruction in
+                let newInstruction = instruction.replacingRegister(currentPhi.target, with: firstElement.value).logRegisterUses()
+                instruction.block.replaceInstruction(instruction, with: newInstruction)
+            }
+            
+            instructions.remove(at: index)
+        }
     }
-}
-
-extension Block {
-    private static var labelIndex: Int = 0
     
-    private static func getLabel(_ description: String) -> String {
-        labelIndex += 1
-        return "_L\(labelIndex)_\(description)".replacingOccurrences(of: " ", with: "_")
+    func replaceInstruction(_ currentInstruction: LLVMInstruction, with newInstruction: LLVMInstruction) {
+        if let index = instructions.firstIndex(of: currentInstruction) {
+            instructions[index] = newInstruction
+        }
     }
 }
 
-extension Block: Equatable {
-    static func == (lhs: Block, rhs: Block) -> Bool {
-        lhs.label == rhs.label && lhs.id == rhs.id
-    }
-}
 
-extension Block: CustomStringConvertible {
-    var description: String {
-        label
-    }
-}
