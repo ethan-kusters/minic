@@ -26,11 +26,6 @@ extension ControlFlowGraph {
         
         blocks.forEach { block in
             llvmString += "\n\(block.label):\n\t"
-            llvmString += block.phiInstructions.map(\.description).joined(separator: "\n\t")
-            
-            if !block.phiInstructions.isEmpty {
-                llvmString += "\n\t"
-            }
             
             llvmString += block.instructions.map(\.description).joined(separator: "\n\t")
         }

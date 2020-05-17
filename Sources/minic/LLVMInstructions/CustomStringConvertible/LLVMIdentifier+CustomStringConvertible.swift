@@ -12,8 +12,8 @@ extension LLVMIdentifier: CustomStringConvertible {
         switch(self) {
             case let .function(value, _):
                 return "@\(value)"
-            case let .localValue(value, _):
-                return "%\(value)"
+            case let .virtualRegister(register):
+                return "\(register)"
             case let .globalValue(value, _):
                 return "@\(value)"
             case .null:

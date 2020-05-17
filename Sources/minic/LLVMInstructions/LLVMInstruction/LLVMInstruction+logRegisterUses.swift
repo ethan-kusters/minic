@@ -18,7 +18,6 @@ extension LLVMInstruction {
              let .or(target, firstOp, secondOp, _),
              let .exclusiveOr(target, firstOp, secondOp, _),
              let .comparison(target, _, firstOp, secondOp, _):
-            
             firstOp.addUse(by: self)
             secondOp.addUse(by: self)
             target.setDefiningInstruction(self)
@@ -26,11 +25,15 @@ extension LLVMInstruction {
             conditional.addUse(by: self)
         case .unconditionalBranch:
             return self
-        case let .load(target, _, _):
+        case let .load(target, srcPointer, _):
+            srcPointer.addUse(self)
             target.setDefiningInstruction(self)
-        case let .store(source, _, _):
+        case let .store(source, destPointer, _):
             source.addUse(by: self)
-        case let .getElementPointer(target, _, _, _, _):
+            destPointer.addUse(self)
+        case let .getElementPointer(target, structureType, structurePointer, _, _):
+            structureType.addUse(self)
+            structurePointer.addUse(self)
             target.setDefiningInstruction(self)
         case let .returnValue(value, _):
             value.addUse(by: self)
@@ -48,6 +51,9 @@ extension LLVMInstruction {
         case let .call(target, _, arguments, _):
             arguments.forEach({$0.addUse(by: self)})
             target?.setDefiningInstruction(self)
+        case let .phi(phiInstruction):
+            phiInstruction.operands.map(\.value).forEach { $0.addUse(by: self) }
+            phiInstruction.target.setDefiningInstruction(self)
         case .declareGlobal, .declareStructureType, .returnVoid:
             return self
         }

@@ -36,6 +36,10 @@ class ControlFlowGraphBuilder {
         functionExit.seal()
         buildExitBlock(functionExit)
         blocks.append(functionExit)
+        
+        if useSSA {
+            blocks.removeTrivialPhis()
+        }
     }
     
     private func buildEntryBlock() -> Block {
@@ -92,30 +96,26 @@ class ControlFlowGraphBuilder {
     
     private func buildEntryBlockWithSSA(_ entryBlock: Block) {
         if function.retType != .void {
-            let returnIdentifier = LLVMIdentifier.localValue(LLVMInstructionConstants.returnPointer,
-                                                             type: function.retType.llvmType)
+            let retReg = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer, type: function.retType.llvmType)
             
-            entryBlock.writeVariable(returnIdentifier, asValue: .null(function.retType.llvmType))
+            entryBlock.writeVariable(retReg.identifier, asValue: .null(function.retType.llvmType))
         }
         
         function.parameters.forEach { param  in
-            let paramID = LLVMIdentifier.localValue(param.name,
-                                                    type: param.type.llvmType)
-            
             let existingParam = LLVMVirtualRegister(withId: param.name,
                                                     type: param.type.llvmType)
             
             existingParam.setDefiningInstruction(LLVMInstruction.allocate(target: existingParam, block: entryBlock))
             
-            entryBlock.writeVariable(paramID, asValue: .register(existingParam))
+            entryBlock.writeVariable(existingParam.identifier, asValue: .register(existingParam))
         }
         
         
         function.locals.forEach { local in
-            let localID = LLVMIdentifier.localValue(local.name,
-                                                    type: local.type.llvmType)
+            let localID = LLVMVirtualRegister(withId: local.name,
+                                              type: local.type.llvmType)
             
-            entryBlock.writeVariable(localID, asValue: .null(localID.type))
+            entryBlock.writeVariable(localID.identifier, asValue: localID.type.unitializedValue)
         }
     }
     
@@ -132,11 +132,11 @@ class ControlFlowGraphBuilder {
     private func buildExitBlockWithoutSSA(_ exitBlock: Block) {
         let retType = function.retType.llvmType
         let returnReg = LLVMVirtualRegister(ofType: retType)
-        let retValPointer = LLVMIdentifier.localValue(LLVMInstructionConstants.returnPointer,
-                                                      type: retType)
+        let retValPointer = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer,
+                                                type: retType)
         
         let loadInstr = LLVMInstruction.load(target: returnReg,
-                                             srcPointer: retValPointer,
+                                             srcPointer: retValPointer.identifier,
                                              block: exitBlock).logRegisterUses()
         
         let returnInstr = LLVMInstruction.returnValue(.register(returnReg),
@@ -147,9 +147,10 @@ class ControlFlowGraphBuilder {
     
     private func buildExitBlockWithSSA(_ exitBlock: Block) {
         let retType = function.retType.llvmType
-        let returnValID = LLVMIdentifier.localValue(LLVMInstructionConstants.returnPointer,
-                                                    type: retType)
-        let returnValue = exitBlock.readVariable(returnValID)
+        let returnValID = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer,
+                                              type: retType)
+        
+        let returnValue = exitBlock.readVariable(returnValID.identifier)
         let returnInstr = LLVMInstruction.returnValue(returnValue, block: exitBlock).logRegisterUses()
         exitBlock.addInstruction(returnInstr)
     }
@@ -192,7 +193,7 @@ class ControlFlowGraphBuilder {
             } else {
                 let identifier = context.getllvmIdentifier(from: lValue.id)
                 
-                if ssaEnabled, case .localValue = identifier {
+                if ssaEnabled, case .virtualRegister = identifier {
                     currentBlock.writeVariable(identifier, asValue: sourceValue)
                 } else {
                     let storeInstr = LLVMInstruction.store(source: sourceValue,
@@ -325,14 +326,14 @@ class ControlFlowGraphBuilder {
                                                                       usingSSA: ssaEnabled) {
                 currentBlock.addInstructions(instructions)
                 
-                let returnValId = LLVMIdentifier.localValue(LLVMInstructionConstants.returnPointer,
-                                                              type: function.retType.llvmType)
+                let returnValId = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer,
+                                                      type: function.retType.llvmType)
                 
                 if ssaEnabled {
-                    currentBlock.writeVariable(returnValId, asValue: value)
+                    currentBlock.writeVariable(returnValId.identifier, asValue: value)
                 } else {
                     let storeInstr = LLVMInstruction.store(source:value,
-                                                           destPointer: returnValId,
+                                                           destPointer: returnValId.identifier,
                                                            block: currentBlock).logRegisterUses()
                     
                     currentBlock.addInstruction(storeInstr)

@@ -1,5 +1,5 @@
 //
-//  InstructionPointer.swift
+//  LLVMIdentifier.swift
 //  MiniCompiler
 //
 //  Created by Ethan Kusters on 4/26/20.
@@ -11,7 +11,7 @@ enum LLVMIdentifier: Equatable, Hashable {
     
     case function(String, retType: LLVMType)
     
-    case localValue(String, type: LLVMType)
+    case virtualRegister(LLVMVirtualRegister)
     
     case globalValue(String, type: LLVMType)
     
@@ -30,8 +30,8 @@ extension LLVMIdentifier {
         switch(self) {
             case let .function(_, retType):
                 return retType
-            case let .localValue(_, type):
-                return type
+        case let .virtualRegister(register):
+                return register.type
             case let .globalValue(_, type):
                 return type
             case .null:
@@ -51,8 +51,8 @@ extension LLVMIdentifier {
         switch(self) {
         case let .function(id, _):
             return "function_\(id)"
-        case let .localValue(id, _):
-            return "local_\(id)"
+        case let .virtualRegister(register):
+            return register.rawIdentifier
         case let .globalValue(id, _):
             return "global_\(id)"
         case let .structureType(id):
@@ -64,5 +64,24 @@ extension LLVMIdentifier {
         case .void:
             return "void"
         }
+    }
+}
+
+extension LLVMIdentifier {
+    static func == (lhs: LLVMIdentifier, rhs: LLVMVirtualRegister) -> Bool {
+        guard case let .virtualRegister(lhsRegister) = lhs else { return false }
+        return lhsRegister == rhs
+    }
+}
+
+extension LLVMIdentifier {
+    func setDefiningInstruction(_ instruction: LLVMInstruction) {
+        guard case let .virtualRegister(register) = self else { return }
+        register.setDefiningInstruction(instruction)
+    }
+    
+    func addUse(_ instruction: LLVMInstruction) {
+        guard case let .virtualRegister(register) = self else { return }
+        register.addUse(by: instruction)
     }
 }

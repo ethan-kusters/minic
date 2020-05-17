@@ -7,19 +7,24 @@
 
 import Foundation
 
-class LLVMVirtualRegister: Equatable {
+class LLVMVirtualRegister: Hashable {
     private static var currentIndex = 0
     
     var rawIdentifier: String
     let type: LLVMType
     
-    private(set) var definingInstruction: LLVMInstructionProtocol?
+    private(set) var definingInstruction: LLVMInstruction?
     
     /// Instructions that uses this register as a source
-    private(set) var uses = [LLVMInstructionProtocol]()
+    private(set) var uses = Set<LLVMInstruction>()
     
     var identifier: LLVMIdentifier {
-        .localValue(rawIdentifier, type: type)
+        .virtualRegister(self)
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(rawIdentifier)
+        hasher.combine(type)
     }
     
     init(ofType type: LLVMType) {
@@ -39,20 +44,12 @@ class LLVMVirtualRegister: Equatable {
         self.type = type
     }
     
-    func setDefiningInstruction(_ instruction: LLVMInstructionProtocol) {
-        if definingInstruction == nil {
-            definingInstruction = instruction
-        } else {
-            uses.append(instruction)
-        }
+    func setDefiningInstruction(_ instruction: LLVMInstruction) {
+        definingInstruction = instruction
     }
     
-    func addUse(by instruction: LLVMInstructionProtocol) {
-        if definingInstruction == nil {
-            fatalError("\(#function): Virtual register must have defining instruction set before it can be used.")
-        }
-        
-        uses.append(instruction)
+    func addUse(by instruction: LLVMInstruction) {
+        uses.insert(instruction)
     }
     
     static func newIntRegister() -> LLVMVirtualRegister {

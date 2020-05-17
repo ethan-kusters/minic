@@ -50,7 +50,7 @@ extension Expression {
         case let .identifier(_, id):
             let identifier = context.getllvmIdentifier(from: id)
             
-            if ssaEnabled, case .localValue = identifier {
+            if ssaEnabled, case .virtualRegister = identifier {
                 let value = block.readVariable(identifier)
                 return ([], value)
             } else {

@@ -8,10 +8,17 @@
 import Foundation
 
 extension Array where Element == Block {
-    func remoeveTrivialPhis() {
+    func removeTrivialPhis() {
         forEach { block in
-            for (index, phi) in block.phiInstructions.enumerated() {
+            while let (index, currentPhi) = block.firstTrivialPhi {
+                guard let firstElement = currentPhi.operands.first else { continue }
                 
+                currentPhi.target.uses.forEach { instruction in
+                    let newInstruction = instruction.replacingRegister(currentPhi.target, with: firstElement.value).logRegisterUses()
+                    instruction.block.replaceInstruction(instruction, with: newInstruction)
+                }
+                
+                block.instructions.remove(at: index)
             }
         }
     }

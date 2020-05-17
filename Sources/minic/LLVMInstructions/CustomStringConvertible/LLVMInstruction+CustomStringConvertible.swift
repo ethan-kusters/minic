@@ -88,6 +88,10 @@ extension LLVMInstruction: CustomStringConvertible {
             
         case let .zeroExtend(target, source, _):
             return "\(target) = zext \(source.type) \(source) to \(target.type)"
+            
+        case let .phi(phiInstruction):
+            return phiInstruction.description
         }
+        
     }
 }

@@ -7,8 +7,7 @@
 
 import Foundation
 
-enum LLVMInstruction: Equatable, LLVMInstructionProtocol {
-    
+enum LLVMInstruction: Hashable {
     // MARK: - Arithmetic
     
     /// The `add` instruction returns the sum of its two operands.
@@ -175,5 +174,7 @@ enum LLVMInstruction: Equatable, LLVMInstructionProtocol {
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#zext-to-instruction)
     case zeroExtend(target: LLVMVirtualRegister, source: LLVMValue, block: Block)
+    
+    case phi(LLVMPhiInstruction)
     
 }

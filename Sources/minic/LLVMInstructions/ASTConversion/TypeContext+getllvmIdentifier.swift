@@ -10,7 +10,7 @@ import Foundation
 extension TypeContext {
     func getllvmIdentifier(from id: String) -> LLVMIdentifier {
         if let symbol = localSymbolTable?[id] {
-            return .localValue(id, type: symbol.llvmType)
+            return .virtualRegister(LLVMVirtualRegister(withId: id, type: symbol.llvmType))
         } else {
             let symbol = globalSymbolTable[id]!
             return .globalValue(id, type: symbol.llvmType)

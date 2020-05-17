@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum LLVMValue: Equatable {
+enum LLVMValue: Hashable {
     case register(LLVMVirtualRegister)
     case literal(Int)
     case null(LLVMType)
@@ -45,8 +45,15 @@ extension LLVMValue {
 }
 
 extension LLVMValue {
-    func addUse(by instruction: LLVMInstructionProtocol) {
+    func addUse(by instruction: LLVMInstruction) {
         guard case let .register(register) = self else { return }
         register.addUse(by: instruction)
+    }
+}
+
+extension LLVMValue {
+    static func == (lhs: LLVMValue, rhs: LLVMVirtualRegister) -> Bool {
+        guard case let .register(lhsRegister) = lhs else { return false }
+        return lhsRegister == rhs
     }
 }

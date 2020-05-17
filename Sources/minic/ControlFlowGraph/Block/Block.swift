@@ -8,13 +8,19 @@
 
 import Foundation
 
-class Block {
+class Block: Hashable {
     let label: String
-    private(set) var phiInstructions = [LLVMPhiInstruction]()
-    
+    private let id = UUID()
     var instructions = [LLVMInstruction]()
     var predecessors = [Block]()
     var successors = [Block]()
+    
+    var phiInstructions: [LLVMPhiInstruction] {
+        instructions.compactMap { instruction -> LLVMPhiInstruction? in
+            guard case let .phi(phiInstruction) = instruction else { return nil }
+            return phiInstruction
+        }
+    }
     
     private var identifierMapping = [LLVMIdentifier : LLVMValue]()
     
@@ -28,6 +34,16 @@ class Block {
     init(_ description: String, instructions: [LLVMInstruction]) {
         self.label = Block.getLabel(description)
         self.instructions = instructions
+    }
+    
+    var firstTrivialPhi: (index: Int, phi: LLVMPhiInstruction)? {
+        guard let index = instructions.firstIndex(where: { instruction in
+            guard case let .phi(phiInstruction) = instruction else { return false }
+            return phiInstruction.trivial
+        }) else { return nil }
+        
+        guard case let .phi(phiInstruction) = instructions[index] else { return nil }
+        return (index, phiInstruction)
     }
     
     func addPredecessor(_ block: Block) {
@@ -44,6 +60,10 @@ class Block {
     
     func addInstruction(_ newInstruction: LLVMInstruction) {
         instructions.append(newInstruction)
+    }
+    
+    func addPhiInstruction(_ newInstruction: LLVMPhiInstruction) {
+        instructions.insert(.phi(newInstruction), at: 0)
     }
     
     func writeVariable(_ id: LLVMIdentifier, asValue value: LLVMValue) {
@@ -65,7 +85,7 @@ class Block {
             // this CFG is not complete, the block might gain a predecessor
             // thus the need for a phi is unclear, so let’s assume it is needed
             let phiInstruction = LLVMPhiInstruction(inBlock: self, forID: id, incomplete: true)
-            phiInstructions.append(phiInstruction)
+            addPhiInstruction(phiInstruction)
             value = .register(phiInstruction.target)
         } else if predecessors.isEmpty {
             value = .null(id.type)
@@ -76,7 +96,7 @@ class Block {
             // ok, let’s search through predecessors and join them
             // with a phi instruction at the beginning of this block
             let phiInstruction = LLVMPhiInstruction(inBlock: self, forID: id)
-            phiInstructions.append(phiInstruction)
+            addPhiInstruction(phiInstruction)
             value = .register(phiInstruction.target)
             
             // variable maps to new value which breaks cycles
@@ -99,6 +119,12 @@ class Block {
             phi.incomplete = false
         }
     }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(label)
+        hasher.combine(sealed)
+        hasher.combine(id)
+    }
 }
 
 extension Block {
@@ -112,10 +138,7 @@ extension Block {
 
 extension Block: Equatable {
     static func == (lhs: Block, rhs: Block) -> Bool {
-        lhs.label == rhs.label
-            && lhs.predecessors == rhs.predecessors
-            && lhs.successors == rhs.successors
-            && lhs.instructions == rhs.instructions
+        lhs.label == rhs.label && lhs.id == rhs.id
     }
 }
 
