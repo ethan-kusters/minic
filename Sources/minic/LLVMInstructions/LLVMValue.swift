@@ -56,4 +56,8 @@ extension LLVMValue {
         guard case let .register(lhsRegister) = lhs else { return false }
         return lhsRegister == rhs
     }
+    
+    static func != (lhs: LLVMValue, rhs: LLVMVirtualRegister) -> Bool {
+        return !(lhs == rhs)
+    }
 }

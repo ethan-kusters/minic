@@ -117,10 +117,13 @@ class Block {
     
     func removeTrivialPhis() {
         while let (index, currentPhi) = firstTrivialPhi {
-            guard let firstElement = currentPhi.operands.first else { continue }
+            guard let representativeOperand = currentPhi.representativeOperand else {
+                instructions.remove(at: index)
+                continue
+            }
             
             currentPhi.target.uses.forEach { instruction in
-                let newInstruction = instruction.replacingRegister(currentPhi.target, with: firstElement.value).logRegisterUses()
+                let newInstruction = instruction.replacingRegister(currentPhi.target, with: representativeOperand.value).logRegisterUses()
                 instruction.block.replaceInstruction(instruction, with: newInstruction)
             }
             

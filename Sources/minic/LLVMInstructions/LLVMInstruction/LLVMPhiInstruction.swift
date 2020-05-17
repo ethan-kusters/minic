@@ -19,7 +19,11 @@ class LLVMPhiInstruction: Hashable {
     var incomplete: Bool
     
     var trivial: Bool {
-        operands.map(\.value).allElementsAreEqual()
+        operands.map(\.value).filter({$0 != target}).allElementsAreEqual()
+    }
+    
+    var representativeOperand: PhiOperand? {
+        return operands.first(where: { $0.value != target })
     }
     
     init(inBlock block: Block, forID id: LLVMIdentifier, incomplete: Bool = false) {
