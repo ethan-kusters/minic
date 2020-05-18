@@ -11,7 +11,7 @@ import Foundation
 ///
 /// # Reference
 /// [LLVM Documentaiton](https://releases.llvm.org/9.0.0/docs/LangRef.html#instruction-reference)
-enum LLVMInstruction: Hashable {
+enum LLVMInstruction: InstructionProtocol {
     
     // MARK: - Arithmetic
     
@@ -22,25 +22,25 @@ enum LLVMInstruction: Hashable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#add-instruction)
-    case add(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: Block)
+    case add(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
     
     /// The ‘sub’ instruction returns the difference of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#sub-instruction)
-    case subtract(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: Block)
+    case subtract(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
     
     /// The ‘mul’ instruction returns the product of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#mul-instruction)
-    case multiply(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: Block)
+    case multiply(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
     
     /// The ‘sdiv’ instruction returns the quotient of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#sdiv-instruction)
-    case signedDivide(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: Block)
+    case signedDivide(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
     
     // MARK: - Boolean Instructions
     
@@ -48,13 +48,13 @@ enum LLVMInstruction: Hashable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#and-instruction)
-    case and(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: Block)
+    case and(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
     
     /// The ‘or’ instruction returns the bitwise logical inclusive or of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#or-instruction)
-    case or(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: Block)
+    case or(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
     
     /// The ‘xor’ instruction returns the bitwise logical exclusive or of its two operands.
     ///
@@ -62,7 +62,7 @@ enum LLVMInstruction: Hashable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#xor-instruction)
-    case exclusiveOr(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: Block)
+    case exclusiveOr(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
     
     // MARK: - Comparison
     
@@ -70,7 +70,7 @@ enum LLVMInstruction: Hashable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#icmp-instruction)
-    case comparison(target: LLVMVirtualRegister, condCode: LLVMConditionCode, firstOp: LLVMValue, secondOp: LLVMValue, block: Block)
+    case comparison(target: LLVMVirtualRegister, condCode: LLVMConditionCode, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
     
     // MARK: - Branch
     
@@ -78,13 +78,13 @@ enum LLVMInstruction: Hashable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#br-instruction)
-    case conditionalBranch(conditional: LLVMValue, ifTrue: LLVMIdentifier, ifFalse: LLVMIdentifier, block: Block)
+    case conditionalBranch(conditional: LLVMValue, ifTrue: LLVMIdentifier, ifFalse: LLVMIdentifier, block: InstructionBlock<Self>)
     
     /// The ‘br’ instruction is used to cause control flow to transfer to a different basic block in the current function.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#br-instruction)
-    case unconditionalBranch(_ target: LLVMIdentifier, block: Block)
+    case unconditionalBranch(_ target: LLVMIdentifier, block: InstructionBlock<Self>)
     
     // MARK: - Load & Store
     
@@ -92,13 +92,13 @@ enum LLVMInstruction: Hashable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#load-instruction)
-    case load(target: LLVMVirtualRegister, srcPointer: LLVMIdentifier, block: Block)
+    case load(target: LLVMVirtualRegister, srcPointer: LLVMIdentifier, block: InstructionBlock<Self>)
     
     /// The ‘store’ instruction is used to write to memory.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#store-instruction)
-    case store(source: LLVMValue, destPointer: LLVMIdentifier, block: Block)
+    case store(source: LLVMValue, destPointer: LLVMIdentifier, block: InstructionBlock<Self>)
     
     /// The ‘getelementptr’ instruction is used to get the address of a subelement of an aggregate data structure.
     ///
@@ -107,7 +107,7 @@ enum LLVMInstruction: Hashable {
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#getelementptr-instruction)
     case getElementPointer(target: LLVMVirtualRegister, structureType: LLVMIdentifier, structurePointer: LLVMIdentifier,
-        elementIndex: Int, block: Block)
+        elementIndex: Int, block: InstructionBlock<Self>)
     
     // MARK: - Invocation
     
@@ -115,19 +115,19 @@ enum LLVMInstruction: Hashable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#call-instruction)
-    case call(target: LLVMVirtualRegister?, functionIdentifier: LLVMIdentifier, arguments: [LLVMValue], block: Block)
+    case call(target: LLVMVirtualRegister?, functionIdentifier: LLVMIdentifier, arguments: [LLVMValue], block: InstructionBlock<Self>)
     
     /// The ‘ret’ instruction is used to return control flow (and optionally a value) from a function back to the caller.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#ret-instruction)
-    case returnValue(_ value: LLVMValue, block: Block)
+    case returnValue(_ value: LLVMValue, block: InstructionBlock<Self>)
     
     /// The ‘ret’ instruction is used to return control flow (and optionally a value) from a function back to the caller.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#ret-instruction)
-    case returnVoid(block: Block)
+    case returnVoid(block: InstructionBlock<Self>)
     
     // MARK: - Allocation
     
@@ -138,7 +138,7 @@ enum LLVMInstruction: Hashable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#alloca-instruction)
-    case allocate(target: LLVMVirtualRegister, block: Block)
+    case allocate(target: LLVMVirtualRegister, block: InstructionBlock<Self>)
     
     // MARK: - Declaration
     
@@ -162,7 +162,7 @@ enum LLVMInstruction: Hashable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#bitcast-to-instruction)
-    case bitcast(target: LLVMVirtualRegister, source: LLVMValue, block: Block)
+    case bitcast(target: LLVMVirtualRegister, source: LLVMValue, block: InstructionBlock<Self>)
     
     /// The ‘trunc’ instruction truncates its operand to the type ty2.
     ///
@@ -171,7 +171,7 @@ enum LLVMInstruction: Hashable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#trunc-to-instruction)
-    case truncate(target: LLVMVirtualRegister, source: LLVMValue, block: Block)
+    case truncate(target: LLVMVirtualRegister, source: LLVMValue, block: InstructionBlock<Self>)
     
     /// The ‘zext’ instruction zero extends its operand to type ty2.
     ///
@@ -180,7 +180,7 @@ enum LLVMInstruction: Hashable {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#zext-to-instruction)
-    case zeroExtend(target: LLVMVirtualRegister, source: LLVMValue, block: Block)
+    case zeroExtend(target: LLVMVirtualRegister, source: LLVMValue, block: InstructionBlock<Self>)
     
     // MARK: - Other
     

@@ -13,7 +13,7 @@ import Foundation
 /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#phi-instruction)
 class LLVMPhiInstruction: Hashable {
     var operands = [PhiOperand]()
-    let block: Block
+    let block: InstructionBlock<LLVMInstruction>
     let target: LLVMVirtualRegister
     let associatedIdentifier: LLVMIdentifier
     var incomplete: Bool
@@ -26,7 +26,7 @@ class LLVMPhiInstruction: Hashable {
         return operands.first(where: { $0.value != target })
     }
     
-    init(inBlock block: Block, forID id: LLVMIdentifier, incomplete: Bool = false) {
+    init(inBlock block: InstructionBlock<LLVMInstruction>, forID id: LLVMIdentifier, incomplete: Bool = false) {
         self.block = block
         self.target = LLVMVirtualRegister(withPrefix: id.descriptiveString, type: id.type)
         self.incomplete = incomplete
@@ -34,7 +34,7 @@ class LLVMPhiInstruction: Hashable {
         target.setDefiningInstruction(.phi(self))
     }
     
-    private init(operands: [PhiOperand], block: Block, target: LLVMVirtualRegister, associatedIdentifier: LLVMIdentifier, incomplete: Bool) {
+    private init(operands: [PhiOperand], block: InstructionBlock<LLVMInstruction>, target: LLVMVirtualRegister, associatedIdentifier: LLVMIdentifier, incomplete: Bool) {
         self.operands = operands
         self.block = block
         self.target = target
@@ -90,6 +90,6 @@ class LLVMPhiInstruction: Hashable {
 extension LLVMPhiInstruction {
     struct PhiOperand: Equatable {
         let value: LLVMValue
-        let block: Block
+        let block: InstructionBlock<LLVMInstruction>
     }
 }

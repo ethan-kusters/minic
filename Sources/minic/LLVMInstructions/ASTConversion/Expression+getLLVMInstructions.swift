@@ -8,7 +8,9 @@
 import Foundation
 
 extension Expression {
-    func getLLVMInstructions(withContext context: TypeContext, forBlock block: Block, usingSSA ssaEnabled: Bool) -> (instructions: [LLVMInstruction], value: LLVMValue) {
+    func getLLVMInstructions(withContext context: TypeContext,
+                             forBlock block: InstructionBlock<LLVMInstruction>,
+                             usingSSA ssaEnabled: Bool) -> (instructions: [LLVMInstruction], value: LLVMValue) {
         switch(self) {
         case let .binary(_, op, left, right):
             let (leftInstructions, leftValue) = left.getLLVMInstructions(withContext: context, forBlock: block, usingSSA: ssaEnabled)
@@ -143,7 +145,7 @@ extension Expression {
     private func fromBinaryExpression(binaryOp: Expression.BinaryOperator,
                                       firstOp: LLVMValue,
                                       secondOp: LLVMValue,
-                                      block: Block) -> ([LLVMInstruction], LLVMValue) {
+                                      block: InstructionBlock<LLVMInstruction>) -> ([LLVMInstruction], LLVMValue) {
         switch(binaryOp) {
         case .times:
             let targetReg = LLVMVirtualRegister(ofType: firstOp.type)
@@ -208,7 +210,7 @@ extension Expression {
         }
     }
     
-    private func compareInstruction(condCode: LLVMConditionCode, firstOp: LLVMValue, secondOp: LLVMValue, block: Block) -> ([LLVMInstruction], LLVMValue) {
+    private func compareInstruction(condCode: LLVMConditionCode, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<LLVMInstruction>) -> ([LLVMInstruction], LLVMValue) {
         let cmpTargetReg = LLVMVirtualRegister(ofType: .i1)
         let cmpInstr = LLVMInstruction.comparison(target: cmpTargetReg,
                                                   condCode: condCode,
@@ -220,7 +222,7 @@ extension Expression {
         return ([cmpInstr], .register(cmpTargetReg))
     }
     
-    private func fromUnaryExpression(unaryOp: Expression.UnaryOperator, operand: LLVMValue, block: Block) -> (LLVMInstruction, LLVMValue) {
+    private func fromUnaryExpression(unaryOp: Expression.UnaryOperator, operand: LLVMValue, block: InstructionBlock<LLVMInstruction>) -> (LLVMInstruction, LLVMValue) {
         switch(unaryOp) {
         case .not:
             let targetReg = LLVMVirtualRegister(ofType: operand.type)

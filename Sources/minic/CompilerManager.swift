@@ -16,7 +16,7 @@ class CompilerManager {
         guard let functionsWithContexts = try TypeCheckingManager().check(program) else { return }
         
         let functionGraphs = functionsWithContexts.map { (function, context) in
-            function.getControlFlowGraph(context: context, useSSA: useSSA)
+            function.getLLVMControlFlowGraph(context: context, useSSA: useSSA)
         }
         
         if generateCfgPdf || generateCfg {

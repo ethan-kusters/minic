@@ -7,14 +7,14 @@
 
 import Foundation
 
-extension Block: Hashable {
+extension InstructionBlock: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(label)
         hasher.combine(sealed)
         hasher.combine(uuid)
     }
     
-    static func == (lhs: Block, rhs: Block) -> Bool {
+    static func == (lhs: InstructionBlock, rhs: InstructionBlock) -> Bool {
         lhs.label == rhs.label && lhs.uuid == rhs.uuid
     }
 }

@@ -1,34 +1,22 @@
 //
-//  Block.swift
-//  MiniCompiler
+//  LLVMInstructionBlock.swift
+//  minic
 //
-//  Created by Ethan Kusters on 4/23/20.
-//  Copyright © 2020 Ethan Kusters. All rights reserved.
+//  Created by Ethan Kusters on 5/18/20.
 //
 
 import Foundation
 
-class Block {
-    let label: String
-    let uuid = UUID()
-    var instructions = [LLVMInstruction]()
-    var predecessors = [Block]()
-    var successors = [Block]()
+extension InstructionBlock where InstructionType == LLVMInstruction {
+    var llvmIdentifier: LLVMIdentifier {
+        return .label(label)
+    }
     
     var phiInstructions: [LLVMPhiInstruction] {
         instructions.compactMap { instruction -> LLVMPhiInstruction? in
             guard case let .phi(phiInstruction) = instruction else { return nil }
             return phiInstruction
         }
-    }
-    
-    private var identifierMapping = [LLVMIdentifier : LLVMValue]()
-    
-    private(set) var sealed = false
-    
-    init(_ description: String, sealed: Bool = true) {
-        self.label = Block.getUniqueLabel(description)
-        self.sealed = sealed
     }
     
     var hasTrivialPhi: Bool {
@@ -45,21 +33,13 @@ class Block {
         return (index, phiInstruction)
     }
     
-    func addPredecessor(_ block: Block) {
-        predecessors.append(block)
+    
+    convenience init(_ description: String, sealed: Bool = true) {
+        self.init(label: InstructionBlock.getUniqueLabel(description),
+                  sealed: sealed)
     }
     
-    func addSuccesor(_ block: Block) {
-        successors.append(block)
-    }
-    
-    func addInstructions(_ newInstructions: [LLVMInstruction]) {
-        instructions.append(contentsOf: newInstructions)
-    }
-    
-    func addInstruction(_ newInstruction: LLVMInstruction) {
-        instructions.append(newInstruction)
-    }
+    // MARK: - SSA Phi Implementation
     
     func addPhiInstruction(_ newInstruction: LLVMPhiInstruction) {
         instructions.insert(.phi(newInstruction), at: 0)
@@ -108,7 +88,7 @@ class Block {
         writeVariable(id, asValue: value )
         return value
     }
- 
+    
     func seal() {
         guard !sealed else { return }
         sealed = true
@@ -134,12 +114,4 @@ class Block {
             instructions.remove(at: index)
         }
     }
-    
-    func replaceInstruction(_ currentInstruction: LLVMInstruction, with newInstruction: LLVMInstruction) {
-        if let index = instructions.firstIndex(of: currentInstruction) {
-            instructions[index] = newInstruction
-        }
-    }
 }
-
-

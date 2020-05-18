@@ -9,7 +9,7 @@
 import Foundation
 
 extension Function {
-    func getControlFlowGraph(context: TypeContext, useSSA: Bool) -> ControlFlowGraph {
-        return ControlFlowGraph(self, context: context, useSSA: useSSA)
+    func getLLVMControlFlowGraph(context: TypeContext, useSSA: Bool) -> LLVMControlFlowGraph {
+        return LLVMControlFlowGraph(self, context: context, useSSA: useSSA)
     }
 }

@@ -8,7 +8,7 @@
 import Foundation
 
 extension LLVMInstruction {
-    var block: Block {
+    var block: InstructionBlock<Self> {
         switch(self) {
         case let .add(_, _, _, block),
              let .subtract(_, _, _, block),

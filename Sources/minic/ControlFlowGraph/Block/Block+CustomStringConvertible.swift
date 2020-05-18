@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension Block: CustomStringConvertible {
+extension InstructionBlock: CustomStringConvertible {
     var description: String {
         label
     }

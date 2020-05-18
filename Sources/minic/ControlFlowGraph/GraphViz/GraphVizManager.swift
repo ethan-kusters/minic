@@ -11,15 +11,15 @@ import Foundation
     import AppKit
 #endif
 
-class GraphVizManager {
-    private let controlFlowGraphs: [ControlFlowGraph]
+class GraphVizManager<GraphType: ControlFlowGraph> {
+    private let controlFlowGraphs: [GraphType]
     private let baseFilename: String
     private var fileName: String {
         baseFilename + "_GraphRepresentation"
     }
     
     
-    init(with controlFlowGraphs: [ControlFlowGraph], named baseFilename: String) {
+    init(with controlFlowGraphs: [GraphType], named baseFilename: String) {
         self.controlFlowGraphs = controlFlowGraphs
         self.baseFilename = baseFilename
     }

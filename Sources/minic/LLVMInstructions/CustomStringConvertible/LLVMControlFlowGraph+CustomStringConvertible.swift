@@ -1,14 +1,14 @@
 //
-//  ControlFlowGraph+llvmString.swift
-//  MiniCompiler
+//  LLVMControlFlowGraph+CustomStringConvertible.swift
+//  minic
 //
-//  Created by Ethan Kusters on 4/27/20.
+//  Created by Ethan Kusters on 5/18/20.
 //
 
 import Foundation
 
-extension ControlFlowGraph {
-    var llvmString: String {
+extension LLVMControlFlowGraph: CustomStringConvertible {
+    var description: String {
         let paramString: String
         
         if ssaEnabled {

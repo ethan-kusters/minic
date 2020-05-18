@@ -9,10 +9,10 @@ import Foundation
 
 class LLVMManager {
     let program: Program
-    let controlFlowGraphs: [ControlFlowGraph]
+    let controlFlowGraphs: [LLVMControlFlowGraph]
     let filename: String
     
-    init(_ program: Program, with controlFlowGraphs: [ControlFlowGraph], named filename: String) {
+    init(_ program: Program, with controlFlowGraphs: [LLVMControlFlowGraph], named filename: String) {
         self.program = program
         self.controlFlowGraphs = controlFlowGraphs
         self.filename = filename
@@ -52,7 +52,7 @@ class LLVMManager {
         let programHeader = getProgramHeader()
         
         let programBody = controlFlowGraphs.map { graph in
-            graph.llvmString
+            graph.description
         }.joined(separator: "\n")
         
         let programFooter = getProgramFooter()

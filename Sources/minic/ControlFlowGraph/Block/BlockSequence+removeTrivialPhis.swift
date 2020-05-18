@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension Sequence where Element: Block {
+extension Sequence where Element: InstructionBlock<LLVMInstruction> {
     func removeTrivialPhis() {
         while let blockWithTrivialPhi = first(where: \.hasTrivialPhi) {
             guard let (index, trivialPhi) = blockWithTrivialPhi.firstTrivialPhi else { continue }

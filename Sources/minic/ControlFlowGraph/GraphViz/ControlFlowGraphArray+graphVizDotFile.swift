@@ -7,12 +7,12 @@
 
 import Foundation
 
-extension Array where Element == ControlFlowGraph {
+extension Array where Element: ControlFlowGraph {
     var graphVizDotFile: String {
         var dotfile = GraphVizConstants.dotfileHeader + GraphVizConstants.openBrace
         
-        forEach { controlFlowGraph in
-            dotfile += controlFlowGraph.graphVizSubgraph
+        for (index, graph) in self.enumerated() {
+            dotfile += graph.graphVizSubgraph(index: index)
         }
         
         dotfile += GraphVizConstants.closeBrace

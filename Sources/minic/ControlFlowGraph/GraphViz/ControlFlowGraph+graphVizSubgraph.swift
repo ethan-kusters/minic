@@ -8,10 +8,8 @@
 import Foundation
 
 extension ControlFlowGraph {
-    private static var subGraphIndex = 0
-    
-    var graphVizSubgraph: String {
-        var subgraph = ControlFlowGraph.getSubgraphHeader() + GraphVizConstants.openBrace
+    func graphVizSubgraph(index: Int) -> String {
+        var subgraph = getSubgraphHeader(index) + GraphVizConstants.openBrace
         
         subgraph += "\(GraphVizConstants.label)\"Function '\(function.name)'\"\(GraphVizConstants.semicolon)"
         blocks.forEach { block in
@@ -25,9 +23,8 @@ extension ControlFlowGraph {
         return subgraph
     }
     
-    private static func getSubgraphHeader() -> String {
-        subGraphIndex += 1
-        return GraphVizConstants.subGraphHeader + " cluster_\(subGraphIndex) "
+    private func getSubgraphHeader(_ index: Int) -> String {
+        return GraphVizConstants.subGraphHeader + " cluster_\(index) "
     }
 }
 
