@@ -1,7 +1,1 @@
-import XCTest
-
-import MiniCompilerTests
-
-var tests = [XCTestCaseEntry]()
-tests += MiniCompilerTests.allTests()
-XCTMain(tests)
+#error("Please test with `swift test --enable-test-discovery`")

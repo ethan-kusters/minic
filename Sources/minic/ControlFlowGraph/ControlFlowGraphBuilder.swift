@@ -11,87 +11,148 @@ class ControlFlowGraphBuilder {
     var blocks = [Block]()
     private let function: Function
     private let context: TypeContext
+    private let ssaEnabled: Bool
     
     private lazy var functionEntry = {
         buildEntryBlock()
     }()
     
     private lazy var functionExit = {
-       buildExitBlock()
+       Block("FunctionExit", sealed: false)
     }()
     
-    init(_ function: Function, context: TypeContext) {
+    init(_ function: Function, context: TypeContext, useSSA: Bool) {
         self.function = function
         self.context = context
+        self.ssaEnabled = useSSA
         
         blocks.append(functionEntry)
         
         if let final = build(function.body, currentBlock: functionEntry) {
             link(final, functionExit)
-            final.addInstruction(.unconditionalBranch(destination: functionExit))
+            final.addInstruction(.unconditionalBranch(functionExit.llvmIdentifier, block: final))
         }
         
+        functionExit.seal()
+        buildExitBlock(functionExit)
         blocks.append(functionExit)
+        
+        if useSSA {
+            blocks.removeTrivialPhis()
+        }
     }
     
     private func buildEntryBlock() -> Block {
         let entryBlock = Block("FunctionEntry")
         
-        if function.retType != .void {
-            entryBlock.addInstruction(.allocate(type: function.retType.equivalentInstructionType,
-                                                result: .localValue(InstructionConstants.returnPointer,
-                                                                    type: function.retType.equivalentInstructionType)))
+        if ssaEnabled {
+            buildEntryBlockWithSSA(entryBlock)
+        } else {
+            buildEntryBlockWithoutSSA(entryBlock)
         }
         
-        let parameterInstructions = function.parameters.flatMap { param -> [Instruction] in
-            let type = param.type.equivalentInstructionType
-            let allocateInstruction = Instruction.allocate(type: type,
-                                                           result: .localValue(param.name, type: type))
+        return entryBlock
+    }
+    
+    private func buildEntryBlockWithoutSSA(_ entryBlock: Block) {
+        if function.retType != .void {
+            let retValReg = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer,
+                                                type: function.retType.llvmType)
             
-            let existingParamValue = InstructionValue.existingRegister(withId: InstructionConstants.parameterPrefix + param.name,
-                                                                       type: type)
+            let allocRetInstr = LLVMInstruction.allocate(target: retValReg, block: entryBlock).logRegisterUses()
+            entryBlock.addInstruction(allocRetInstr)
+        }
+        
+        let parameterInstructions = function.parameters.flatMap { param -> [LLVMInstruction] in
+            let paramReg = LLVMVirtualRegister(withId: param.name, type: param.type.llvmType)
+            let existingParam = LLVMVirtualRegister(withId: LLVMInstructionConstants.parameterPrefix + param.name,
+                                                     type: param.type.llvmType)
             
-            let storeInstruction = Instruction.store(valueType: type,
-                                                     value: existingParamValue,
-                                                     pointerType: type,
-                                                     pointer: .localValue(param.name, type: type))
+            /// We manually set the def instruction for the parameter since LLVM defined it
+            existingParam.setDefiningInstruction(LLVMInstruction.allocate(target: existingParam, block: entryBlock))
+            
+            let allocateInstruction = LLVMInstruction.allocate(target: paramReg,
+                                                               block: entryBlock).logRegisterUses()
+            
+            let storeInstruction = LLVMInstruction.store(source: .register(existingParam),
+                                                         destPointer: paramReg.identifier,
+                                                         block: entryBlock).logRegisterUses()
             
             return [allocateInstruction, storeInstruction]
         }
         
         entryBlock.addInstructions(parameterInstructions)
         
-        let localAllocations = function.locals.map { local -> Instruction in
-            .allocate(type: local.type.equivalentInstructionType,
-                      result: .localValue(local.name,
-                                          type: local.type.equivalentInstructionType))
+        let localAllocations = function.locals.map { local -> LLVMInstruction in
+            let paramReg = LLVMVirtualRegister(withId: local.name,
+                                               type: local.type.llvmType)
+            
+            return LLVMInstruction.allocate(target: paramReg,
+                                            block: entryBlock).logRegisterUses()
         }
         
         entryBlock.addInstructions(localAllocations)
-        
-        return entryBlock
     }
     
-    private func buildExitBlock() -> Block {
-        let exitBlock = Block("FunctionExit")
-        
-        if function.retType == .void {
-            exitBlock.addInstruction(.returnVoid)
-        } else {
-            let retType = function.retType.equivalentInstructionType
-            let retRegister = InstructionValue.newRegister(forType: retType)
+    private func buildEntryBlockWithSSA(_ entryBlock: Block) {
+        if function.retType != .void {
+            let retReg = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer, type: function.retType.llvmType)
             
-            let load = Instruction.load(valueType: retType,
-                                        pointerType: retType,
-                                        pointer: .localValue(InstructionConstants.returnPointer, type: retType),
-                                        result: retRegister)
-            
-            let ret = Instruction.returnValue(type: retType, value: retRegister)
-            
-            exitBlock.addInstructions([load, ret])
+            entryBlock.writeVariable(retReg.identifier, asValue: .null(function.retType.llvmType))
         }
         
-        return exitBlock
+        function.parameters.forEach { param  in
+            let existingParam = LLVMVirtualRegister(withId: param.name,
+                                                    type: param.type.llvmType)
+            
+            existingParam.setDefiningInstruction(LLVMInstruction.allocate(target: existingParam, block: entryBlock))
+            
+            entryBlock.writeVariable(existingParam.identifier, asValue: .register(existingParam))
+        }
+        
+        
+        function.locals.forEach { local in
+            let localID = LLVMVirtualRegister(withId: local.name,
+                                              type: local.type.llvmType)
+            
+            entryBlock.writeVariable(localID.identifier, asValue: localID.type.unitializedValue)
+        }
+    }
+    
+    private func buildExitBlock(_ exitBlock: Block) {
+        if function.retType == .void {
+            exitBlock.addInstruction(.returnVoid(block: exitBlock))
+        } else if ssaEnabled {
+            buildExitBlockWithSSA(exitBlock)
+        } else {
+            buildExitBlockWithoutSSA(exitBlock)
+        }
+    }
+    
+    private func buildExitBlockWithoutSSA(_ exitBlock: Block) {
+        let retType = function.retType.llvmType
+        let returnReg = LLVMVirtualRegister(ofType: retType)
+        let retValPointer = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer,
+                                                type: retType)
+        
+        let loadInstr = LLVMInstruction.load(target: returnReg,
+                                             srcPointer: retValPointer.identifier,
+                                             block: exitBlock).logRegisterUses()
+        
+        let returnInstr = LLVMInstruction.returnValue(.register(returnReg),
+                                                      block: exitBlock).logRegisterUses()
+        
+        exitBlock.addInstructions([loadInstr, returnInstr])
+    }
+    
+    private func buildExitBlockWithSSA(_ exitBlock: Block) {
+        let retType = function.retType.llvmType
+        let returnValID = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer,
+                                              type: retType)
+        
+        let returnValue = exitBlock.readVariable(returnValID.identifier)
+        let returnInstr = LLVMInstruction.returnValue(returnValue, block: exitBlock).logRegisterUses()
+        exitBlock.addInstruction(returnInstr)
     }
     
     private func link(_ predecessor: Block, _ successor: Block) {
@@ -102,80 +163,56 @@ class ControlFlowGraphBuilder {
     private func build(_ statement: Statement, currentBlock: Block) -> Block? {
         switch(statement) {
         case let .assignment(_, lValue, source):
-            let (sourceInstructions, sourceValue) = source.getEquivalentInstructions(context)
+            var (sourceInstructions, sourceValue) = source.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
             currentBlock.addInstructions(sourceInstructions)
             
+            if sourceValue.type == .i1 {
+                // We need to zext this value as it was the result of a icmp
+                let extTargetReg = LLVMVirtualRegister.newBoolRegister()
+                let extInstr = LLVMInstruction.zeroExtend(target: extTargetReg,
+                                                          source: sourceValue,
+                                                          block: currentBlock).logRegisterUses()
+                
+                currentBlock.addInstruction(extInstr)
+                sourceValue = .register(extTargetReg)
+            }
+            
             if let leftExpression = lValue.leftExpression {
-                let (leftInstructions, leftValue) = leftExpression.getEquivalentInstructions(context)
+                let (leftInstructions, leftValue) = leftExpression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
                 currentBlock.addInstructions(leftInstructions)
                 
-                let structTypeDeclaration: TypeDeclaration
-                
-                if case let .identifier(_, id) = leftExpression {
-                    let structPointer = context.getInstructionPointer(from: id)
-                    
-                    guard case let .structure(name: name) = structPointer.type else {
-                        fatalError("Type checker should have caught this. Dot access on not-struct value.")
-                    }
-                    
-                    structTypeDeclaration = context.getStruct(name)!
-                } else if case let .dot(_, left, id) = leftExpression {
-                    var idChain = [id]
-                    var currentLeft: Expression = left
-                    while case let .dot(_, left, id) = currentLeft {
-                        currentLeft = left
-                        idChain.append(id)
-                    }
-                    
-                    guard case let .identifier(_, baseID) = currentLeft else { fatalError() }
-                    
-                    let structPointer = context.getInstructionPointer(from: baseID)
-                    
-                    guard case let .structure(name: baseStructTypeName) = structPointer.type else {
-                        fatalError("Type checker should have caught this. Dot access on not-struct value.")
-                    }
-                    
-                    var currentStruct = context.getStruct(baseStructTypeName)!
-                    
-                    idChain.reversed().forEach { id in
-                        let currentStructPointer = currentStruct.fields[id]!.type.equivalentInstructionType
-                        
-                        guard case let .structure(name: currentStructName) = currentStructPointer else {
-                            fatalError("Type checker should have caught this. Dot access on not-struct value.")
-                        }
-                        
-                        currentStruct = context.getStruct(currentStructName)!
-                    }
-                    
-                    structTypeDeclaration = currentStruct
-                } else {
-                    fatalError("Type checker should have caught this. Dot access on non-identifier value.")
-                }
+                let structTypeDeclaration = leftExpression.getStructFromDotExpression(context)
                 
                 let fieldIndex = structTypeDeclaration.fields.firstIndex(where: {
                     $0.name == lValue.id
                 })!
                 
-                let fieldType = structTypeDeclaration.fields[fieldIndex].type.equivalentInstructionType
+                let fieldType = structTypeDeclaration.fields[fieldIndex].type.llvmType
                 
-                let ptrResult = InstructionValue.newRegister(forType: fieldType)
-                let getPtrInstruction = Instruction.getElementPointer(structureType: .structureType(structTypeDeclaration.name),
-                                                                      structurePointer: leftValue,
-                                                                      elementIndex: fieldIndex,
-                                                                      result: ptrResult)
+                let getPtrTargetReg = LLVMVirtualRegister(ofType: fieldType)
+                let getPtrInstruction = LLVMInstruction.getElementPointer(target: getPtrTargetReg,
+                                                                          structureType: .structureType(structTypeDeclaration.name),
+                                                                          structurePointer: leftValue.identifier,
+                                                                          elementIndex: fieldIndex,
+                                                                          block: currentBlock).logRegisterUses()
                 
-                let setInstr = Instruction.store(valueType: fieldType,
-                                                 value: sourceValue,
-                                                 pointerType: ptrResult.type,
-                                                 pointer: .localValue(ptrResult.identifier, type: ptrResult.type))
+                let storeInstr = LLVMInstruction.store(source: sourceValue,
+                                                       destPointer: getPtrTargetReg.identifier,
+                                                       block: currentBlock).logRegisterUses()
                 
-                currentBlock.addInstructions([getPtrInstruction, setInstr])
+                currentBlock.addInstructions([getPtrInstruction, storeInstr])
             } else {
-                let pointer = context.getInstructionPointer(from: lValue.id)
-                currentBlock.addInstruction(.store(valueType: sourceValue.type,
-                                                   value: sourceValue,
-                                                   pointerType: pointer.type,
-                                                   pointer: pointer))
+                let identifier = context.getllvmIdentifier(from: lValue.id)
+                
+                if ssaEnabled, case .virtualRegister = identifier {
+                    currentBlock.writeVariable(identifier, asValue: sourceValue)
+                } else {
+                    let storeInstr = LLVMInstruction.store(source: sourceValue,
+                                                           destPointer: identifier,
+                                                           block: currentBlock).logRegisterUses()
+                    
+                    currentBlock.addInstruction(storeInstr)
+                }
             }
             
             return currentBlock
@@ -192,7 +229,7 @@ class ControlFlowGraphBuilder {
             
             return block
         case let .conditional(_, guardExp, thenStmt, elseStmt):
-            let (guardInstructions, guardValue) = guardExp.getEquivalentInstructions(context)
+            let (guardInstructions, guardValue) = guardExp.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
             currentBlock.addInstructions(guardInstructions)
             
             let condExit = Block("CondExit")
@@ -203,10 +240,10 @@ class ControlFlowGraphBuilder {
             
             if let thenExit = build(thenStmt, currentBlock: thenEntry) {
                 link(thenExit, condExit)
-                thenExit.addInstruction(.unconditionalBranch(destination: condExit))
+                thenExit.addInstruction(.unconditionalBranch(condExit.llvmIdentifier, block: thenExit))
             }
             
-            let ifBranch: [Instruction]
+            let ifBranch: [LLVMInstruction]
             
             if let elseStmt = elseStmt {
                 let elseEntry = Block("ElseEntry")
@@ -216,17 +253,19 @@ class ControlFlowGraphBuilder {
                 
                 ifBranch = getConditionalBranch(conditional: guardValue,
                                                 ifTrue: thenEntry,
-                                                ifFalse: elseEntry)
+                                                ifFalse: elseEntry,
+                                                block: currentBlock)
                 
                 if let elseExit = build(elseStmt, currentBlock: elseEntry) {
                     link(elseExit, condExit)
-                    elseExit.addInstruction(.unconditionalBranch(destination: condExit))
+                    elseExit.addInstruction(.unconditionalBranch(condExit.llvmIdentifier, block: elseExit))
                 }
             } else {
                 link(currentBlock, condExit)
                 ifBranch = getConditionalBranch(conditional: guardValue,
                                                 ifTrue: thenEntry,
-                                                ifFalse: condExit)
+                                                ifFalse: condExit,
+                                                block: currentBlock)
             }
             
             currentBlock.addInstructions(ifBranch)
@@ -238,110 +277,142 @@ class ControlFlowGraphBuilder {
                 return nil
             }
         case let .delete(_, expression):
-            let (instructions, value) = expression.getEquivalentInstructions(context)
+            let (instructions, value) = expression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
             currentBlock.addInstructions(instructions)
             
-            let destinationReg = InstructionValue.newRegister(forType: .pointer(.i8))
-            let cast = Instruction.bitcast(currentType: value.type,
-                                           value: value,
-                                           destinationType: destinationReg.type,
-                                           result: destinationReg)
+            let castTargetReg = LLVMVirtualRegister(ofType: .pointer(.i8))
+            let castInstr = LLVMInstruction.bitcast(target: castTargetReg,
+                                                    source: value,
+                                                    block: currentBlock).logRegisterUses()
             
-            let free = Instruction.call(returnType: .void,
-                                        functionPointer: .function(InstructionConstants.freeFunction,
-                                                                   retType: .void),
-                                        arguments: [destinationReg],
-                                        result: nil)
+            let freeFuncId = LLVMIdentifier.function(LLVMInstructionConstants.freeFunction,
+                                                     retType: .void)
             
-            currentBlock.addInstructions([cast, free])
+            let freeInstr = LLVMInstruction.call(target: nil,
+                                                 functionIdentifier: freeFuncId,
+                                                 arguments: [.register(castTargetReg)],
+                                                 block: currentBlock).logRegisterUses()
+            
+            currentBlock.addInstructions([castInstr, freeInstr])
             
             return currentBlock
         case let .invocation(_, expression):
-            let expressionInstructions = expression.getEquivalentInstructions(context).instructions
+            let expressionInstructions = expression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled).instructions
             currentBlock.addInstructions(expressionInstructions)
             
             return currentBlock
         case let .printLn(_, expression):
-            let (instructions, value) = expression.getEquivalentInstructions(context)
+            let (instructions, value) = expression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
             currentBlock.addInstructions(instructions)
-            currentBlock.addInstruction(.call(returnType: .void,
-                                              functionPointer: .function(InstructionConstants.printlnHelperFunction,
-                                                                         retType: .void),
-                                        arguments: [value],
-                                        result: nil))
             
+            let printlnFuncId = LLVMIdentifier.function(LLVMInstructionConstants.printlnHelperFunction,
+                                                        retType: .void)
+            
+            let printlnCallInstr = LLVMInstruction.call(target: nil,
+                                                        functionIdentifier: printlnFuncId,
+                                                        arguments: [value],
+                                                        block: currentBlock).logRegisterUses()
+            
+            currentBlock.addInstruction(printlnCallInstr)
             
             return currentBlock
         case let .print(_, expression):
-            let (instructions, value) = expression.getEquivalentInstructions(context)
+            let (instructions, value) = expression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
             currentBlock.addInstructions(instructions)
-            currentBlock.addInstruction(.call(returnType: .void,
-                                              functionPointer: .function(InstructionConstants.printHelperFunction,
-                                                                         retType: .void),
-                                              arguments: [value],
-                                              result: nil))
+            
+            let printFuncId = LLVMIdentifier.function(LLVMInstructionConstants.printHelperFunction,
+                                                      retType: .void)
+            
+            let printlnCallInstr = LLVMInstruction.call(target: nil,
+                                                        functionIdentifier: printFuncId,
+                                                        arguments: [value],
+                                                        block: currentBlock).logRegisterUses()
+            
+            currentBlock.addInstruction(printlnCallInstr)
             
             return currentBlock
         case let .return(_, value):
-            if let (instructions, value) = value?.getEquivalentInstructions(context) {
+            if let (instructions, value) = value?.getLLVMInstructions(withContext: context,
+                                                                      forBlock: currentBlock,
+                                                                      usingSSA: ssaEnabled) {
                 currentBlock.addInstructions(instructions)
                 
-                let retType = function.retType.equivalentInstructionType
+                let returnValId = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer,
+                                                      type: function.retType.llvmType)
                 
-                currentBlock.addInstruction(.store(valueType: value.type,
-                                                   value: value,
-                                                   pointerType: retType,
-                                                   pointer: .localValue(InstructionConstants.returnPointer,
-                                                                        type: retType)))
+                if ssaEnabled {
+                    currentBlock.writeVariable(returnValId.identifier, asValue: value)
+                } else {
+                    let storeInstr = LLVMInstruction.store(source:value,
+                                                           destPointer: returnValId.identifier,
+                                                           block: currentBlock).logRegisterUses()
+                    
+                    currentBlock.addInstruction(storeInstr)
+                }
             }
             
             link(currentBlock, functionExit)
-            currentBlock.addInstruction(.unconditionalBranch(destination: functionExit))
+            currentBlock.addInstruction(.unconditionalBranch(functionExit.llvmIdentifier, block: currentBlock))
             
             return nil
         case let .while(_, guardExp, body):
-            let (guardInstructions, guardValue) = guardExp.getEquivalentInstructions(context)
+            let (guardInstructions, guardValue) = guardExp.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
             currentBlock.addInstructions(guardInstructions)
             
-            let whileBodyEntry = Block("WhileBodyEntrance")
-            let whileExit = Block("WhileExit")
+            let whileBodyEntry = Block("WhileBodyEntrance", sealed: false)
+            let whileExit = Block("WhileExit", sealed: false)
             
             link(currentBlock, whileBodyEntry)
             link(currentBlock, whileExit)
             currentBlock.addInstructions(getConditionalBranch(conditional: guardValue,
                                                               ifTrue: whileBodyEntry,
-                                                              ifFalse: whileExit))
+                                                              ifFalse: whileExit,
+                                                              block: currentBlock))
             
             blocks.append(whileBodyEntry)
             
             if let whileBodyExit = build(body, currentBlock: whileBodyEntry) {
-                let (secondGuardInstructions, secondGuardValue) = guardExp.getEquivalentInstructions(context)
-                whileBodyExit.addInstructions(secondGuardInstructions)
-                
                 link(whileBodyExit, whileBodyEntry)
                 link(whileBodyExit, whileExit)
+                whileBodyEntry.seal()
+                whileExit.seal()
+                
+                let (secondGuardInstructions, secondGuardValue) = guardExp.getLLVMInstructions(withContext: context, forBlock: whileBodyExit, usingSSA: ssaEnabled)
+                whileBodyExit.addInstructions(secondGuardInstructions)
+                
                 whileBodyExit.addInstructions(getConditionalBranch(conditional: secondGuardValue,
                                                                    ifTrue: whileBodyEntry,
-                                                                   ifFalse: whileExit))
+                                                                   ifFalse: whileExit,
+                                                                   block: whileBodyExit))
             }
+            
+            whileBodyEntry.seal()
+            whileExit.seal()
             
             blocks.append(whileExit)
             return whileExit
         }
     }
     
-    func getConditionalBranch(conditional: InstructionValue, ifTrue: Block, ifFalse: Block) -> [Instruction] {
+    func getConditionalBranch(conditional: LLVMValue, ifTrue: Block, ifFalse: Block, block: Block) -> [LLVMInstruction] {
         guard conditional.type != .i1 else {
-            return [.conditionalBranch(conditional: conditional, ifTrue: ifTrue, ifFalse: ifFalse)]
+            let brInstr = LLVMInstruction.conditionalBranch(conditional: conditional,
+                                                            ifTrue: ifTrue.llvmIdentifier,
+                                                            ifFalse: ifFalse.llvmIdentifier,
+                                                            block: block).logRegisterUses()
+            return [brInstr]
         }
         
-        let castResult = InstructionValue.newRegister(forType: .i1)
-        let castInstruction = Instruction.truncate(currentType: conditional.type,
-                                                   value: conditional,
-                                                   destinationType: castResult.type,
-                                                   result: castResult)
+        let castTargetReg = LLVMVirtualRegister(ofType: .i1)
+        let castInstruction = LLVMInstruction.truncate(target: castTargetReg,
+                                                       source: conditional,
+                                                       block: block).logRegisterUses()
         
-        let branch = Instruction.conditionalBranch(conditional: castResult, ifTrue: ifTrue, ifFalse: ifFalse)
+        let branch = LLVMInstruction.conditionalBranch(conditional: .register(castTargetReg),
+                                                       ifTrue: ifTrue.llvmIdentifier,
+                                                       ifFalse: ifFalse.llvmIdentifier,
+                                                       block: block).logRegisterUses()
+        
         return [castInstruction, branch]
     }
 }
