@@ -11,7 +11,7 @@ import Foundation
 class Block {
     let label: String
     let uuid = UUID()
-    private(set) var instructions = [LLVMInstruction]()
+    var instructions = [LLVMInstruction]()
     var predecessors = [Block]()
     var successors = [Block]()
     
@@ -29,6 +29,13 @@ class Block {
     init(_ description: String, sealed: Bool = true) {
         self.label = Block.getUniqueLabel(description)
         self.sealed = sealed
+    }
+    
+    var hasTrivialPhi: Bool {
+        instructions.contains(where: { instruction in
+            guard case let .phi(phiInstruction) = instruction else { return false }
+            return phiInstruction.trivial
+        })
     }
     
     var firstTrivialPhi: (index: Int, phi: LLVMPhiInstruction)? {

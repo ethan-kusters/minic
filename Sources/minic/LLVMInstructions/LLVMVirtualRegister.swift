@@ -35,7 +35,7 @@ class LLVMVirtualRegister: Hashable {
     
     init(withPrefix prefix: String, type: LLVMType) {
         LLVMVirtualRegister.currentIndex += 1
-        rawIdentifier = "_\(prefix)\(LLVMVirtualRegister.currentIndex)"
+        rawIdentifier = "_\(prefix)_\(LLVMVirtualRegister.currentIndex)"
         self.type = type
     }
     
