@@ -163,8 +163,19 @@ class ControlFlowGraphBuilder {
     private func build(_ statement: Statement, currentBlock: Block) -> Block? {
         switch(statement) {
         case let .assignment(_, lValue, source):
-            let (sourceInstructions, sourceValue) = source.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
+            var (sourceInstructions, sourceValue) = source.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
             currentBlock.addInstructions(sourceInstructions)
+            
+            if sourceValue.type == .i1 {
+                // We need to zext this value as it was the result of a icmp
+                let extTargetReg = LLVMVirtualRegister.newBoolRegister()
+                let extInstr = LLVMInstruction.zeroExtend(target: extTargetReg,
+                                                          source: sourceValue,
+                                                          block: currentBlock).logRegisterUses()
+                
+                currentBlock.addInstruction(extInstr)
+                sourceValue = .register(extTargetReg)
+            }
             
             if let leftExpression = lValue.leftExpression {
                 let (leftInstructions, leftValue) = leftExpression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)

@@ -216,12 +216,8 @@ extension Expression {
                                                   secondOp: secondOp,
                                                   block: block).logRegisterUses()
         
-        let extTargetReg = LLVMVirtualRegister.newBoolRegister()
-        let extInstr = LLVMInstruction.zeroExtend(target: extTargetReg,
-                                                  source: .register(cmpTargetReg),
-                                                  block: block).logRegisterUses()
-        
-        return ([cmpInstr, extInstr], .register(extTargetReg))
+
+        return ([cmpInstr], .register(cmpTargetReg))
     }
     
     private func fromUnaryExpression(unaryOp: Expression.UnaryOperator, operand: LLVMValue, block: Block) -> (LLVMInstruction, LLVMValue) {
