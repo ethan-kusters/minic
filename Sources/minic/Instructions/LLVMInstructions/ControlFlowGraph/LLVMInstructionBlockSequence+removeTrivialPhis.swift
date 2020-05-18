@@ -1,5 +1,5 @@
 //
-//  BlockSequence+removeTrivialPhis.swift
+//  LLVMInstructionBlockSequence+removeTrivialPhis.swift
 //  minic
 //
 //  Created by Ethan Kusters on 5/17/20.

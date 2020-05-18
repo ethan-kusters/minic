@@ -15,6 +15,8 @@ extension InstructionBlock: Hashable {
     }
     
     static func == (lhs: InstructionBlock, rhs: InstructionBlock) -> Bool {
-        lhs.label == rhs.label && lhs.uuid == rhs.uuid
+        lhs.label == rhs.label
+            && lhs.uuid == rhs.uuid
+            && lhs.sealed == rhs.sealed
     }
 }

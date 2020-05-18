@@ -44,5 +44,3 @@ class InstructionBlock<InstructionType: InstructionProtocol> {
         }
     }
 }
-
-

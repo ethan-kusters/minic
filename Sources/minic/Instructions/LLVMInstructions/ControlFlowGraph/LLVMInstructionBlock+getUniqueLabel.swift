@@ -1,5 +1,5 @@
 //
-//  Block+getUniqueLabel.swift
+//  LLVMInstructionBlock+getUniqueLabel.swift
 //  minic
 //
 //  Created by Ethan Kusters on 5/17/20.

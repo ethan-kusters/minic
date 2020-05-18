@@ -1,5 +1,5 @@
 //
-//  Block+CustomStringConvertible.swift
+//  InstructionBlock+CustomStringConvertible.swift
 //  minic
 //
 //  Created by Ethan Kusters on 5/17/20.
