@@ -8,15 +8,25 @@
 import Foundation
 
 enum LLVMType: Equatable, Hashable {
+    
     case void
+    
     case null
+    
     case i1
+    
     case i8
+    
     case i32
+    
     case i64
+    
     case label
+    
     indirect case pointer(LLVMType)
+    
     case structure(name: String)
+    
 }
 
 extension LLVMType {

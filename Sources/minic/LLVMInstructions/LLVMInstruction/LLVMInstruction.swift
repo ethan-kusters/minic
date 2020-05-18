@@ -7,7 +7,12 @@
 
 import Foundation
 
+/// An abstract representation of a subset of the LLVM instruction set.
+///
+/// # Reference
+/// [LLVM Documentaiton](https://releases.llvm.org/9.0.0/docs/LangRef.html#instruction-reference)
 enum LLVMInstruction: Hashable {
+    
     // MARK: - Arithmetic
     
     /// The `add` instruction returns the sum of its two operands.
@@ -135,6 +140,8 @@ enum LLVMInstruction: Hashable {
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#alloca-instruction)
     case allocate(target: LLVMVirtualRegister, block: Block)
     
+    // MARK: - Declaration
+    
     /// Global variables define regions of memory allocated at compilation time instead of run-time.
     ///
     /// # Reference
@@ -175,6 +182,11 @@ enum LLVMInstruction: Hashable {
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#zext-to-instruction)
     case zeroExtend(target: LLVMVirtualRegister, source: LLVMValue, block: Block)
     
-    case phi(LLVMPhiInstruction)
+    // MARK: - Other
     
+    /// The ‘phi’ instruction is used to implement the φ node in the SSA graph representing the function.
+    ///
+    /// # Reference
+    /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#phi-instruction)
+    case phi(LLVMPhiInstruction)
 }

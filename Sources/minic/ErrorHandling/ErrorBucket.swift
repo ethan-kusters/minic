@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import ColorizeSwift
 
 class ErrorBucker: ErrorHandler {
     private let header = String(" Line | Error Message                                                          ")

@@ -11,7 +11,7 @@ extension ControlFlowGraph {
     var llvmString: String {
         let paramString: String
         
-        if enableSSA {
+        if ssaEnabled {
             paramString = function.parameters.map { param in
                 "\(param.type.llvmType) %\(param.name)"
             }.joined(separator: ", ")

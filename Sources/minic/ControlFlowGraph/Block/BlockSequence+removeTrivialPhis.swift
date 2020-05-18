@@ -1,5 +1,5 @@
 //
-//  BlockArray+removeTrivialPhis.swift
+//  BlockSequence+removeTrivialPhis.swift
 //  minic
 //
 //  Created by Ethan Kusters on 5/17/20.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension Array where Element: Block {
+extension Sequence where Element: Block {
     func removeTrivialPhis() {
         while let blockWithTrivialPhi = first(where: \.hasTrivialPhi) {
             guard let (index, trivialPhi) = blockWithTrivialPhi.firstTrivialPhi else { continue }
