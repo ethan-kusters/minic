@@ -32,10 +32,7 @@ class Block {
     }
     
     var hasTrivialPhi: Bool {
-        instructions.contains(where: { instruction in
-            guard case let .phi(phiInstruction) = instruction else { return false }
-            return phiInstruction.trivial
-        })
+        phiInstructions.contains(where: \.trivial)
     }
     
     var firstTrivialPhi: (index: Int, phi: LLVMPhiInstruction)? {

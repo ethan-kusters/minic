@@ -8,12 +8,8 @@
 import Foundation
 
 extension Array where Element: Block {
-    var firstBlockWithTrivialPhi: Block? {
-        first(where: \.hasTrivialPhi)
-    }
-    
     func removeTrivialPhis() {
-        while let blockWithTrivialPhi = firstBlockWithTrivialPhi {
+        while let blockWithTrivialPhi = first(where: \.hasTrivialPhi) {
             guard let (index, trivialPhi) = blockWithTrivialPhi.firstTrivialPhi else { continue }
             guard let representativeOperand = trivialPhi.representativeOperand else {
                 blockWithTrivialPhi.instructions.remove(at: index)
@@ -25,6 +21,7 @@ extension Array where Element: Block {
                 instruction.block.replaceInstruction(instruction, with: newInstruction)
             }
             
+            trivialPhi.target.removeAllUses()
             blockWithTrivialPhi.instructions.remove(at: index)
         }
     }

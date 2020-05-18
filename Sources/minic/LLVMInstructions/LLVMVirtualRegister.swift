@@ -52,6 +52,11 @@ class LLVMVirtualRegister: Hashable {
         uses.insert(instruction)
     }
     
+    func removeAllUses() {
+        definingInstruction = nil
+        uses.removeAll()
+    }
+    
     static func newIntRegister() -> LLVMVirtualRegister {
         LLVMVirtualRegister(ofType: LLVMInstructionConstants.defaultIntType)
     }
