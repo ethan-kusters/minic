@@ -7,6 +7,8 @@
 
 import Foundation
 
+/// Flexible second operand
+///
 /// Many ARM instructions have a flexible second operand
 /// that can either be a constant or a register.
 ///

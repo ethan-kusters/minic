@@ -18,7 +18,7 @@ enum ARMInstruction: InstructionProtocol {
     /// Add without Carry.
     ///
     /// # Syntax
-    /// ADD{S}{cond} {Rd}, Rn, Operand2
+    /// `ADD{S}{cond} {Rd}, Rn, Operand2`
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/add)
@@ -27,7 +27,7 @@ enum ARMInstruction: InstructionProtocol {
     /// Subtract without Carry.
     ///
     /// # Syntax
-    /// SUB{S}{cond} {Rd}, Rn, Operand2
+    /// `SUB{S}{cond} {Rd}, Rn, Operand2`
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/sub)
@@ -37,18 +37,27 @@ enum ARMInstruction: InstructionProtocol {
     /// giving the least significant 32 bits of the result.
     ///
     /// # Syntax
-    /// MUL{S}{cond} {Rd}, Rn, Rm
+    /// `MUL{S}{cond} {Rd}, Rn, Rm`
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/mul)
     case multiply(target: ARMRegister, firstOp: ARMRegister, secondOp: ARMRegister)
+    
+    /// Signed divide.
+    ///
+    /// # Syntax
+    /// `SDIV{cond} {Rd}, Rn, Rm`
+    ///
+    /// # Reference
+    /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/sdiv)
+    case signedDivide(target: ARMRegister, firstOp: ARMRegister, secondOp: ARMRegister)
     
     // MARK: - Booleanp
     
     /// Logical AND.
     ///
     /// # Syntax
-    /// AND{S}{cond} Rd, Rn, Operand2
+    /// `AND{S}{cond} Rd, Rn, Operand2`
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/and)
@@ -57,7 +66,7 @@ enum ARMInstruction: InstructionProtocol {
     /// Logical OR.
     ///
     /// # Syntax
-    /// ORR{S}{cond} Rd, Rn, Operand2
+    /// `ORR{S}{cond} Rd, Rn, Operand2`
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/orr)
@@ -66,7 +75,7 @@ enum ARMInstruction: InstructionProtocol {
     /// Logical Exclusive OR.
     ///
     /// # Syntax
-    /// EOR{S}{cond} Rd, Rn, Operand2
+    /// `EOR{S}{cond} Rd, Rn, Operand2`
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/eor)
@@ -80,7 +89,7 @@ enum ARMInstruction: InstructionProtocol {
     /// Updates the condition flags on the result, but does not place the result in any register.
     ///
     /// # Syntax
-    /// CMP{cond} Rn, Operand2
+    /// `CMP{cond} Rn, Operand2`
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/cmp-and-cmn)
@@ -91,7 +100,7 @@ enum ARMInstruction: InstructionProtocol {
     /// Causes a branch to `label`.
     ///
     /// # Syntax
-    /// B{cond}{.W} label
+    /// `B{cond}{.W} label`
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/b)
@@ -104,7 +113,7 @@ enum ARMInstruction: InstructionProtocol {
     /// Copies the value of `Operand2` into `Rd`.
     ///
     /// # Syntax
-    /// MOV{S}{cond} Rd, Operand2
+    /// `MOV{S}{cond} Rd, Operand2`
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/mov)
@@ -117,7 +126,7 @@ enum ARMInstruction: InstructionProtocol {
     /// You can generate any 32-bit immediate with a MOV, MOVT instruction pair.
     ///
     /// # Syntax
-    /// MOVT{cond} Rd, #imm16
+    /// `MOVT{cond} Rd, #imm16`
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/movt)
@@ -125,6 +134,59 @@ enum ARMInstruction: InstructionProtocol {
     
     // MARK: - Loads and Stores
     
+    /// Load with register offset.
+    ///
+    /// # Syntax
+    /// `LDR{type}{cond} Rt, [Rn, ±Rm {, shift}] ; register offset`
+    ///
+    /// # Reference
+    /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/ldr-register-offset)
+    case load(target: ARMRegister, sourceAddress: ARMRegister)
     
+    /// Store with register offset.
+    ///
+    /// # Syntax
+    /// `STR{type}{cond} Rt, [Rn, ±Rm {, shift}] ; register offset`
+    ///
+    /// # Reference
+    /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/str-register-offset)
+    case store(source: ARMRegister, targetAddress: ARMRegister)
     
+    // MARK: - Invocation
+    
+    /// Branch with Link.
+    ///
+    /// # Syntax
+    /// `BL{cond}{.W} label`
+    ///
+    /// # Reference
+    /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/bl)
+    case branchWithLink(label: ARMLabel)
+    
+    /// Push registers onto a full descending stack.
+    ///
+    /// # Syntax
+    /// `PUSH{cond} reglist`
+    ///
+    /// # Reference
+    /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/push)
+    case push(registers: [ARMRegister])
+    
+    /// Pop registers off a full descending stack.
+    ///
+    /// # Syntax
+    /// `POP{cond} reglist`
+    ///
+    /// # Reference
+    /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/pop)
+    case pop(registers: [ARMRegister])
+    
+    /// Declares a named common area in the bss section.
+    ///
+    /// # Syntax
+    /// `.comm symbol, length`
+    ///
+    /// # Reference
+    ///[GNU Documentation](http://web.mit.edu/gnu/doc/html/as_7.html#SEC74)
+    case declareGlobal(label: ARMLabel)
 }

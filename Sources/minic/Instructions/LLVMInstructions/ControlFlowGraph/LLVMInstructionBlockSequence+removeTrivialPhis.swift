@@ -16,12 +16,7 @@ extension Sequence where Element: InstructionBlock<LLVMInstruction> {
                 continue
             }
             
-            trivialPhi.target.uses.forEach { instruction in
-                let newInstruction = instruction.replacingRegister(trivialPhi.target, with: representativeOperand.value).logRegisterUses()
-                instruction.block.replaceInstruction(instruction, with: newInstruction)
-            }
-            
-            trivialPhi.target.removeAllUses()
+            trivialPhi.target.replaceAllUses(withValue: representativeOperand.value)
             blockWithTrivialPhi.instructions.remove(at: index)
         }
     }

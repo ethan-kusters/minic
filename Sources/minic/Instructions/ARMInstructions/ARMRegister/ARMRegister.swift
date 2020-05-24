@@ -7,4 +7,7 @@
 
 import Foundation
 
-typealias ARMRegister = Int
+enum ARMRegister: Hashable {
+    case virtual(LLVMVirtualRegister)
+    case real(ARMRealRegister)
+}

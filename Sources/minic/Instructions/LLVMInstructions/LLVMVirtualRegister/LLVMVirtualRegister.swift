@@ -7,7 +7,7 @@
 
 import Foundation
 
-class LLVMVirtualRegister: Hashable {
+class LLVMVirtualRegister {
     private static var currentIndex = 0
     
     var rawIdentifier: String
@@ -20,11 +20,6 @@ class LLVMVirtualRegister: Hashable {
     
     var identifier: LLVMIdentifier {
         .virtualRegister(self)
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(rawIdentifier)
-        hasher.combine(type)
     }
     
     init(ofType type: LLVMType) {
@@ -63,9 +58,5 @@ class LLVMVirtualRegister: Hashable {
     
     static func newBoolRegister() -> LLVMVirtualRegister {
         LLVMVirtualRegister(ofType: LLVMInstructionConstants.defaultBoolType)
-    }
-    
-    static func == (lhs: LLVMVirtualRegister, rhs: LLVMVirtualRegister) -> Bool {
-        lhs.rawIdentifier == rhs.rawIdentifier
     }
 }
