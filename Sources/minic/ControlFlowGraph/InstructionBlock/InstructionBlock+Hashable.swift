@@ -9,8 +9,6 @@ import Foundation
 
 extension InstructionBlock: Hashable {
     func hash(into hasher: inout Hasher) {
-        hasher.combine(label)
-        hasher.combine(sealed)
         hasher.combine(uuid)
     }
     

@@ -9,8 +9,9 @@ import Foundation
 
 extension InstructionBlock where InstructionType == ARMInstruction {
     convenience init(withLLVMInstructionBlock llvmInstructionBlock: InstructionBlock<LLVMInstruction>) {
-        self.init(label: llvmInstructionBlock.label, sealed: llvmInstructionBlock.sealed)
-        
-        
+        llvmInstructionBlock.deconstructSSA()
+        self.init(label: llvmInstructionBlock.label,
+                  sealed: llvmInstructionBlock.sealed,
+                  instructions: llvmInstructionBlock.instructions.armInstructions)
     }
 }

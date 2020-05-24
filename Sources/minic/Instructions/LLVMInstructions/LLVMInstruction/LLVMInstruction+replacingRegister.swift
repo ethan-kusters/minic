@@ -98,6 +98,10 @@ extension LLVMInstruction {
                                         block: block)
         case let .phi(phiInstruction):
             return .phi(phiInstruction.replacingRegister(oldRegister, with: newValue))
+        case let .move(target, source, block):
+            return .move(target: target,
+                         source: source == oldRegister ? newValue : source,
+                         block: block)
         case .declareGlobal, .declareStructureType, .returnVoid:
             return self
         }
@@ -196,6 +200,10 @@ extension LLVMInstruction {
                                         block: block)
         case let .phi(phiInstruction):
             return .phi(phiInstruction.replacingRegister(oldRegister, with: .register(newRegister)))
+        case let .move(target, source, block):
+            return .move(target: target == oldRegister ? newRegister : target,
+                         source: source == oldRegister ? .register(newRegister) : source,
+                         block: block)
         case .declareGlobal, .declareStructureType, .returnVoid:
             return self
         }

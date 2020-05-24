@@ -28,7 +28,8 @@ extension LLVMInstruction {
              let .bitcast(_, _, block),
              let .truncate(_, _, block),
              let .zeroExtend(_, _, block),
-             let .call(_, _, _, block):
+             let .call(_, _, _, block),
+             let .move(_, _, block):
             return block
         case let .phi(phiInstruction):
             return phiInstruction.block

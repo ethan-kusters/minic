@@ -91,6 +91,9 @@ extension LLVMInstruction: CustomStringConvertible {
             
         case let .phi(phiInstruction):
             return phiInstruction.description
+            
+        case .move:
+            fatalError("Cannot print out an LLVM `move` instruction as it does not exist.")
         }
         
     }

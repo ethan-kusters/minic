@@ -54,6 +54,9 @@ extension LLVMInstruction {
         case let .phi(phiInstruction):
             phiInstruction.operands.map(\.value).forEach { $0.addUse(by: self) }
             phiInstruction.target.setDefiningInstruction(self)
+        case let .move(target, source, _):
+            target.setDefiningInstruction(self)
+            source.addUse(by: self)
         case .declareGlobal, .declareStructureType, .returnVoid:
             return self
         }

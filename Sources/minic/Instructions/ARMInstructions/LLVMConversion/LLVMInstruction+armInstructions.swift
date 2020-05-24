@@ -162,12 +162,21 @@ extension LLVMInstruction {
             return []
         case let .bitcast(target, source, _):
             target.replaceAllUses(withValue: source)
+            return []
         case let .truncate(target, source, _):
             target.replaceAllUses(withValue: source)
+            return []
         case let .zeroExtend(target, source, _):
             target.replaceAllUses(withValue: source)
-        case let .phi(_):
-            <#code#>
+            return []
+        case .phi:
+            fatalError("Phi has no equivalent in Assembly.")
+        case let .move(target, source, _):
+            let movInstr = ARMInstruction.move(condCode: nil,
+                                               target: target.armRegister,
+                                               source: source.armFlexibleOperand)
+            
+            return [movInstr]
         }
     }
 }

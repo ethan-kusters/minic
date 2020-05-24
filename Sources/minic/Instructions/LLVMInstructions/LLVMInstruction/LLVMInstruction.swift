@@ -189,4 +189,12 @@ enum LLVMInstruction: InstructionProtocol {
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#phi-instruction)
     case phi(LLVMPhiInstruction)
+    
+    /// This is a fake instruction used when coming out of SSA and
+    /// converting to ARM instructions. There is no `move` instruction in LLVM.
+    ///
+    /// # Reference
+    /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/mov)
+    case move(target: LLVMVirtualRegister, source: LLVMValue, block: InstructionBlock<Self>)
+    
 }

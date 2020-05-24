@@ -43,8 +43,17 @@ class LLVMVirtualRegister {
         definingInstruction = instruction
     }
     
+    func removeDefiningInstruction(_ instruction: LLVMInstruction) {
+        guard instruction == definingInstruction else { return }
+        definingInstruction = nil
+    }
+    
     func addUse(by instruction: LLVMInstruction) {
         uses.insert(instruction)
+    }
+    
+    func removeUse(by instruction: LLVMInstruction) {
+        uses.remove(instruction)
     }
     
     func removeAllUses() {

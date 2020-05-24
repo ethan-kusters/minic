@@ -9,17 +9,26 @@
 import Foundation
 
 class InstructionBlock<InstructionType: InstructionProtocol> {
-    let label: String
     let uuid = UUID()
-    var instructions = [InstructionType]()
-    var predecessors = [InstructionBlock<InstructionType>]()
-    var successors = [InstructionBlock<InstructionType>]()
-    var identifierMapping = [LLVMIdentifier : LLVMValue]()
-    var sealed = false
+    let label: String
+    var instructions: [InstructionType]
+    var predecessors: [InstructionBlock<InstructionType>]
+    var successors: [InstructionBlock<InstructionType>]
+    var identifierMapping: [LLVMIdentifier : LLVMValue]
+    var sealed: Bool
     
-    init(label: String, sealed: Bool) {
+    init(label: String,
+         sealed: Bool,
+         instructions: [InstructionType] = [InstructionType](),
+         predecessors: [InstructionBlock<InstructionType>] = [InstructionBlock<InstructionType>](),
+         successors: [InstructionBlock<InstructionType>] = [InstructionBlock<InstructionType>](),
+         identifierMapping: [LLVMIdentifier : LLVMValue] = [LLVMIdentifier : LLVMValue]()) {
         self.label = label
         self.sealed = sealed
+        self.instructions = instructions
+        self.predecessors = predecessors
+        self.successors = successors
+        self.identifierMapping = identifierMapping
     }
     
     func addPredecessor(_ block: InstructionBlock<InstructionType>) {
@@ -38,9 +47,17 @@ class InstructionBlock<InstructionType: InstructionProtocol> {
         instructions.append(newInstruction)
     }
     
+    func insertInstruction(_ newInstruction: InstructionType, at index: Int) {
+        instructions.insert(newInstruction, at: index)
+    }
+    
     func replaceInstruction(_ currentInstruction: InstructionType, with newInstruction: InstructionType) {
         if let index = instructions.firstIndex(of: currentInstruction) {
             instructions[index] = newInstruction
+            
+            if let llvmInstruction = currentInstruction as? LLVMInstruction {
+                llvmInstruction.removeRegisterUses()
+            }
         }
     }
 }

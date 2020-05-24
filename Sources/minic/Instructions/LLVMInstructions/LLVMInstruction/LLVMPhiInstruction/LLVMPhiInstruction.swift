@@ -11,7 +11,7 @@ import Foundation
 ///
 /// # Reference
 /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#phi-instruction)
-class LLVMPhiInstruction: Hashable {
+class LLVMPhiInstruction {
     var operands = [PhiOperand]()
     let block: InstructionBlock<LLVMInstruction>
     let target: LLVMVirtualRegister
@@ -34,7 +34,11 @@ class LLVMPhiInstruction: Hashable {
         target.setDefiningInstruction(.phi(self))
     }
     
-    private init(operands: [PhiOperand], block: InstructionBlock<LLVMInstruction>, target: LLVMVirtualRegister, associatedIdentifier: LLVMIdentifier, incomplete: Bool) {
+    private init(operands: [PhiOperand],
+                 block: InstructionBlock<LLVMInstruction>,
+                 target: LLVMVirtualRegister,
+                 associatedIdentifier: LLVMIdentifier,
+                 incomplete: Bool) {
         self.operands = operands
         self.block = block
         self.target = target
@@ -69,27 +73,5 @@ class LLVMPhiInstruction: Hashable {
                                   target: self.target,
                                   associatedIdentifier: self.associatedIdentifier,
                                   incomplete: self.incomplete)
-    }
-    
-    static func == (lhs: LLVMPhiInstruction, rhs: LLVMPhiInstruction) -> Bool {
-        lhs.operands == rhs.operands
-            && lhs.block == rhs.block
-            && lhs.target == rhs.target
-            && lhs.associatedIdentifier == rhs.associatedIdentifier
-            && lhs.incomplete == rhs.incomplete
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(block)
-        hasher.combine(target)
-        hasher.combine(associatedIdentifier)
-        hasher.combine(incomplete)
-    }
-}
-
-extension LLVMPhiInstruction {
-    struct PhiOperand: Equatable {
-        let value: LLVMValue
-        let block: InstructionBlock<LLVMInstruction>
     }
 }
