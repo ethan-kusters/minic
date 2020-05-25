@@ -38,7 +38,8 @@ extension LLVMValue {
             let targetReg = ARMRegister.virtual(LLVMVirtualRegister.newIntRegister())
             let moveInstruction = ARMInstruction.move(condCode: nil,
                                                       target: targetReg,
-                                                      source: .constant(0))
+                                                      source: .constant(ARMInstructionConstants.nullValue))
+            
             return ([moveInstruction], targetReg)
         case .void:
             fatalError("Cannot convert `void` LLVM Values to ARM.")

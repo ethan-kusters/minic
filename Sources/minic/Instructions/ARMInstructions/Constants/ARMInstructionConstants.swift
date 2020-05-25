@@ -11,6 +11,7 @@ struct ARMInstructionConstants {
     static let falseValue: ARMImmediateValue = 0
     static let trueValue: ARMImmediateValue = 1
     static let expectedArchitecture = Architecture._32
+    static let nullValue: ARMImmediateValue = 0
     
     static var numberOfBytesPerStructField: Int {
         switch(expectedArchitecture) {
