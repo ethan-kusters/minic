@@ -22,17 +22,10 @@ extension LLVMValue {
                 
                 return ([movInstr], targetReg)
             } else {
-                let movBot = ARMInstruction.moveBottom(condCode: nil,
-                                                       target: targetReg,
-                                                       source: .literal(prefix: .lower16,
-                                                                        immediate: value.immediateValue))
+                let move32Instr = ARMInstructionMacros.getMoveLiteral32(target: targetReg,
+                                                                        source: value.immediateValue)
                 
-                let movTop = ARMInstruction.moveTop(condCode: nil,
-                                                    target: targetReg,
-                                                    source: .literal(prefix: .upper16,
-                                                                     immediate: value.immediateValue))
-                
-                return ([movBot, movTop], targetReg)
+                return (move32Instr, targetReg)
             }
         case .null:
             let targetReg = ARMRegister.virtual(LLVMVirtualRegister.newIntRegister())

@@ -13,6 +13,9 @@ import Foundation
 /// # Reference
 /// [ARM Documentation](https://developer.arm.com/docs/100067/0610/armclang-integrated-assembler-directives/assembly-expressions)
 enum ARMExpression: Hashable {
+    
     case literal(prefix: ARMRelocationPrefix?, immediate: ARMImmediateValue)
+    
     case symbol(prefix: ARMRelocationPrefix?, symbol: ARMSymbol)
+    
 }

@@ -11,43 +11,57 @@ extension ARMInstruction: CustomStringConvertible {
     var description: String {
         switch(self) {
         case let .add(target, firstOp, secondOp):
-            return "ADD \(target), \(firstOp), \(secondOp)"
+            return "\tADD \(target), \(firstOp), \(secondOp)"
         case let .subtract(target, firstOp, secondOp):
-            return "SUB \(target), \(firstOp), \(secondOp)"
+            return "\tSUB \(target), \(firstOp), \(secondOp)"
         case let .multiply(target, firstOp, secondOp):
-            return "MUL \(target), \(firstOp), \(secondOp)"
+            return "\tMUL \(target), \(firstOp), \(secondOp)"
         case let .signedDivide(target, firstOp, secondOp):
-            return "SDIV \(target), \(firstOp), \(secondOp)"
+            return "\tSDIV \(target), \(firstOp), \(secondOp)"
         case let .and(target, firstOp, secondOp):
-            return "AND \(target), \(firstOp), \(secondOp)"
+            return "\tAND \(target), \(firstOp), \(secondOp)"
         case let .or(target, firstOp, secondOp):
-            return "ORR \(target), \(firstOp), \(secondOp)"
+            return "\tORR \(target), \(firstOp), \(secondOp)"
         case let .exclusiveOr(target, firstOp, secondOp):
-            return "EOR \(target), \(firstOp), \(secondOp)"
+            return "\tEOR \(target), \(firstOp), \(secondOp)"
         case let .compare(firstOp, secondOp):
-            return "CMP \(firstOp), \(secondOp)"
+            return "\tCMP \(firstOp), \(secondOp)"
         case let .branch(condCode, label):
-            return "B\(optional: condCode) \(label)"
+            return "\tB\(optional: condCode) \(label)"
         case let .move(condCode, target, source):
-            return "MOV\(optional: condCode) \(target), \(source)"
+            return "\tMOV\(optional: condCode) \(target), \(source)"
         case let .moveTop(condCode, target, source):
-            return "MOVT\(optional: condCode) \(target), \(source)"
+            return "\tMOVT\(optional: condCode) \(target), \(source)"
         case let .moveBottom(condCode, target, source):
-            return "MOVW\(optional: condCode) \(target), \(source)"
+            return "\tMOVW\(optional: condCode) \(target), \(source)"
         case let .load(target, sourceAddress):
-            return "LDR \(target), \(sourceAddress)"
+            return "\tLDR \(target), \(sourceAddress)"
         case let .store(source, targetAddress):
-            return "STR \(source), \(targetAddress)"
+            return "\tSTR \(source), \(targetAddress)"
         case let .branchWithLink(label):
-            return "BL \(label)"
+            return "\tBL \(label)"
         case let .push(registers):
             let registerList = registers.map(\.description).joined(separator: ", ")
-            return "PUSH {\(registerList)}"
+            return "\tPUSH {\(registerList)}"
         case let .pop(registers):
             let registerList = registers.map(\.description).joined(separator: ", ")
-            return "POP {\(registerList)}"
+            return "\tPOP {\(registerList)}"
         case let .declareGlobal(label):
-            return ".comm \(label), 4"
+            return "\t.comm \(label), 4"
+        case let .alignmentDirective(exponent):
+            return "\t.align \(exponent)"
+        case let .sectionDirective(section):
+            return "\t\(section)"
+        case let .sizeDirective(symbol):
+            return "\t.size \(symbol), .-\(symbol)"
+        case let .stringDefinitionDirective(string):
+            return "\t.asciz \"\(string)\""
+        case let .globalSymbolDirective(symbol):
+            return "\t.global \(symbol)"
+        case let .architectureDirective(architecture):
+            return "\t.arch \(architecture)"
+        case let .label(symbol):
+            return ".\(symbol):"
         }
     }
     

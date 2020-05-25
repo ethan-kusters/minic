@@ -202,4 +202,80 @@ enum ARMInstruction: InstructionProtocol {
     /// # Reference
     ///[GNU Documentation](http://web.mit.edu/gnu/doc/html/as_7.html#SEC74)
     case declareGlobal(label: ARMSymbol)
+    
+    /// MARK: - Assembler Directives
+    
+    /// Aligns the current location in the file to a specified boundary.
+    ///
+    /// # Syntax
+    /// `.align exponent [, fill_value]`
+    ///
+    /// # Note
+    /// Specifies the alignment boundary as an exponent.
+    /// The actual alignment boundary is 2^{exponent}.
+    ///
+    /// # Reference
+    /// [ARM Documentation](https://developer.arm.com/docs/100067/0610/armclang-integrated-assembler-directives/alignment-directives)
+    case alignmentDirective(exponent: Int)
+    
+    /// Instructs the assembler to change the ELF section that code and data
+    /// is being emitted into.
+    ///
+    /// # Reference
+    /// [ARM Documentation](https://developer.arm.com/docs/dui0774/i/armclang-integrated-assembler-directives/section-directives)
+    case sectionDirective(section: ARMExecutableSection)
+    
+    /// Tells the assembler how much space the data that a symbol points to is using.
+    ///
+    /// # Syntax
+    /// `.size symbol, .-symbol`
+    ///
+    /// # Reference
+    /// [GNU Documentation](http://web.mit.edu/gnu/doc/html/as_7.html#SEC117)
+    ///
+    /// [ARM Blog](https://community.arm.com/developer/ip-products/processors/b/processors-ip-blog/posts/useful-assembler-directives-and-macros-for-the-gnu-assembler)
+    case sizeDirective(symbol: ARMSymbol)
+    
+    /// Allocates one or more bytes of memory in the current section,
+    /// and defines the initial contents of the memory from a string literal.
+    ///
+    /// Appends a null byte to the end of the string.
+    ///
+    /// # Syntax
+    /// `.asciz "string"`
+    ///
+    /// # Reference
+    /// [ARM Documentation](https://developer.arm.com/docs/100067/0611/armclang-integrated-assembler/string-definition-directives)
+    case stringDefinitionDirective(string: String)
+    
+    /// Makes the symbol visible to ld.
+    ///
+    /// # Syntax
+    /// `.global symbol`
+    ///
+    /// # Reference
+    /// [GNU Documentation](http://web.mit.edu/gnu/doc/html/as_7.html#SEC89)
+    case globalSymbolDirective(symbol: ARMSymbol)
+    
+    /// Changes the architecture that the assembler is generating instructions for.
+    ///
+    /// # Syntax
+    /// `.arch arch_name`
+    ///
+    /// # Reference
+    /// [ARM Documentation](https://developer.arm.com/docs/dui0774/i/armclang-integrated-assembler-directives/aarch32-target-selection-directives)
+    case architectureDirective(architecture: ARMArchitecture)
+    
+    /// Symbolic representation of an address.
+    ///
+    /// Use labels to mark specific addresses that
+    /// you want to refer to from other parts of the code.
+    ///
+    /// # Syntax
+    /// Written as a symbol beginning in the first column.
+    /// `symbol`
+    ///
+    /// # Reference
+    /// [ARM Documentation](https://developer.arm.com/docs/100068/0614/migrating-from-armasm-to-the-armclang-integrated-assembler/labels)
+    case label(symbol: ARMSymbol)
 }
