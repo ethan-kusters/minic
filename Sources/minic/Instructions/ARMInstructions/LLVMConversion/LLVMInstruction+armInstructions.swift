@@ -126,7 +126,7 @@ extension LLVMInstruction {
             
             let addInstr = ARMInstruction.add(target: target.armRegister,
                                               firstOp: ptrReg,
-                                              secondOp: .constant(ARMImmediateValue(offset)))
+                                              secondOp: .constant(offset.immediateValue))
             
             return [ptrInstr, [addInstr]].compactAndFlatten()
         case let .call(target, functionIdentifier, arguments, _):
@@ -136,7 +136,7 @@ extension LLVMInstruction {
                 let (srcInstr, srcOp) = argument.armFlexibleOperand
                 
                 let movInstr = ARMInstruction.move(condCode: nil,
-                                          target: index.armRealRegister,
+                                          target: index.armRegister,
                                           source: srcOp)
                 
                 return [srcInstr, [movInstr]].compactAndFlatten()

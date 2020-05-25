@@ -14,19 +14,19 @@ extension LLVMValue {
             return (nil, .register(virtualRegister.armRegister))
         case let .literal(value):
             if let _ = Int16(exactly: value) {
-                return (nil, .constant(ARMImmediateValue(value)))
+                return (nil, .constant(value.immediateValue))
             }
             
             let destReg = ARMRegister.virtual(.newIntRegister())
             let movBot = ARMInstruction.moveBottom(condCode: nil,
                                                    target: destReg,
                                                    source: .literal(prefix: .lower16,
-                                                                    immediate: ARMImmediateValue(value)))
+                                                                    immediate: value.immediateValue))
             
             let movTop = ARMInstruction.moveTop(condCode: nil,
                                                 target: destReg,
                                                 source: .literal(prefix: .upper16,
-                                                                 immediate: ARMImmediateValue(value)))
+                                                                 immediate: value.immediateValue))
             
             return ([movBot, movTop], .register(destReg))
         case .null:

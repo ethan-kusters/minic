@@ -18,19 +18,19 @@ extension LLVMValue {
             if let _ = Int16(exactly: value) {
                 let movInstr = ARMInstruction.move(condCode: nil,
                                                           target: targetReg,
-                                                          source: .constant(ARMImmediateValue(value)))
+                                                          source: .constant(value.immediateValue))
                 
                 return ([movInstr], targetReg)
             } else {
                 let movBot = ARMInstruction.moveBottom(condCode: nil,
                                                        target: targetReg,
                                                        source: .literal(prefix: .lower16,
-                                                                        immediate: ARMImmediateValue(value)))
+                                                                        immediate: value.immediateValue))
                 
                 let movTop = ARMInstruction.moveTop(condCode: nil,
                                                     target: targetReg,
                                                     source: .literal(prefix: .upper16,
-                                                                     immediate: ARMImmediateValue(value)))
+                                                                     immediate: value.immediateValue))
                 
                 return ([movBot, movTop], targetReg)
             }
