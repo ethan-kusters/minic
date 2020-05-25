@@ -18,17 +18,10 @@ extension LLVMValue {
             }
             
             let destReg = ARMRegister.virtual(.newIntRegister())
-            let movBot = ARMInstruction.moveBottom(condCode: nil,
-                                                   target: destReg,
-                                                   source: .literal(prefix: .lower16,
-                                                                    immediate: value.immediateValue))
             
-            let movTop = ARMInstruction.moveTop(condCode: nil,
-                                                target: destReg,
-                                                source: .literal(prefix: .upper16,
-                                                                 immediate: value.immediateValue))
-            
-            return ([movBot, movTop], .register(destReg))
+            let movInstr = ARMInstructionMacros.getMoveLiteral32(target: destReg,
+                                                                 source: value.immediateValue)
+            return (movInstr, .register(destReg))
         case .null:
             return (nil, .constant(0))
         case .void:

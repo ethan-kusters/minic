@@ -10,6 +10,7 @@ import Foundation
 struct ARMInstructionStringConstants {
     static let printFunctionSymbol: ARMSymbol = "printf"
     static let scanFunctionSymbol: ARMSymbol = "scanf"
+    static let divideFunctionSymbol: ARMSymbol = "__aeabi_idiv"
     
     static let printlnFormatSymbol: ARMSymbol = "PRINTLN_FMT"
     static let printlnFormatString = "%ld\n"

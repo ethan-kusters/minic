@@ -14,17 +14,14 @@ extension LLVMIdentifier {
             return (nil, register.armRegister)
         case let .globalValue(label, _):
             let destRegister = ARMRegister.virtual(.newIntRegister())
-            let movBot = ARMInstruction.moveBottom(condCode: nil,
-                                                    target: destRegister,
-                                                    source: .symbol(prefix: .lower16,
-                                                                    symbol: label))
             
-            let movTop = ARMInstruction.moveTop(condCode: nil,
-                                                 target: destRegister,
-                                                 source: .symbol(prefix: .upper16,
-                                                                 symbol: label))
+            let movAddr = ARMInstructionMacros.getMoveSymbol32(target: destRegister,
+                                                               source: label)
             
-            return ([movBot, movTop], destRegister)
+            let loadVal = ARMInstruction.load(target: destRegister,
+                                              sourceAddress: destRegister)
+            
+            return ([movAddr, [loadVal]].flatten(), destRegister)
         case .function:
             fatalError("Cannot convert `function` to `ARMRegister`.")
         case .label:

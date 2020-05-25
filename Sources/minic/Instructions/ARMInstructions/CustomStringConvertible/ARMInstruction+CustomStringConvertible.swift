@@ -35,9 +35,9 @@ extension ARMInstruction: CustomStringConvertible {
         case let .moveBottom(condCode, target, source):
             return "\tMOVW\(optional: condCode) \(target), \(source)"
         case let .load(target, sourceAddress):
-            return "\tLDR \(target), \(sourceAddress)"
+            return "\tLDR \(target), [\(sourceAddress)]"
         case let .store(source, targetAddress):
-            return "\tSTR \(source), \(targetAddress)"
+            return "\tSTR \(source), [\(targetAddress)]"
         case let .branchWithLink(label):
             return "\tBL \(label)"
         case let .push(registers):

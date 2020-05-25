@@ -53,7 +53,7 @@ class CompilerManager {
             graph.blocks.forEach { block in
                 print(block.label)
                 block.instructions.forEach { instruction in
-                    print("\t\(instruction)")
+                    print("\(instruction)")
                 }
             }
         }

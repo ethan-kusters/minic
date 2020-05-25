@@ -38,14 +38,19 @@ extension LLVMInstruction {
             
             return [firstOpInstr, secondOpInstr, [multInstr]].compactAndFlatten()
         case let .signedDivide(target, firstOp, secondOp, _):
-            let (firstOpInstr, firstOp) = firstOp.armRegister
-            let (secondOpInstr, secondOp) = secondOp.armRegister
+            /// Signed divide isn't supported on older ARM CPUs so we
+            /// call a library function.
             
-            let divInstr = ARMInstruction.signedDivide(target: target.armRegister,
-                                                   firstOp: firstOp,
-                                                   secondOp: secondOp)
+            let firstOpInstr = firstOp.moveToRegister(target: .real(0))
+            let secondOpInstr = secondOp.moveToRegister(target: .real(1))
             
-            return [firstOpInstr, secondOpInstr, [divInstr]].compactAndFlatten()
+            let divCall = ARMInstruction.branchWithLink(label: ARMInstructionStringConstants.divideFunctionSymbol)
+            
+            let movRetVal = ARMInstruction.move(condCode: nil,
+                                                target: target.armRegister,
+                                                source: .register(.real(0)))
+            
+            return [firstOpInstr, secondOpInstr, [divCall, movRetVal]].compactAndFlatten()
         case let .and(target, firstOp, secondOp, _):
             let (firstOpInstr, firstOp) = firstOp.armRegister
             let (secondOpInstr, secondOp) = secondOp.armFlexibleOperand
@@ -201,11 +206,13 @@ extension LLVMInstruction {
             return [srcInstr, [movInstr]].compactAndFlatten()
         case let .read(target, _):
             let scanInstructions = ARMInstructionMacros.scanInstructions
-            let movRetValInstr = ARMInstruction.move(condCode: nil,
-                                                     target: target.armRegister,
-                                                     source: .register(.real(0)))
+            let movRetAddrInstr = ARMInstructionMacros.getMoveSymbol32(target: target.armRegister,
+                                                                      source: ARMInstructionStringConstants.readScratchVariableSymbol)
             
-            return [scanInstructions, [movRetValInstr]].compactAndFlatten()
+            let loadRetValInstr = ARMInstruction.load(target: target.armRegister,
+                                                      sourceAddress: target.armRegister)
+            
+            return [scanInstructions, movRetAddrInstr, [loadRetValInstr]].compactAndFlatten()
         case let .print(source, _):
             let (srcInstr, source) = source.armFlexibleOperand
             let movSrcInstr = ARMInstruction.move(condCode: nil, target: .real(1), source: source)

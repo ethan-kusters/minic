@@ -26,7 +26,8 @@ struct ARMInstructionMacros {
             .alignmentDirective(exponent: ARMInstructionConstants.byteAlignmentExponent),
             .label(symbol: ARMInstructionStringConstants.readFormatSymbol),
             .stringDefinitionDirective(string: ARMInstructionStringConstants.readFormatString),
-            .declareGlobal(label: ARMInstructionStringConstants.readScratchVariableSymbol)
+            .declareGlobal(label: ARMInstructionStringConstants.readScratchVariableSymbol),
+            .globalSymbolDirective(symbol: ARMInstructionStringConstants.divideFunctionSymbol)
         ]
     }
     
