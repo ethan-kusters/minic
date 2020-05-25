@@ -104,7 +104,7 @@ enum ARMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/b)
-    case branch(condCode: ARMConditionCode?, label: ARMLabel)
+    case branch(condCode: ARMConditionCode?, label: ARMSymbol)
     
     // MARK: - Moves
     
@@ -123,14 +123,27 @@ enum ARMInstruction: InstructionProtocol {
     ///
     /// Writes imm16 to Rd[31:16], without affecting Rd[15:0].
     ///
-    /// You can generate any 32-bit immediate with a MOV, MOVT instruction pair.
+    /// You can generate any 32-bit immediate with a MOVW, MOVT instruction pair.
     ///
     /// # Syntax
     /// `MOVT{cond} Rd, #imm16`
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/movt)
-    case moveTop(condCode: ARMConditionCode?, target: ARMRegister, source: Int16)
+    case moveTop(condCode: ARMConditionCode?, target: ARMRegister, source: ARMExpression)
+    
+    /// Move bottom.
+    ///
+    /// Writes imm16 to Rd[15:0], without affecting Rd[31:16].
+    ///
+    /// You can generate any 32-bit immediate with a MOVW, MOVT instruction pair.
+    ///
+    /// # Syntax
+    /// `MOVW{cond} Rd, #imm16`
+    ///
+    /// # Reference
+    /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/movt)
+    case moveBottom(condCode: ARMConditionCode?, target: ARMRegister, source: ARMExpression)
     
     // MARK: - Loads and Stores
     
@@ -161,7 +174,7 @@ enum ARMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/bl)
-    case branchWithLink(label: ARMLabel)
+    case branchWithLink(label: ARMSymbol)
     
     /// Push registers onto a full descending stack.
     ///
@@ -188,5 +201,5 @@ enum ARMInstruction: InstructionProtocol {
     ///
     /// # Reference
     ///[GNU Documentation](http://web.mit.edu/gnu/doc/html/as_7.html#SEC74)
-    case declareGlobal(label: ARMLabel)
+    case declareGlobal(label: ARMSymbol)
 }

@@ -13,7 +13,7 @@ import Foundation
 ///
 /// # Reference
 /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/condition-codes/condition-code-suffixes)
-enum ARMConditionCode {
+enum ARMConditionCode: String {
     
     /// Equal
     case EQ

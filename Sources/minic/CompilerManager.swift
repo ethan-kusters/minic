@@ -32,6 +32,9 @@ class CompilerManager {
             }
         }
         
+        let llvmManager = LLVMManager(program, with: llvmControlFlowGraphs, named: sourceFileName)
+        try llvmManager.generateLLVM(printOutput: printLlvm, outputFilePath: outputFile)
+        
         let armControlFlowGraphs = llvmControlFlowGraphs.map(\.armControlFlowGraph)
         
         if generateCfgPdf || generateCfg {
@@ -46,9 +49,13 @@ class CompilerManager {
             }
         }
         
-        let llvmManager = LLVMManager(program, with: llvmControlFlowGraphs, named: sourceFileName)
-        try llvmManager.generateLLVM(printOutput: printLlvm, outputFilePath: outputFile)
-        
-        
+        armControlFlowGraphs.forEach { graph in
+            graph.blocks.forEach { block in
+                print(block.label)
+                block.instructions.forEach { instruction in
+                    print("\t\(instruction)")
+                }
+            }
+        }
     }
 }

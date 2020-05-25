@@ -8,14 +8,31 @@
 import Foundation
 
 extension LLVMValue {
-    var armFlexibleOperand: ARMFlexibleOperand {
+    var armFlexibleOperand: ([ARMInstruction]?, ARMFlexibleOperand) {
         switch(self) {
         case let .register(virtualRegister):
-            return .register(virtualRegister.armRegister)
+            return (nil, .register(virtualRegister.armRegister))
         case let .literal(value):
-            return .constant(value)
-        default:
-            fatalError("Cannot convert `null` or `void` LLVM Values to ARM.")
+            if let _ = Int16(exactly: value) {
+                return (nil, .constant(ARMImmediateValue(value)))
+            }
+            
+            let destReg = ARMRegister.virtual(.newIntRegister())
+            let movBot = ARMInstruction.moveBottom(condCode: nil,
+                                                   target: destReg,
+                                                   source: .literal(prefix: .lower16,
+                                                                    immediate: ARMImmediateValue(value)))
+            
+            let movTop = ARMInstruction.moveTop(condCode: nil,
+                                                target: destReg,
+                                                source: .literal(prefix: .upper16,
+                                                                 immediate: ARMImmediateValue(value)))
+            
+            return ([movBot, movTop], .register(destReg))
+        case .null:
+            return (nil, .constant(0))
+        case .void:
+            fatalError("Cannot convert `void` LLVM Values to ARM.")
         }
     }
 }

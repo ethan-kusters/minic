@@ -15,6 +15,6 @@ import Foundation
 /// # Documentation
 /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/flexible-second-operand-operand2)
 enum ARMFlexibleOperand: Hashable {
-    case constant(Int)
+    case constant(ARMImmediateValue)
     case register(ARMRegister)
 }

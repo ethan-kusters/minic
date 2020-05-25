@@ -8,7 +8,7 @@
 import Foundation
 
 extension LLVMIdentifier {
-    var armLabel: ARMLabel {
+    var armSymbol: ARMSymbol {
         switch(self) {
         case let .function(funcLabel, _):
             return funcLabel

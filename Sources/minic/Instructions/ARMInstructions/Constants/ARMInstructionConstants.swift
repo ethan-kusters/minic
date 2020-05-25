@@ -8,8 +8,8 @@
 import Foundation
 
 struct ARMInstructionConstants {
-    static let falseValue = 0
-    static let trueValue = 1
+    static let falseValue: ARMImmediateValue = 0
+    static let trueValue: ARMImmediateValue = 1
     static let expectedArchitecture = Architecture._32
     
     static var numberOfBytesPerStructField: Int {

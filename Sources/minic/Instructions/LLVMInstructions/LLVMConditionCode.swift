@@ -11,7 +11,7 @@ import Foundation
 ///
 /// # Reference
 /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#id300)
-enum LLVMConditionCode: String, Equatable {
+enum LLVMConditionCode: String, Hashable {
     
     /// equal
     case eq
