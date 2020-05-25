@@ -160,7 +160,9 @@ class LLVMControlFlowGraph: ControlFlowGraph {
     private func build(_ statement: Statement, currentBlock: InstructionBlock<LLVMInstruction>) -> InstructionBlock<LLVMInstruction>? {
         switch(statement) {
         case let .assignment(_, lValue, source):
-            var (sourceInstructions, sourceValue) = source.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
+            var (sourceInstructions, sourceValue) = source.getLLVMInstructions(withContext: context,
+                                                                               forBlock: currentBlock,
+                                                                               usingSSA: ssaEnabled)
             currentBlock.addInstructions(sourceInstructions)
             
             if sourceValue.type == .i1 {
@@ -175,7 +177,9 @@ class LLVMControlFlowGraph: ControlFlowGraph {
             }
             
             if let leftExpression = lValue.leftExpression {
-                let (leftInstructions, leftValue) = leftExpression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
+                let (leftInstructions, leftValue) = leftExpression.getLLVMInstructions(withContext: context,
+                                                                                       forBlock: currentBlock,
+                                                                                       usingSSA: ssaEnabled)
                 currentBlock.addInstructions(leftInstructions)
                 
                 let structTypeDeclaration = leftExpression.getStructFromDotExpression(context)
@@ -226,7 +230,9 @@ class LLVMControlFlowGraph: ControlFlowGraph {
             
             return block
         case let .conditional(_, guardExp, thenStmt, elseStmt):
-            let (guardInstructions, guardValue) = guardExp.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
+            let (guardInstructions, guardValue) = guardExp.getLLVMInstructions(withContext: context,
+                                                                               forBlock: currentBlock,
+                                                                               usingSSA: ssaEnabled)
             currentBlock.addInstructions(guardInstructions)
             
             let condExit = InstructionBlock("CondExit")
@@ -274,7 +280,9 @@ class LLVMControlFlowGraph: ControlFlowGraph {
                 return nil
             }
         case let .delete(_, expression):
-            let (instructions, value) = expression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
+            let (instructions, value) = expression.getLLVMInstructions(withContext: context,
+                                                                       forBlock: currentBlock,
+                                                                       usingSSA: ssaEnabled)
             currentBlock.addInstructions(instructions)
             
             let castTargetReg = LLVMVirtualRegister(ofType: .pointer(.i8))
@@ -294,38 +302,34 @@ class LLVMControlFlowGraph: ControlFlowGraph {
             
             return currentBlock
         case let .invocation(_, expression):
-            let expressionInstructions = expression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled).instructions
+            let expressionInstructions = expression.getLLVMInstructions(withContext: context,
+                                                                        forBlock: currentBlock,
+                                                                        usingSSA: ssaEnabled).instructions
             currentBlock.addInstructions(expressionInstructions)
             
             return currentBlock
         case let .printLn(_, expression):
-            let (instructions, value) = expression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
+            let (instructions, value) = expression.getLLVMInstructions(withContext: context,
+                                                                       forBlock: currentBlock,
+                                                                       usingSSA: ssaEnabled)
             currentBlock.addInstructions(instructions)
             
-            let printlnFuncId = LLVMIdentifier.function(LLVMInstructionConstants.printlnHelperFunction,
-                                                        retType: .void)
+            let printlnInstr = LLVMInstruction.println(source: value,
+                                                       block: currentBlock).logRegisterUses()
             
-            let printlnCallInstr = LLVMInstruction.call(target: nil,
-                                                        functionIdentifier: printlnFuncId,
-                                                        arguments: [value],
-                                                        block: currentBlock).logRegisterUses()
-            
-            currentBlock.addInstruction(printlnCallInstr)
+            currentBlock.addInstruction(printlnInstr)
             
             return currentBlock
         case let .print(_, expression):
-            let (instructions, value) = expression.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
+            let (instructions, value) = expression.getLLVMInstructions(withContext: context,
+                                                                       forBlock: currentBlock,
+                                                                       usingSSA: ssaEnabled)
             currentBlock.addInstructions(instructions)
             
-            let printFuncId = LLVMIdentifier.function(LLVMInstructionConstants.printHelperFunction,
-                                                      retType: .void)
+            let printInstr = LLVMInstruction.print(source: value,
+                                                   block: currentBlock).logRegisterUses()
             
-            let printlnCallInstr = LLVMInstruction.call(target: nil,
-                                                        functionIdentifier: printFuncId,
-                                                        arguments: [value],
-                                                        block: currentBlock).logRegisterUses()
-            
-            currentBlock.addInstruction(printlnCallInstr)
+            currentBlock.addInstruction(printInstr)
             
             return currentBlock
         case let .return(_, value):
@@ -374,7 +378,9 @@ class LLVMControlFlowGraph: ControlFlowGraph {
                 whileBodyEntry.seal()
                 whileExit.seal()
                 
-                let (secondGuardInstructions, secondGuardValue) = guardExp.getLLVMInstructions(withContext: context, forBlock: whileBodyExit, usingSSA: ssaEnabled)
+                let (secondGuardInstructions, secondGuardValue) = guardExp.getLLVMInstructions(withContext: context,
+                                                                                               forBlock: whileBodyExit,
+                                                                                               usingSSA: ssaEnabled)
                 whileBodyExit.addInstructions(secondGuardInstructions)
                 
                 whileBodyExit.addInstructions(getConditionalBranch(conditional: secondGuardValue,

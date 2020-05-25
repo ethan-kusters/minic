@@ -182,6 +182,17 @@ enum LLVMInstruction: InstructionProtocol {
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#zext-to-instruction)
     case zeroExtend(target: LLVMVirtualRegister, source: LLVMValue, block: InstructionBlock<Self>)
     
+    // MARK: - Macro Instructions
+    
+    /// Generates a call to printf with the passed value.
+    case print(source: LLVMValue, block: InstructionBlock<Self>)
+    
+    /// Generates a call to printf with an appended newline with the passed value.
+    case println(source: LLVMValue, block: InstructionBlock<Self>)
+    
+    /// Generates a call to scanf and places the read value into the target
+    case read(target: LLVMVirtualRegister, block: InstructionBlock<Self>)
+    
     // MARK: - Other
     
     /// The ‘phi’ instruction is used to implement the φ node in the SSA graph representing the function.
@@ -189,6 +200,8 @@ enum LLVMInstruction: InstructionProtocol {
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#phi-instruction)
     case phi(LLVMPhiInstruction)
+    
+    // MARK: - Temporary ARM Instructions
     
     /// This is a fake instruction used when coming out of SSA and
     /// converting to ARM instructions. There is no `move` instruction in LLVM.

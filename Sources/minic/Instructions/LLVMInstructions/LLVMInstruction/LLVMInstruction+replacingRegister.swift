@@ -102,6 +102,14 @@ extension LLVMInstruction {
             return .move(target: target,
                          source: source == oldRegister ? newValue : source,
                          block: block)
+        case let .print(source, block):
+            return .print(source: source == oldRegister ? newValue : source,
+                          block: block)
+        case let .println(source, block):
+            return .println(source: source == oldRegister ? newValue : source,
+                            block: block)
+        case .read:
+            return self
         case .declareGlobal, .declareStructureType, .returnVoid:
             return self
         }
@@ -203,6 +211,15 @@ extension LLVMInstruction {
         case let .move(target, source, block):
             return .move(target: target == oldRegister ? newRegister : target,
                          source: source == oldRegister ? .register(newRegister) : source,
+                         block: block)
+        case let .print(source, block):
+            return .print(source: source == oldRegister ? .register(newRegister) : source,
+                          block: block)
+        case let .println(source, block):
+            return .println(source: source == oldRegister ? .register(newRegister) : source,
+                            block: block)
+        case let .read(target, block):
+            return .read(target: target == oldRegister ? newRegister : target,
                          block: block)
         case .declareGlobal, .declareStructureType, .returnVoid:
             return self

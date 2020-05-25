@@ -57,6 +57,12 @@ extension LLVMInstruction {
         case let .move(target, source, _):
             target.setDefiningInstruction(self)
             source.addUse(by: self)
+        case let .println(source, _):
+            source.addUse(by: self)
+        case let .print(source, _):
+            source.addUse(by: self)
+        case let .read(target, _):
+            target.setDefiningInstruction(self)
         case .declareGlobal, .declareStructureType, .returnVoid:
             return self
         }

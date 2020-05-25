@@ -199,6 +199,25 @@ extension LLVMInstruction {
                                                source: source)
             
             return [srcInstr, [movInstr]].compactAndFlatten()
+        case let .read(target, _):
+            let scanInstructions = ARMInstructionMacros.scanInstructions
+            let movRetValInstr = ARMInstruction.move(condCode: nil,
+                                                     target: target.armRegister,
+                                                     source: .register(.real(0)))
+            
+            return [scanInstructions, [movRetValInstr]].compactAndFlatten()
+        case let .print(source, _):
+            let (srcInstr, source) = source.armFlexibleOperand
+            let movSrcInstr = ARMInstruction.move(condCode: nil, target: .real(1), source: source)
+            let printInstructions = ARMInstructionMacros.printInstructions
+            
+            return [srcInstr, [movSrcInstr], printInstructions].compactAndFlatten()
+    case let .println(source, _):
+        let (srcInstr, source) = source.armFlexibleOperand
+        let movSrcInstr = ARMInstruction.move(condCode: nil, target: .real(1), source: source)
+        let printlnInstructions = ARMInstructionMacros.printlnInstructions
+        
+        return [srcInstr, [movSrcInstr], printlnInstructions].compactAndFlatten()
         }
     }
 }

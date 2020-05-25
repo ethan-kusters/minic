@@ -29,7 +29,11 @@ extension LLVMInstruction {
              let .truncate(_, _, block),
              let .zeroExtend(_, _, block),
              let .call(_, _, _, block),
-             let .move(_, _, block):
+             let .move(_, _, block),
+             let .print(_, block),
+             let .println(_, block),
+             let .read(_, block):
+            
             return block
         case let .phi(phiInstruction):
             return phiInstruction.block

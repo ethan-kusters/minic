@@ -123,12 +123,7 @@ extension Expression {
             return ([], .null(NullTypeManager.getNullType(forIndex: typeIndex).llvmType))
         case .read:
             let targetReg = LLVMVirtualRegister.newIntRegister()
-            let readFuncId = LLVMIdentifier.function(LLVMInstructionConstants.readHelperFunction,
-                                                     retType: targetReg.type)
-            
-            let readInstruction = LLVMInstruction.call(target: targetReg,
-                                                       functionIdentifier: readFuncId,
-                                                       arguments: [],
+            let readInstruction = LLVMInstruction.read(target: targetReg,
                                                        block: block).logRegisterUses()
             
             return ([readInstruction], .register(targetReg))

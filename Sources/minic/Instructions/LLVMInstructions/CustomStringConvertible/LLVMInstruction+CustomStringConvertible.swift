@@ -94,7 +94,24 @@ extension LLVMInstruction: CustomStringConvertible {
             
         case .move:
             fatalError("Cannot print out an LLVM `move` instruction as it does not exist.")
+            
+        case let .print(source, block):
+            return LLVMInstructionMacros.getPrintInstructions(source: source, block: block)
+                .map(\.description)
+                .joined(separator: "\n")
+        
+        case let .println(source, block):
+            return LLVMInstructionMacros.getPrintlnInstructions(source: source, block: block)
+                .map(\.description)
+                .joined(separator: "\n")
+            
+        case let .read(target, block):
+            return LLVMInstructionMacros.getReadInstructions(target: target, block: block)
+                .map(\.description)
+                .joined(separator: "\n")
         }
+        
+        
         
     }
 }
