@@ -13,7 +13,7 @@ import Foundation
 /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#phi-instruction)
 class LLVMPhiInstruction {
     var operands = [PhiOperand]()
-    let block: InstructionBlock<LLVMInstruction>
+    let block: LLVMInstructionBlock
     let target: LLVMVirtualRegister
     let associatedIdentifier: LLVMIdentifier
     var incomplete: Bool
@@ -26,7 +26,7 @@ class LLVMPhiInstruction {
         return operands.first(where: { $0.value != target })
     }
     
-    init(inBlock block: InstructionBlock<LLVMInstruction>, forID id: LLVMIdentifier, incomplete: Bool = false) {
+    init(inBlock block: LLVMInstructionBlock, forID id: LLVMIdentifier, incomplete: Bool = false) {
         self.block = block
         self.target = LLVMVirtualRegister(withPrefix: id.descriptiveString, type: id.type)
         self.incomplete = incomplete
@@ -35,7 +35,7 @@ class LLVMPhiInstruction {
     }
     
     private init(operands: [PhiOperand],
-                 block: InstructionBlock<LLVMInstruction>,
+                 block: LLVMInstructionBlock,
                  target: LLVMVirtualRegister,
                  associatedIdentifier: LLVMIdentifier,
                  incomplete: Bool) {

@@ -7,16 +7,16 @@
 
 import Foundation
 
-protocol ControlFlowGraph {
-    associatedtype instructionType where instructionType: InstructionProtocol
-    var blocks: [InstructionBlock<instructionType>] { get set }
-    var function: Function { get }
+class ControlFlowGraph<InstructionType: InstructionProtocol, BlockType: InstructionBlock>: ControlFlowGraphProtocol {
+    var blocks: [BlockType]
+    var function: Function
     
-    func link(_ predecessor: InstructionBlock<instructionType>, _ successor: InstructionBlock<instructionType>)
-}
-
-extension ControlFlowGraph {
-    func link(_ predecessor: InstructionBlock<instructionType>, _ successor: InstructionBlock<instructionType>) {
+    init(blocks: [BlockType], function: Function) {
+        self.blocks = blocks
+        self.function = function
+    }
+    
+    func link(_ predecessor: BlockType, _ successor: BlockType) {
         predecessor.addSuccesor(successor)
         successor.addPredecessor(predecessor)
     }

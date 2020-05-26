@@ -10,6 +10,6 @@ import Foundation
 extension LLVMPhiInstruction {
     struct PhiOperand: Equatable {
         let value: LLVMValue
-        let block: InstructionBlock<LLVMInstruction>
+        let block: LLVMInstructionBlock
     }
 }

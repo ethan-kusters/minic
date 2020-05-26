@@ -22,25 +22,25 @@ enum LLVMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#add-instruction)
-    case add(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
+    case add(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: LLVMInstructionBlock)
     
     /// The ‘sub’ instruction returns the difference of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#sub-instruction)
-    case subtract(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
+    case subtract(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: LLVMInstructionBlock)
     
     /// The ‘mul’ instruction returns the product of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#mul-instruction)
-    case multiply(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
+    case multiply(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: LLVMInstructionBlock)
     
     /// The ‘sdiv’ instruction returns the quotient of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#sdiv-instruction)
-    case signedDivide(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
+    case signedDivide(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: LLVMInstructionBlock)
     
     // MARK: - Boolean Instructions
     
@@ -48,13 +48,13 @@ enum LLVMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#and-instruction)
-    case and(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
+    case and(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: LLVMInstructionBlock)
     
     /// The ‘or’ instruction returns the bitwise logical inclusive or of its two operands.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#or-instruction)
-    case or(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
+    case or(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: LLVMInstructionBlock)
     
     /// The ‘xor’ instruction returns the bitwise logical exclusive or of its two operands.
     ///
@@ -62,7 +62,7 @@ enum LLVMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#xor-instruction)
-    case exclusiveOr(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
+    case exclusiveOr(target: LLVMVirtualRegister, firstOp: LLVMValue, secondOp: LLVMValue, block: LLVMInstructionBlock)
     
     // MARK: - Comparison
     
@@ -70,7 +70,7 @@ enum LLVMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#icmp-instruction)
-    case comparison(target: LLVMVirtualRegister, condCode: LLVMConditionCode, firstOp: LLVMValue, secondOp: LLVMValue, block: InstructionBlock<Self>)
+    case comparison(target: LLVMVirtualRegister, condCode: LLVMConditionCode, firstOp: LLVMValue, secondOp: LLVMValue, block: LLVMInstructionBlock)
     
     // MARK: - Branch
     
@@ -78,13 +78,13 @@ enum LLVMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#br-instruction)
-    case conditionalBranch(conditional: LLVMValue, ifTrue: LLVMIdentifier, ifFalse: LLVMIdentifier, block: InstructionBlock<Self>)
+    case conditionalBranch(conditional: LLVMValue, ifTrue: LLVMIdentifier, ifFalse: LLVMIdentifier, block: LLVMInstructionBlock)
     
     /// The ‘br’ instruction is used to cause control flow to transfer to a different basic block in the current function.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#br-instruction)
-    case unconditionalBranch(_ target: LLVMIdentifier, block: InstructionBlock<Self>)
+    case unconditionalBranch(_ target: LLVMIdentifier, block: LLVMInstructionBlock)
     
     // MARK: - Load & Store
     
@@ -92,13 +92,13 @@ enum LLVMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#load-instruction)
-    case load(target: LLVMVirtualRegister, srcPointer: LLVMIdentifier, block: InstructionBlock<Self>)
+    case load(target: LLVMVirtualRegister, srcPointer: LLVMIdentifier, block: LLVMInstructionBlock)
     
     /// The ‘store’ instruction is used to write to memory.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#store-instruction)
-    case store(source: LLVMValue, destPointer: LLVMIdentifier, block: InstructionBlock<Self>)
+    case store(source: LLVMValue, destPointer: LLVMIdentifier, block: LLVMInstructionBlock)
     
     /// The ‘getelementptr’ instruction is used to get the address of a subelement of an aggregate data structure.
     ///
@@ -107,7 +107,7 @@ enum LLVMInstruction: InstructionProtocol {
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#getelementptr-instruction)
     case getElementPointer(target: LLVMVirtualRegister, structureType: LLVMIdentifier, structurePointer: LLVMIdentifier,
-        elementIndex: Int, block: InstructionBlock<Self>)
+        elementIndex: Int, block: LLVMInstructionBlock)
     
     // MARK: - Invocation
     
@@ -115,19 +115,19 @@ enum LLVMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#call-instruction)
-    case call(target: LLVMVirtualRegister?, functionIdentifier: LLVMIdentifier, arguments: [LLVMValue], block: InstructionBlock<Self>)
+    case call(target: LLVMVirtualRegister?, functionIdentifier: LLVMIdentifier, arguments: [LLVMValue], block: LLVMInstructionBlock)
     
     /// The ‘ret’ instruction is used to return control flow (and optionally a value) from a function back to the caller.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#ret-instruction)
-    case returnValue(_ value: LLVMValue, block: InstructionBlock<Self>)
+    case returnValue(_ value: LLVMValue, block: LLVMInstructionBlock)
     
     /// The ‘ret’ instruction is used to return control flow (and optionally a value) from a function back to the caller.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#ret-instruction)
-    case returnVoid(block: InstructionBlock<Self>)
+    case returnVoid(block: LLVMInstructionBlock)
     
     // MARK: - Allocation
     
@@ -138,7 +138,7 @@ enum LLVMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#alloca-instruction)
-    case allocate(target: LLVMVirtualRegister, block: InstructionBlock<Self>)
+    case allocate(target: LLVMVirtualRegister, block: LLVMInstructionBlock)
     
     // MARK: - Declaration
     
@@ -162,7 +162,7 @@ enum LLVMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#bitcast-to-instruction)
-    case bitcast(target: LLVMVirtualRegister, source: LLVMValue, block: InstructionBlock<Self>)
+    case bitcast(target: LLVMVirtualRegister, source: LLVMValue, block: LLVMInstructionBlock)
     
     /// The ‘trunc’ instruction truncates its operand to the type ty2.
     ///
@@ -171,7 +171,7 @@ enum LLVMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#trunc-to-instruction)
-    case truncate(target: LLVMVirtualRegister, source: LLVMValue, block: InstructionBlock<Self>)
+    case truncate(target: LLVMVirtualRegister, source: LLVMValue, block: LLVMInstructionBlock)
     
     /// The ‘zext’ instruction zero extends its operand to type ty2.
     ///
@@ -180,18 +180,18 @@ enum LLVMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#zext-to-instruction)
-    case zeroExtend(target: LLVMVirtualRegister, source: LLVMValue, block: InstructionBlock<Self>)
+    case zeroExtend(target: LLVMVirtualRegister, source: LLVMValue, block: LLVMInstructionBlock)
     
     // MARK: - Macro Instructions
     
     /// Generates a call to printf with the passed value.
-    case print(source: LLVMValue, block: InstructionBlock<Self>)
+    case print(source: LLVMValue, block: LLVMInstructionBlock)
     
     /// Generates a call to printf with an appended newline with the passed value.
-    case println(source: LLVMValue, block: InstructionBlock<Self>)
+    case println(source: LLVMValue, block: LLVMInstructionBlock)
     
     /// Generates a call to scanf and places the read value into the target
-    case read(target: LLVMVirtualRegister, block: InstructionBlock<Self>)
+    case read(target: LLVMVirtualRegister, block: LLVMInstructionBlock)
     
     // MARK: - Other
     
@@ -208,6 +208,6 @@ enum LLVMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/mov)
-    case move(target: LLVMVirtualRegister, source: LLVMValue, block: InstructionBlock<Self>)
+    case move(target: LLVMVirtualRegister, source: LLVMValue, block: LLVMInstructionBlock)
     
 }

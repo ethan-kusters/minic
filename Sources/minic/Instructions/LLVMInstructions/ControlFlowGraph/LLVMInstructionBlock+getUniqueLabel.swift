@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension InstructionBlock where InstructionType == LLVMInstruction {
+extension LLVMInstructionBlock {
     private static var labelIndex: Int = 0
     
     static func getUniqueLabel(_ description: String) -> String {

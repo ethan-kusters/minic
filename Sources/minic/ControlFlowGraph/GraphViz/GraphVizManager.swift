@@ -11,7 +11,7 @@ import Foundation
     import AppKit
 #endif
 
-class GraphVizManager<GraphType: ControlFlowGraph> {
+class GraphVizManager<InstructionType: InstructionProtocol, BlockType: InstructionBlock, GraphType: ControlFlowGraph<InstructionType, BlockType>> {
     private let controlFlowGraphs: [GraphType]
     private let baseFilename: String
     private var fileName: String {

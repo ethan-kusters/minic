@@ -11,7 +11,7 @@ import Foundation
 ///
 /// # Reference
 /// [Simple and Efficient Construction of Static Single Assignment Form](https://compilers.cs.uni-saarland.de/papers/bbhlmz13cc.pdf)
-extension InstructionBlock where InstructionType == LLVMInstruction {
+extension LLVMInstructionBlock {
     
     // MARK: - Phi Instructions
     

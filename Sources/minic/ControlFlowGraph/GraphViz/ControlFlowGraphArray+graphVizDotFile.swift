@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension Array where Element: ControlFlowGraph {
+extension Array where Element: ControlFlowGraphProtocol {
     var graphVizDotFile: String {
         var dotfile = GraphVizConstants.dotfileHeader + GraphVizConstants.openBrace
         

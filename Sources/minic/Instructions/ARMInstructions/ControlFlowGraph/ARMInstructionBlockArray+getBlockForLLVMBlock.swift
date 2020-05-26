@@ -7,11 +7,11 @@
 
 import Foundation
 
-extension Array where Element == InstructionBlock<ARMInstruction> {
-    mutating func getBlock(forLLVMBlock llvmBlock: InstructionBlock<LLVMInstruction>,
-                           withContext context: CodeGenerationContext) -> InstructionBlock<ARMInstruction> {
+extension Array where Element == ARMInstructionBlock {
+    mutating func getBlock(forLLVMBlock llvmBlock: LLVMInstructionBlock,
+                           withContext context: CodeGenerationContext) -> ARMInstructionBlock {
         guard let existingBlock = first(where: { $0.label == llvmBlock.label }) else {
-            let newBlock = InstructionBlock(withLLVMInstructionBlock: llvmBlock, context: context)
+            let newBlock = ARMInstructionBlock(withLLVMInstructionBlock: llvmBlock, context: context)
             append(newBlock)
             return newBlock
         }

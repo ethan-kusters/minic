@@ -8,50 +8,68 @@
 
 import Foundation
 
-class InstructionBlock<InstructionType: InstructionProtocol> {
-    let uuid = UUID()
-    let label: String
-    var instructions: [InstructionType]
-    var predecessors: [InstructionBlock<InstructionType>]
-    var successors: [InstructionBlock<InstructionType>]
-    var identifierMapping: [LLVMIdentifier : LLVMValue]
-    var sealed: Bool
+protocol InstructionBlock: Hashable {
+    associatedtype InstructionType: InstructionProtocol
     
-    init(label: String,
-         sealed: Bool,
-         instructions: [InstructionType] = [InstructionType](),
-         predecessors: [InstructionBlock<InstructionType>] = [InstructionBlock<InstructionType>](),
-         successors: [InstructionBlock<InstructionType>] = [InstructionBlock<InstructionType>](),
-         identifierMapping: [LLVMIdentifier : LLVMValue] = [LLVMIdentifier : LLVMValue]()) {
-        self.label = label
-        self.sealed = sealed
-        self.instructions = instructions
-        self.predecessors = predecessors
-        self.successors = successors
-        self.identifierMapping = identifierMapping
-    }
+    var uuid: UUID { get }
+    var label: String { get }
+    var instructions: [InstructionType] { get set }
+    var predecessors: [Self] { get set }
+    var successors: [Self] { get set }
+//    var identifierMapping: [LLVMIdentifier : LLVMValue]
+//    var sealed: Bool
     
-    func addPredecessor(_ block: InstructionBlock<InstructionType>) {
+//    init(label: String,
+//         sealed: Bool,
+//         instructions: [InstructionType] = [InstructionType](),
+//         predecessors: [InstructionBlock<InstructionType>] = [InstructionBlock<InstructionType>](),
+//         successors: [InstructionBlock<InstructionType>] = [InstructionBlock<InstructionType>](),
+//         identifierMapping: [LLVMIdentifier : LLVMValue] = [LLVMIdentifier : LLVMValue]()) {
+//        self.label = label
+//        self.sealed = sealed
+//        self.instructions = instructions
+//        self.predecessors = predecessors
+//        self.successors = successors
+//        self.identifierMapping = identifierMapping
+//    }
+    
+    func addPredecessor(_ block: Self)
+    
+    func addSuccesor(_ block: Self)
+    
+    func addInstructions(_ newInstructions: [InstructionType])
+    
+    func addInstruction(_ newInstruction: InstructionType)
+    
+    func insertInstruction(_ newInstruction: InstructionType, at index: Int)
+    
+    func replaceInstruction(_ currentInstruction: InstructionType, with newInstruction: InstructionType)
+    
+}
+
+extension InstructionBlock {
+    
+    mutating func addPredecessor(_ block: Self) {
         predecessors.append(block)
     }
     
-    func addSuccesor(_ block: InstructionBlock<InstructionType>) {
+    mutating func addSuccesor(_ block: Self) {
         successors.append(block)
     }
     
-    func addInstructions(_ newInstructions: [InstructionType]) {
+    mutating func addInstructions(_ newInstructions: [InstructionType]) {
         instructions.append(contentsOf: newInstructions)
     }
     
-    func addInstruction(_ newInstruction: InstructionType) {
+    mutating func addInstruction(_ newInstruction: InstructionType) {
         instructions.append(newInstruction)
     }
     
-    func insertInstruction(_ newInstruction: InstructionType, at index: Int) {
+    mutating func insertInstruction(_ newInstruction: InstructionType, at index: Int) {
         instructions.insert(newInstruction, at: index)
     }
     
-    func replaceInstruction(_ currentInstruction: InstructionType, with newInstruction: InstructionType) {
+    mutating func replaceInstruction(_ currentInstruction: InstructionType, with newInstruction: InstructionType) {
         if let index = instructions.firstIndex(of: currentInstruction) {
             instructions[index] = newInstruction
             

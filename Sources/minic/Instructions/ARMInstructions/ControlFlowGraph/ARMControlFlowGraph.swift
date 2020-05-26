@@ -7,17 +7,12 @@
 
 import Foundation
 
-class ARMControlFlowGraph: ControlFlowGraph {
-    typealias instructionType = ARMInstruction
-    
-    var blocks: [InstructionBlock<ARMInstruction>]
-    let function: Function
+class ARMControlFlowGraph: ControlFlowGraph<ARMInstruction, ARMInstructionBlock> {
     let context: CodeGenerationContext
     
-    init(withBlocks blocks: [InstructionBlock<ARMInstruction>], forFunction function: Function, context: CodeGenerationContext) {
-        self.blocks = blocks
-        self.function = function
+    init(withBlocks blocks: [ARMInstructionBlock], forFunction function: Function, context: CodeGenerationContext) {
         self.context = context
+        super.init(blocks: blocks, function: function)
         
         let functionPrologue = ARMInstructionMacros.getFunctionPrologue(context, registersUsed: [], valuesOnStack: 0)
         let functionEpilogue = ARMInstructionMacros.getFunctionEpilogue(context, registersUsed: [], valuesOnStack: 0)

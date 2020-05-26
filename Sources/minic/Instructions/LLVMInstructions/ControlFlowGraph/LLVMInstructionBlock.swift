@@ -7,7 +7,19 @@
 
 import Foundation
 
-extension InstructionBlock where InstructionType == LLVMInstruction {
+final class LLVMInstructionBlock: InstructionBlock {
+    typealias InstructionType = LLVMInstruction
+    
+    let uuid = UUID()
+    let label: String
+    
+    var instructions = [InstructionType]()
+    var predecessors = [LLVMInstructionBlock]()
+    var successors = [LLVMInstructionBlock]()
+    
+    var identifierMapping = [LLVMIdentifier : LLVMValue]()
+    var sealed: Bool
+    
     var llvmIdentifier: LLVMIdentifier {
         .label(label)
     }
@@ -24,8 +36,35 @@ extension InstructionBlock where InstructionType == LLVMInstruction {
         })
     }
     
-    convenience init(_ description: String, sealed: Bool = true) {
-        self.init(label: InstructionBlock.getUniqueLabel(description),
-                  sealed: sealed)
+    init(_ description: String, sealed: Bool = true) {
+        self.label = LLVMInstructionBlock.getUniqueLabel(description)
+        self.sealed = sealed
+    }
+    
+    func addPredecessor(_ block: LLVMInstructionBlock) {
+        predecessors.append(block)
+    }
+    
+    func addSuccesor(_ block: LLVMInstructionBlock) {
+        successors.append(block)
+    }
+    
+    func addInstructions(_ newInstructions: [InstructionType]) {
+        instructions.append(contentsOf: newInstructions)
+    }
+    
+    func addInstruction(_ newInstruction: InstructionType) {
+        instructions.append(newInstruction)
+    }
+    
+    func insertInstruction(_ newInstruction: InstructionType, at index: Int) {
+        instructions.insert(newInstruction, at: index)
+    }
+    
+    func replaceInstruction(_ currentInstruction: InstructionType, with newInstruction: InstructionType) {
+        if let index = instructions.firstIndex(of: currentInstruction) {
+            instructions[index] = newInstruction
+            currentInstruction.removeRegisterUses()
+        }
     }
 }

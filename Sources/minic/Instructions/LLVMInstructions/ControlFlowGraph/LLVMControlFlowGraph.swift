@@ -7,18 +7,16 @@
 
 import Foundation
 
-class LLVMControlFlowGraph: ControlFlowGraph {
+class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlock> {
     typealias instructionType = LLVMInstruction
     
-    var blocks = [InstructionBlock<instructionType>]()
-    let function: Function
     let context: TypeContext
     let ssaEnabled: Bool
     
     init(_ function: Function, context: TypeContext, useSSA: Bool) {
-        self.function = function
         self.context = context
         self.ssaEnabled = useSSA
+        super.init(blocks: [], function: function)
         
         blocks.append(functionEntry)
         
@@ -41,11 +39,11 @@ class LLVMControlFlowGraph: ControlFlowGraph {
     }()
     
     private lazy var functionExit = {
-       InstructionBlock("FunctionExit", sealed: false)
+       LLVMInstructionBlock("FunctionExit", sealed: false)
     }()
     
-    private func buildEntryBlock() -> InstructionBlock<LLVMInstruction> {
-        let entryBlock = InstructionBlock("FunctionEntry")
+    private func buildEntryBlock() -> LLVMInstructionBlock {
+        let entryBlock = LLVMInstructionBlock("FunctionEntry")
         
         if ssaEnabled {
             buildEntryBlockWithSSA(entryBlock)
@@ -56,7 +54,7 @@ class LLVMControlFlowGraph: ControlFlowGraph {
         return entryBlock
     }
     
-    private func buildEntryBlockWithoutSSA(_ entryBlock: InstructionBlock<LLVMInstruction>) {
+    private func buildEntryBlockWithoutSSA(_ entryBlock: LLVMInstructionBlock) {
         if function.retType != .void {
             let retValReg = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer,
                                                 type: function.retType.llvmType)
@@ -96,7 +94,7 @@ class LLVMControlFlowGraph: ControlFlowGraph {
         entryBlock.addInstructions(localAllocations)
     }
     
-    private func buildEntryBlockWithSSA(_ entryBlock: InstructionBlock<LLVMInstruction>) {
+    private func buildEntryBlockWithSSA(_ entryBlock: LLVMInstructionBlock) {
         if function.retType != .void {
             let retReg = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer, type: function.retType.llvmType)
             
@@ -121,7 +119,7 @@ class LLVMControlFlowGraph: ControlFlowGraph {
         }
     }
     
-    private func buildExitBlock(_ exitBlock: InstructionBlock<LLVMInstruction>) {
+    private func buildExitBlock(_ exitBlock: LLVMInstructionBlock) {
         if function.retType == .void {
             exitBlock.addInstruction(.returnVoid(block: exitBlock))
         } else if ssaEnabled {
@@ -131,7 +129,7 @@ class LLVMControlFlowGraph: ControlFlowGraph {
         }
     }
     
-    private func buildExitBlockWithoutSSA(_ exitBlock: InstructionBlock<LLVMInstruction>) {
+    private func buildExitBlockWithoutSSA(_ exitBlock: LLVMInstructionBlock) {
         let retType = function.retType.llvmType
         let returnReg = LLVMVirtualRegister(ofType: retType)
         let retValPointer = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer,
@@ -147,7 +145,7 @@ class LLVMControlFlowGraph: ControlFlowGraph {
         exitBlock.addInstructions([loadInstr, returnInstr])
     }
     
-    private func buildExitBlockWithSSA(_ exitBlock: InstructionBlock<LLVMInstruction>) {
+    private func buildExitBlockWithSSA(_ exitBlock: LLVMInstructionBlock) {
         let retType = function.retType.llvmType
         let returnValID = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer,
                                               type: retType)
@@ -157,7 +155,7 @@ class LLVMControlFlowGraph: ControlFlowGraph {
         exitBlock.addInstruction(returnInstr)
     }
     
-    private func build(_ statement: Statement, currentBlock: InstructionBlock<LLVMInstruction>) -> InstructionBlock<LLVMInstruction>? {
+    private func build(_ statement: Statement, currentBlock: LLVMInstructionBlock) -> LLVMInstructionBlock? {
         switch(statement) {
         case let .assignment(_, lValue, source):
             var (sourceInstructions, sourceValue) = source.getLLVMInstructions(withContext: context,
@@ -235,8 +233,8 @@ class LLVMControlFlowGraph: ControlFlowGraph {
                                                                                usingSSA: ssaEnabled)
             currentBlock.addInstructions(guardInstructions)
             
-            let condExit = InstructionBlock("CondExit")
-            let thenEntry = InstructionBlock("ThenEntry")
+            let condExit = LLVMInstructionBlock("CondExit")
+            let thenEntry = LLVMInstructionBlock("ThenEntry")
             
             link(currentBlock, thenEntry)
             blocks.append(thenEntry)
@@ -249,7 +247,7 @@ class LLVMControlFlowGraph: ControlFlowGraph {
             let ifBranch: [LLVMInstruction]
             
             if let elseStmt = elseStmt {
-                let elseEntry = InstructionBlock("ElseEntry")
+                let elseEntry = LLVMInstructionBlock("ElseEntry")
                 
                 link(currentBlock, elseEntry)
                 blocks.append(elseEntry)
@@ -360,8 +358,8 @@ class LLVMControlFlowGraph: ControlFlowGraph {
             let (guardInstructions, guardValue) = guardExp.getLLVMInstructions(withContext: context, forBlock: currentBlock, usingSSA: ssaEnabled)
             currentBlock.addInstructions(guardInstructions)
             
-            let whileBodyEntry = InstructionBlock("WhileBodyEntrance", sealed: false)
-            let whileExit = InstructionBlock("WhileExit", sealed: false)
+            let whileBodyEntry = LLVMInstructionBlock("WhileBodyEntrance", sealed: false)
+            let whileExit = LLVMInstructionBlock("WhileExit", sealed: false)
             
             link(currentBlock, whileBodyEntry)
             link(currentBlock, whileExit)
@@ -400,7 +398,7 @@ class LLVMControlFlowGraph: ControlFlowGraph {
     func getConditionalBranch(conditional: LLVMValue,
                               ifTrue: LLVMIdentifier,
                               ifFalse: LLVMIdentifier,
-                              block: InstructionBlock<instructionType>) -> [LLVMInstruction] {
+                              block: LLVMInstructionBlock) -> [LLVMInstruction] {
         guard conditional.type != .i1 else {
             let brInstr = LLVMInstruction.conditionalBranch(conditional: conditional,
                                                             ifTrue: ifTrue,

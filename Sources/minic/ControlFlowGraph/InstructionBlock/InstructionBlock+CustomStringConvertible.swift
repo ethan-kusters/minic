@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension InstructionBlock: CustomStringConvertible {
+extension LLVMInstructionBlock: CustomStringConvertible {
     var description: String {
         label
     }

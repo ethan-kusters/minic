@@ -17,7 +17,7 @@ extension ARMExecutableSection: CustomStringConvertible {
         case .data:
             return ".data"
         case .readOnlyData:
-            return ".rodata"
+            return ".section .rodata"
         case .uninitializedData:
             return ".bss"
         }

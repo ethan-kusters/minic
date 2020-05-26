@@ -7,11 +7,11 @@
 
 import Foundation
 
-extension InstructionBlock where InstructionType == LLVMInstruction {
+extension LLVMInstructionBlock {
     
     /// Removes all Phi instructions and replaces them with move instructions.
     func deconstructSSA() {
-//        let copyBlock = InstructionBlock<LLVMInstruction>.
+//        let copyBlock = LLVMInstructionBlock.
         
         phiInstructions.forEach { phiInstruction in
             let newPhiReg = LLVMVirtualRegister(withPrefix: "phi", type: phiInstruction.target.type)

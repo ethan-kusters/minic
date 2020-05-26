@@ -9,7 +9,7 @@ import Foundation
 
 struct LLVMInstructionMacros {
     static func getPrintlnInstructions(source: LLVMValue,
-                                       block: InstructionBlock<LLVMInstruction>) -> [LLVMInstruction] {
+                                       block: LLVMInstructionBlock) -> [LLVMInstruction] {
         let printlnFuncId = LLVMIdentifier.function(LLVMInstructionConstants.printlnHelperFunction,
                                                     retType: .void)
         
@@ -22,7 +22,7 @@ struct LLVMInstructionMacros {
     }
     
     static func getPrintInstructions(source: LLVMValue,
-                                     block: InstructionBlock<LLVMInstruction>) -> [LLVMInstruction] {
+                                     block: LLVMInstructionBlock) -> [LLVMInstruction] {
         let printFuncId = LLVMIdentifier.function(LLVMInstructionConstants.printHelperFunction,
                                                     retType: .void)
         
@@ -34,7 +34,7 @@ struct LLVMInstructionMacros {
         return [printlnCallInstr]
     }
     
-    static func getReadInstructions(target: LLVMVirtualRegister, block: InstructionBlock<LLVMInstruction>) -> [LLVMInstruction] {
+    static func getReadInstructions(target: LLVMVirtualRegister, block: LLVMInstructionBlock) -> [LLVMInstruction] {
         let readFuncId = LLVMIdentifier.function(LLVMInstructionConstants.readHelperFunction,
                                                  retType: target.type)
         

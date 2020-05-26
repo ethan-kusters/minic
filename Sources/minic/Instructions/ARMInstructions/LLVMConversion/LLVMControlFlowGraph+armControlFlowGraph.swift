@@ -9,7 +9,7 @@ import Foundation
 
 extension LLVMControlFlowGraph {
     func getARMControlFlowGraph(withContext context: CodeGenerationContext) -> ARMControlFlowGraph {
-        var armBlocks = [InstructionBlock<ARMInstruction>]()
+        var armBlocks = [ARMInstructionBlock]()
         
         for currentLLVMBlock in self.blocks {
             let currentARMBlock = armBlocks.getBlock(forLLVMBlock: currentLLVMBlock, withContext: context)
