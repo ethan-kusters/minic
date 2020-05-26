@@ -47,7 +47,7 @@ extension ARMInstruction: CustomStringConvertible {
             let registerList = registers.map(\.description).joined(separator: ", ")
             return "\tPOP {\(registerList)}"
         case let .declareGlobal(label):
-            return "\t.comm \(label), 4"
+            return "\t.comm \(label), \(ARMInstructionConstants.byteAlignment), \(ARMInstructionConstants.byteAlignment)"
         case let .alignmentDirective(exponent):
             return "\t.align \(exponent)"
         case let .sectionDirective(section):
@@ -61,7 +61,7 @@ extension ARMInstruction: CustomStringConvertible {
         case let .architectureDirective(architecture):
             return "\t.arch \(architecture)"
         case let .label(symbol):
-            return ".\(symbol):"
+            return "\(symbol):"
         }
     }
     

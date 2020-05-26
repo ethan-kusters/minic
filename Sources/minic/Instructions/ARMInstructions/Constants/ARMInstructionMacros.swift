@@ -8,13 +8,13 @@
 import Foundation
 
 struct ARMInstructionMacros {
-    static func getFileHeader() -> [ARMInstruction] {
+    static var fileHeader: [ARMInstruction] {
         [
             .architectureDirective(architecture: ARMInstructionConstants.expectedARMArchitecture)
         ]
     }
     
-    static func getFileFooter() -> [ARMInstruction] {
+    static var fileFooter: [ARMInstruction] {
         [
             .sectionDirective(section: .readOnlyData),
             .alignmentDirective(exponent: ARMInstructionConstants.byteAlignmentExponent),
@@ -93,9 +93,37 @@ struct ARMInstructionMacros {
         ]
     }
     
+    static func getFunctionPrologue(registersUsed: [ARMRegister], valuesOnStack: Int) -> [ARMInstruction] {
+        let spAdjustment = (ARMInstructionConstants.bytesPerValue * valuesOnStack).immediateValue
+        let setSPInstr = ARMInstruction.subtract(target: .real(.stackPointer),
+                                                 firstOp: .real(.stackPointer),
+                                                 secondOp: .constant(spAdjustment))
+        
+        return [
+            .push(registers: [.real(.framePointer), .real(.linkRegister)]),
+            .add(target: .real(.framePointer),
+                 firstOp: .real(.stackPointer),
+                 secondOp: .constant(ARMInstructionConstants.bytesPerValue.immediateValue)),
+            registersUsed.isEmpty == false ? .push(registers: registersUsed) : nil,
+            valuesOnStack > 0 ? setSPInstr : nil
+        ].compact()
+    }
+    
     static func getFunctionFooter(_ functionSymbol: ARMSymbol) -> [ARMInstruction] {
         [
             .sizeDirective(symbol: functionSymbol)
         ]
+    }
+    
+    static func getFunctionEpilogue(registersUsed: [ARMRegister], valuesOnStack: Int) -> [ARMInstruction] {
+        let spAdjustment = (ARMInstructionConstants.bytesPerValue * valuesOnStack).immediateValue
+        let resetSPInstr = ARMInstruction.add(target: .real(.stackPointer),
+                                              firstOp: .real(.stackPointer),
+                                              secondOp: .constant(spAdjustment))
+        return [
+            valuesOnStack > 0 ? resetSPInstr : nil,
+            registersUsed.isEmpty == false ? .pop(registers: registersUsed) : nil,
+            .pop(registers: [.real(.framePointer), .real(.programCounter)]),
+        ].compact()
     }
 }

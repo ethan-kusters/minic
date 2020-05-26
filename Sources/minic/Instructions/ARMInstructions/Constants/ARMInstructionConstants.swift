@@ -24,7 +24,7 @@ struct ARMInstructionConstants {
     static let byteAlignment = 4
     static let byteAlignmentExponent = 2
     
-    static var numberOfBytesPerStructField: Int {
+    static var bytesPerValue: Int {
         switch(expectedProcessorArchitecture) {
         case ._32:
             return 4

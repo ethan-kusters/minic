@@ -35,27 +35,7 @@ class CompilerManager {
         let llvmManager = LLVMManager(program, with: llvmControlFlowGraphs, named: sourceFileName)
         try llvmManager.generateLLVM(printOutput: printLlvm, outputFilePath: outputFile)
         
-        let armControlFlowGraphs = llvmControlFlowGraphs.map(\.armControlFlowGraph)
-        
-        if generateCfgPdf || generateCfg {
-            let graphVizManager = GraphVizManager(with: armControlFlowGraphs, named: sourceFileName + "arm")
-            
-            if generateCfgPdf {
-                try graphVizManager.generateGraphPDF()
-            }
-            
-            if generateCfg {
-                try graphVizManager.generateGraphDotfile()
-            }
-        }
-        
-        armControlFlowGraphs.forEach { graph in
-            graph.blocks.forEach { block in
-                print(block.label)
-                block.instructions.forEach { instruction in
-                    print("\(instruction)")
-                }
-            }
-        }
+        let armManager = ARMManager(program, with: llvmControlFlowGraphs, named: sourceFileName)
+        try armManager.generateAssembly(printOutput: printLlvm, outputFilePath: outputFile)
     }
 }

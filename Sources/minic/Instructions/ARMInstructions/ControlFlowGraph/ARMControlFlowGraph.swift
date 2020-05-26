@@ -18,6 +18,25 @@ class ARMControlFlowGraph: ControlFlowGraph {
         self.blocks = blocks
         self.function = function
         self.context = context
+        
+        let functionPrologue = ARMInstructionMacros.getFunctionPrologue(registersUsed: [], valuesOnStack: 0)
+        let functionEpilogue = ARMInstructionMacros.getFunctionEpilogue(registersUsed: [], valuesOnStack: 0)
+        
+        self.blocks.first?.instructions.insert(contentsOf: functionPrologue, at: 0)
+        self.blocks.last?.instructions.append(contentsOf: functionEpilogue)
+    }
+    
+    var instructions: [ARMInstruction] {
+        [
+            ARMInstructionMacros.getFunctionHeader(function.name),
+            blocks.flatMap { block in
+                [
+                    [ARMInstruction.label(symbol: block.label)],
+                    block.instructions
+                ].flatten()
+            },
+            ARMInstructionMacros.getFunctionFooter(function.name)
+        ].flatten()
     }
     
 }

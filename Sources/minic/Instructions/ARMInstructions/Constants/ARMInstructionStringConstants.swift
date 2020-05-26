@@ -13,7 +13,7 @@ struct ARMInstructionStringConstants {
     static let divideFunctionSymbol: ARMSymbol = "__aeabi_idiv"
     
     static let printlnFormatSymbol: ARMSymbol = "PRINTLN_FMT"
-    static let printlnFormatString = "%ld\n"
+    static let printlnFormatString = "%ld\\n"
     
     static let printFormatSymbol: ARMSymbol = "PRINT_FMT"
     static let printFormatString = "%ld "

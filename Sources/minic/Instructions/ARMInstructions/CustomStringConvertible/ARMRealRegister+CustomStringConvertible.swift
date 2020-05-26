@@ -15,7 +15,7 @@ extension ARMRealRegister: CustomStringConvertible {
         case .intraproceduralScratch:
             return "r12"
         case .framePointer:
-            return "r11"
+            return "fp"
         case .stackPointer:
             return "sp"
         case .linkRegister:

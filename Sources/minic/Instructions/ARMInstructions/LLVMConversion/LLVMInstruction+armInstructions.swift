@@ -127,7 +127,7 @@ extension LLVMInstruction {
             return [srcInstr, trgInstr, [storeInstruction]].compactAndFlatten()
         case let .getElementPointer(target, _, structurePointer, elementIndex, _):
             let (ptrInstr, ptrReg) = structurePointer.armRegister
-            let offset = elementIndex * ARMInstructionConstants.numberOfBytesPerStructField
+            let offset = elementIndex * ARMInstructionConstants.bytesPerValue
             
             let addInstr = ARMInstruction.add(target: target.armRegister,
                                               firstOp: ptrReg,
@@ -174,7 +174,7 @@ extension LLVMInstruction {
         case let .allocate(target, _):
             let spSubInstr = ARMInstruction.subtract(target: .real(.stackPointer),
                                                      firstOp: .real(.stackPointer),
-                                                     secondOp: .constant(4))
+                                                     secondOp: .constant(ARMInstructionConstants.bytesPerValue.immediateValue))
             
             let movInstr = ARMInstruction.move(condCode: nil,
                                                target: target.armRegister,
