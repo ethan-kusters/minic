@@ -8,12 +8,12 @@
 import Foundation
 
 extension LLVMIdentifier {
-    var armRegister: ([ARMInstruction]?, ARMRegister)  {
+    func getARMRegister(_ context: CodeGenerationContext) -> ([ARMInstruction]?, ARMRegister)  {
         switch(self) {
-        case let .virtualRegister(register):
-            return (nil, register.armRegister)
+        case let .virtualRegister(virtualRegister):
+            return (nil, context.getRegister(fromVirtualRegister: virtualRegister))
         case let .globalValue(label, _):
-            let destRegister = ARMRegister.virtual(.newIntRegister())
+            let destRegister = context.newVirtualRegister()
             
             let movAddr = ARMInstructionMacros.getMoveSymbol32(target: destRegister,
                                                                source: label)

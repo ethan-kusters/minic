@@ -8,93 +8,97 @@
 import Foundation
 
 extension LLVMInstruction {
-    var armInstructions: [ARMInstruction] {
+    func getArmInstructions(withContext context: CodeGenerationContext) -> [ARMInstruction] {
         switch(self) {
         case let .add(target, firstOp, secondOp, _):
-            let (firstOpInstr, firstOp) = firstOp.armRegister
-            let (secondOpInstr, secondOp) = secondOp.armFlexibleOperand
+            let (firstOpInstr, firstOp) = firstOp.getARMRegister(context)
+            let (secondOpInstr, secondOp) = secondOp.getFlexibleOperand(context)
             
-            let addInstr = ARMInstruction.add(target: target.armRegister,
+            let addInstr = ARMInstruction.add(target: target.getARMRegister(context),
                                               firstOp: firstOp,
                                               secondOp: secondOp)
             
             return [firstOpInstr, secondOpInstr, [addInstr]].compactAndFlatten()
         case let .subtract(target, firstOp, secondOp, _):
-            let (firstOpInstr, firstOp) = firstOp.armRegister
-            let (secondOpInstr, secondOp) = secondOp.armFlexibleOperand
+            let (firstOpInstr, firstOp) = firstOp.getARMRegister(context)
+            let (secondOpInstr, secondOp) = secondOp.getFlexibleOperand(context)
             
-            let subInstr = ARMInstruction.subtract(target: target.armRegister,
+            let subInstr = ARMInstruction.subtract(target: target.getARMRegister(context),
                                                    firstOp: firstOp,
                                                    secondOp: secondOp)
             
             return [firstOpInstr, secondOpInstr, [subInstr]].compactAndFlatten()
         case let .multiply(target, firstOp, secondOp, _):
-            let (firstOpInstr, firstOp) = firstOp.armRegister
-            let (secondOpInstr, secondOp) = secondOp.armRegister
+            let (firstOpInstr, firstOp) = firstOp.getARMRegister(context)
+            let (secondOpInstr, secondOp) = secondOp.getARMRegister(context)
             
-            let multInstr = ARMInstruction.multiply(target: target.armRegister,
-                                                   firstOp: firstOp,
-                                                   secondOp: secondOp)
+            let multInstr = ARMInstruction.multiply(target: target.getARMRegister(context),
+                                                    firstOp: firstOp,
+                                                    secondOp: secondOp)
             
             return [firstOpInstr, secondOpInstr, [multInstr]].compactAndFlatten()
         case let .signedDivide(target, firstOp, secondOp, _):
             /// Signed divide isn't supported on older ARM CPUs so we
             /// call a library function.
             
-            let firstOpInstr = firstOp.moveToRegister(target: .real(0))
-            let secondOpInstr = secondOp.moveToRegister(target: .real(1))
+            let r0 = context.getRegister(fromRealRegister: 0)
+            let r1 = context.getRegister(fromRealRegister: 1)
+            
+            let firstOpInstr = firstOp.moveToRegister(context, target: r0)
+            let secondOpInstr = secondOp.moveToRegister(context, target: r1)
             
             let divCall = ARMInstruction.branchWithLink(label: ARMInstructionStringConstants.divideFunctionSymbol)
             
             let movRetVal = ARMInstruction.move(condCode: nil,
-                                                target: target.armRegister,
-                                                source: .register(.real(0)))
+                                                target: target.getARMRegister(context),
+                                                source: r0.flexibleOperand)
             
             return [firstOpInstr, secondOpInstr, [divCall, movRetVal]].compactAndFlatten()
         case let .and(target, firstOp, secondOp, _):
-            let (firstOpInstr, firstOp) = firstOp.armRegister
-            let (secondOpInstr, secondOp) = secondOp.armFlexibleOperand
+            let (firstOpInstr, firstOp) = firstOp.getARMRegister(context)
+            let (secondOpInstr, secondOp) = secondOp.getFlexibleOperand(context)
             
-            let andInstr = ARMInstruction.and(target: target.armRegister,
-                                                   firstOp: firstOp,
-                                                   secondOp: secondOp)
+            let andInstr = ARMInstruction.and(target: target.getARMRegister(context),
+                                              firstOp: firstOp,
+                                              secondOp: secondOp)
             
             return [firstOpInstr, secondOpInstr, [andInstr]].compactAndFlatten()
         case let .or(target, firstOp, secondOp, _):
-            let (firstOpInstr, firstOp) = firstOp.armRegister
-            let (secondOpInstr, secondOp) = secondOp.armFlexibleOperand
+            let (firstOpInstr, firstOp) = firstOp.getARMRegister(context)
+            let (secondOpInstr, secondOp) = secondOp.getFlexibleOperand(context)
             
-            let orInstr = ARMInstruction.or(target: target.armRegister,
-                                                   firstOp: firstOp,
-                                                   secondOp: secondOp)
+            let orInstr = ARMInstruction.or(target: target.getARMRegister(context),
+                                            firstOp: firstOp,
+                                            secondOp: secondOp)
             
             return [firstOpInstr, secondOpInstr, [orInstr]].compactAndFlatten()
         case let .exclusiveOr(target, firstOp, secondOp, _):
-            let (firstOpInstr, firstOp) = firstOp.armRegister
-            let (secondOpInstr, secondOp) = secondOp.armFlexibleOperand
+            let (firstOpInstr, firstOp) = firstOp.getARMRegister(context)
+            let (secondOpInstr, secondOp) = secondOp.getFlexibleOperand(context)
             
-            let xorInstr = ARMInstruction.exclusiveOr(target: target.armRegister,
-                                                   firstOp: firstOp,
-                                                   secondOp: secondOp)
+            let xorInstr = ARMInstruction.exclusiveOr(target: target.getARMRegister(context),
+                                                      firstOp: firstOp,
+                                                      secondOp: secondOp)
             
             return [firstOpInstr, secondOpInstr, [xorInstr]].compactAndFlatten()
         case let .comparison(target, condCode, firstOp, secondOp, _):
             let assumeFalseInstr = ARMInstruction.move(condCode: nil,
-                                                     target: target.armRegister,
-                                                     source: .constant(ARMInstructionConstants.falseValue))
+                                                       target: target.getARMRegister(context),
+                                                       source: .constant(ARMInstructionConstants.falseValue))
             
-            let (firstOpInstr, firstOp) = firstOp.armRegister
-            let (secondOpInstr, secondOp) = secondOp.armFlexibleOperand
+            let (firstOpInstr, firstOp) = firstOp.getARMRegister(context)
+            let (secondOpInstr, secondOp) = secondOp.getFlexibleOperand(context)
+            
             let cmpInstr = ARMInstruction.compare(firstOp: firstOp,
                                                   secondOp: secondOp)
             
             let condMovInstr = ARMInstruction.move(condCode: condCode.armConditionCode,
-                                                   target: target.armRegister,
+                                                   target: target.getARMRegister(context),
                                                    source: .constant(ARMInstructionConstants.trueValue))
             
             return [[assumeFalseInstr], firstOpInstr, secondOpInstr, [cmpInstr, condMovInstr]].compactAndFlatten()
         case let .conditionalBranch(conditional, ifTrue, ifFalse, _):
-            let (condInstr, condReg) = conditional.armRegister
+            let (condInstr, condReg) = conditional.getARMRegister(context)
             
             let cmpInstr = ARMInstruction.compare(firstOp: condReg,
                                                   secondOp: .constant(ARMInstructionConstants.trueValue))
@@ -111,25 +115,25 @@ extension LLVMInstruction {
             
             return [brInstr]
         case let .load(target, srcPointer, _):
-            let (srcInstr, srcReg) = srcPointer.armRegister
+            let (srcInstr, srcReg) = srcPointer.getARMRegister(context)
             
-            let ldInstr = ARMInstruction.load(target: target.armRegister,
+            let ldInstr = ARMInstruction.load(target: target.getARMRegister(context),
                                               sourceAddress: srcReg)
             
             return [srcInstr, [ldInstr]].compactAndFlatten()
         case let .store(source, destPointer, _):
-            let (srcInstr, srcReg) = source.armRegister
-            let (trgInstr, trgRrg) = destPointer.armRegister
+            let (srcInstr, srcReg) = source.getARMRegister(context)
+            let (trgInstr, trgRrg) = destPointer.getARMRegister(context)
             
             let storeInstruction = ARMInstruction.store(source: srcReg,
                                                         targetAddress: trgRrg)
             
             return [srcInstr, trgInstr, [storeInstruction]].compactAndFlatten()
         case let .getElementPointer(target, _, structurePointer, elementIndex, _):
-            let (ptrInstr, ptrReg) = structurePointer.armRegister
+            let (ptrInstr, ptrReg) = structurePointer.getARMRegister(context)
             let offset = elementIndex * ARMInstructionConstants.bytesPerValue
             
-            let addInstr = ARMInstruction.add(target: target.armRegister,
+            let addInstr = ARMInstruction.add(target: target.getARMRegister(context),
                                               firstOp: ptrReg,
                                               secondOp: .constant(offset.immediateValue))
             
@@ -138,11 +142,11 @@ extension LLVMInstruction {
             let movArgIntrs = arguments.enumerated().flatMap { (index, argument) -> [ARMInstruction] in
                 guard index < 3 else { fatalError("ToDo: Add support for >3 args")}
                 
-                let (srcInstr, srcOp) = argument.armFlexibleOperand
+                let (srcInstr, srcOp) = argument.getFlexibleOperand(context)
                 
                 let movInstr = ARMInstruction.move(condCode: nil,
-                                          target: index.armRegister,
-                                          source: srcOp)
+                                                   target: index.getARMRegister(context),
+                                                   source: srcOp)
                 
                 return [srcInstr, [movInstr]].compactAndFlatten()
             }
@@ -151,34 +155,44 @@ extension LLVMInstruction {
             
             var movRetValInstr: ARMInstruction?
             if let target = target {
+                let r0 = context.getRegister(fromRealRegister: 0)
+                
                 movRetValInstr = .move(condCode: nil,
-                                       target: target.armRegister,
-                                       source: .register(.real(0)))
+                                       target: target.getARMRegister(context),
+                                       source: r0.flexibleOperand)
             }
             
             return [movArgIntrs, [blInstr, movRetValInstr].compact()].compactAndFlatten()
         case let .returnValue(retVal, _):
-            let (retValInstr, retVal) = retVal.armFlexibleOperand
+            let r0 = context.getRegister(fromRealRegister: 0)
+            let fp = context.getRegister(fromRealRegister: .framePointer)
+            let pc = context.getRegister(fromRealRegister: .programCounter)
+            
+            let (retValInstr, retVal) = retVal.getFlexibleOperand(context)
             
             let movRetVal = ARMInstruction.move(condCode: nil,
-                                                target: .real(0),
+                                                target: r0,
                                                 source: retVal)
             
-            let popInstr = ARMInstruction.pop(registers: [.real(.framePointer), .real(.programCounter)])
+            let popInstr = ARMInstruction.pop(registers: [fp, pc])
             
             return [retValInstr, [movRetVal, popInstr]].compactAndFlatten()
         case .returnVoid:
-            let popInstr = ARMInstruction.pop(registers: [.real(.framePointer), .real(.programCounter)])
+            let fp = context.getRegister(fromRealRegister: .framePointer)
+            let pc = context.getRegister(fromRealRegister: .programCounter)
+            let popInstr = ARMInstruction.pop(registers: [fp, pc])
             
             return [popInstr]
         case let .allocate(target, _):
-            let spSubInstr = ARMInstruction.subtract(target: .real(.stackPointer),
-                                                     firstOp: .real(.stackPointer),
+            let sp = context.getRegister(fromRealRegister: .stackPointer)
+            
+            let spSubInstr = ARMInstruction.subtract(target: sp,
+                                                     firstOp: sp,
                                                      secondOp: .constant(ARMInstructionConstants.bytesPerValue.immediateValue))
             
             let movInstr = ARMInstruction.move(condCode: nil,
-                                               target: target.armRegister,
-                                               source: .register(.real(.stackPointer)))
+                                               target: target.getARMRegister(context),
+                                               source: sp.flexibleOperand)
             
             return [spSubInstr, movInstr]
         case let .declareGlobal(target, _):
@@ -197,34 +211,38 @@ extension LLVMInstruction {
         case .phi:
             fatalError("Phi has no equivalent in Assembly.")
         case let .move(target, source, _):
-            let (srcInstr, source) = source.armFlexibleOperand
+            let (srcInstr, source) = source.getFlexibleOperand(context)
             
             let movInstr = ARMInstruction.move(condCode: nil,
-                                               target: target.armRegister,
+                                               target: target.getARMRegister(context),
                                                source: source)
             
             return [srcInstr, [movInstr]].compactAndFlatten()
         case let .read(target, _):
-            let scanInstructions = ARMInstructionMacros.scanInstructions
-            let movRetAddrInstr = ARMInstructionMacros.getMoveSymbol32(target: target.armRegister,
-                                                                      source: ARMInstructionStringConstants.readScratchVariableSymbol)
+            let scanInstructions = ARMInstructionMacros.getScanInstructions(context)
+            let movRetAddrInstr = ARMInstructionMacros.getMoveSymbol32(target: target.getARMRegister(context),
+                                                                       source: ARMInstructionStringConstants.readScratchVariableSymbol)
             
-            let loadRetValInstr = ARMInstruction.load(target: target.armRegister,
-                                                      sourceAddress: target.armRegister)
+            let loadRetValInstr = ARMInstruction.load(target: target.getARMRegister(context),
+                                                      sourceAddress: target.getARMRegister(context))
             
             return [scanInstructions, movRetAddrInstr, [loadRetValInstr]].compactAndFlatten()
         case let .print(source, _):
-            let (srcInstr, source) = source.armFlexibleOperand
-            let movSrcInstr = ARMInstruction.move(condCode: nil, target: .real(1), source: source)
-            let printInstructions = ARMInstructionMacros.printInstructions
+            let r1 = context.getRegister(fromRealRegister: 1)
+            
+            let (srcInstr, source) = source.getFlexibleOperand(context)
+            let movSrcInstr = ARMInstruction.move(condCode: nil, target: r1, source: source)
+            let printInstructions = ARMInstructionMacros.getPrintInstructions(context)
             
             return [srcInstr, [movSrcInstr], printInstructions].compactAndFlatten()
-    case let .println(source, _):
-        let (srcInstr, source) = source.armFlexibleOperand
-        let movSrcInstr = ARMInstruction.move(condCode: nil, target: .real(1), source: source)
-        let printlnInstructions = ARMInstructionMacros.printlnInstructions
-        
-        return [srcInstr, [movSrcInstr], printlnInstructions].compactAndFlatten()
+        case let .println(source, _):
+            let r1 = context.getRegister(fromRealRegister: 1)
+            
+            let (srcInstr, source) = source.getFlexibleOperand(context)
+            let movSrcInstr = ARMInstruction.move(condCode: nil, target: r1, source: source)
+            let printlnInstructions = ARMInstructionMacros.getPrintlnInstructions(context)
+            
+            return [srcInstr, [movSrcInstr], printlnInstructions].compactAndFlatten()
         }
     }
 }

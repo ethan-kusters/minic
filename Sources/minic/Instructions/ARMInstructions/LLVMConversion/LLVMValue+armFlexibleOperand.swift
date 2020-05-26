@@ -8,16 +8,16 @@
 import Foundation
 
 extension LLVMValue {
-    var armFlexibleOperand: ([ARMInstruction]?, ARMFlexibleOperand) {
+    func getFlexibleOperand(_ context: CodeGenerationContext) -> ([ARMInstruction]?, ARMFlexibleOperand) {
         switch(self) {
         case let .register(virtualRegister):
-            return (nil, .register(virtualRegister.armRegister))
+            return (nil, context.getRegister(fromVirtualRegister: virtualRegister).flexibleOperand)
         case let .literal(value):
             if let _ = Int16(exactly: value) {
                 return (nil, .constant(value.immediateValue))
             }
             
-            let destReg = ARMRegister.virtual(.newIntRegister())
+            let destReg = context.newVirtualRegister()
             
             let movInstr = ARMInstructionMacros.getMoveLiteral32(target: destReg,
                                                                  source: value.immediateValue)

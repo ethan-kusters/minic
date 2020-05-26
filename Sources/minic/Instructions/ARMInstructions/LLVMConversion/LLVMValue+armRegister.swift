@@ -8,12 +8,12 @@
 import Foundation
 
 extension LLVMValue {
-    var armRegister: ([ARMInstruction]?, ARMRegister) {
+    func getARMRegister(_ context: CodeGenerationContext) -> ([ARMInstruction]?, ARMRegister) {
         switch(self) {
         case let .register(llvmVirtualRegister):
-            return (nil, llvmVirtualRegister.armRegister)
+            return (nil, context.getRegister(fromVirtualRegister: llvmVirtualRegister))
         case let .literal(value):
-            let targetReg = ARMRegister.virtual(LLVMVirtualRegister.newIntRegister())
+            let targetReg = context.newVirtualRegister()
             
             if let _ = Int16(exactly: value) {
                 let movInstr = ARMInstruction.move(condCode: nil,
@@ -28,7 +28,7 @@ extension LLVMValue {
                 return (move32Instr, targetReg)
             }
         case .null:
-            let targetReg = ARMRegister.virtual(LLVMVirtualRegister.newIntRegister())
+            let targetReg = context.newVirtualRegister()
             let moveInstruction = ARMInstruction.move(condCode: nil,
                                                       target: targetReg,
                                                       source: .constant(ARMInstructionConstants.nullValue))
@@ -39,12 +39,14 @@ extension LLVMValue {
         }
     }
     
-    func moveToRegister(target: ARMRegister) -> ([ARMInstruction]) {
+    func moveToRegister(_ context: CodeGenerationContext, target: ARMRegister) -> ([ARMInstruction]) {
         switch(self) {
         case let .register(llvmVirtualRegister):
+            let sourceOp = context.getRegister(fromVirtualRegister: llvmVirtualRegister).flexibleOperand
+            
             let movInstr = ARMInstruction.move(condCode: nil,
                                                target: target,
-                                               source: .register(llvmVirtualRegister.armRegister))
+                                               source: sourceOp)
             
             return [movInstr]
         case let .literal(value):

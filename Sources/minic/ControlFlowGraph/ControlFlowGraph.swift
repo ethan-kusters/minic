@@ -11,7 +11,6 @@ protocol ControlFlowGraph {
     associatedtype instructionType where instructionType: InstructionProtocol
     var blocks: [InstructionBlock<instructionType>] { get set }
     var function: Function { get }
-    var context: TypeContext { get }
     
     func link(_ predecessor: InstructionBlock<instructionType>, _ successor: InstructionBlock<instructionType>)
 }

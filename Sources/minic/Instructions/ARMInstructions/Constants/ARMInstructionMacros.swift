@@ -31,28 +31,32 @@ struct ARMInstructionMacros {
         ]
     }
     
-    static var printInstructions: [ARMInstruction] {
+    static func getPrintInstructions(_ context: CodeGenerationContext) -> [ARMInstruction] {
         [
-            getMoveSymbol32(target: .real(0), source: ARMInstructionStringConstants.printFormatSymbol),
+            getMoveSymbol32(target: context.getRegister(fromRealRegister: 0),
+                            source: ARMInstructionStringConstants.printFormatSymbol),
             [
                 .branchWithLink(label: ARMInstructionStringConstants.printFunctionSymbol)
             ]
         ].flatten()
     }
     
-    static var printlnInstructions: [ARMInstruction] {
+    static func getPrintlnInstructions(_ context: CodeGenerationContext) -> [ARMInstruction] {
         [
-            getMoveSymbol32(target: .real(0), source: ARMInstructionStringConstants.printlnFormatSymbol),
+            getMoveSymbol32(target: context.getRegister(fromRealRegister: 0),
+                            source: ARMInstructionStringConstants.printlnFormatSymbol),
             [
                 .branchWithLink(label: ARMInstructionStringConstants.printFunctionSymbol)
             ]
         ].flatten()
     }
     
-    static var scanInstructions: [ARMInstruction] {
+    static func getScanInstructions(_ context: CodeGenerationContext) -> [ARMInstruction] {
         [
-            getMoveSymbol32(target: .real(1), source: ARMInstructionStringConstants.readScratchVariableSymbol),
-            getMoveSymbol32(target: .real(0), source: ARMInstructionStringConstants.readFormatSymbol),
+            getMoveSymbol32(target: context.getRegister(fromRealRegister: 1),
+                            source: ARMInstructionStringConstants.readScratchVariableSymbol),
+            getMoveSymbol32(target: context.getRegister(fromRealRegister: 0),
+                            source: ARMInstructionStringConstants.readFormatSymbol),
             [
                 .branchWithLink(label: ARMInstructionStringConstants.scanFunctionSymbol)
             ]
@@ -93,17 +97,19 @@ struct ARMInstructionMacros {
         ]
     }
     
-    static func getFunctionPrologue(registersUsed: [ARMRegister], valuesOnStack: Int) -> [ARMInstruction] {
+    static func getFunctionPrologue(_ context: CodeGenerationContext, registersUsed: [ARMRegister], valuesOnStack: Int) -> [ARMInstruction] {
+        let sp = context.getRegister(fromRealRegister: .stackPointer)
+        let fp = context.getRegister(fromRealRegister: .framePointer)
+        let lr = context.getRegister(fromRealRegister: .linkRegister)
+        
         let spAdjustment = (ARMInstructionConstants.bytesPerValue * valuesOnStack).immediateValue
-        let setSPInstr = ARMInstruction.subtract(target: .real(.stackPointer),
-                                                 firstOp: .real(.stackPointer),
+        let setSPInstr = ARMInstruction.subtract(target: sp,
+                                                 firstOp: sp,
                                                  secondOp: .constant(spAdjustment))
         
         return [
-            .push(registers: [.real(.framePointer), .real(.linkRegister)]),
-            .add(target: .real(.framePointer),
-                 firstOp: .real(.stackPointer),
-                 secondOp: .constant(ARMInstructionConstants.bytesPerValue.immediateValue)),
+            .push(registers: [fp, lr]),
+            .add(target: fp, firstOp: sp, secondOp: .constant(ARMInstructionConstants.bytesPerValue.immediateValue)),
             registersUsed.isEmpty == false ? .push(registers: registersUsed) : nil,
             valuesOnStack > 0 ? setSPInstr : nil
         ].compact()
@@ -115,15 +121,19 @@ struct ARMInstructionMacros {
         ]
     }
     
-    static func getFunctionEpilogue(registersUsed: [ARMRegister], valuesOnStack: Int) -> [ARMInstruction] {
+    static func getFunctionEpilogue(_ context: CodeGenerationContext, registersUsed: [ARMRegister], valuesOnStack: Int) -> [ARMInstruction] {
+        let sp = context.getRegister(fromRealRegister: .stackPointer)
+        let fp = context.getRegister(fromRealRegister: .framePointer)
+        let pc = context.getRegister(fromRealRegister: .programCounter)
+        
         let spAdjustment = (ARMInstructionConstants.bytesPerValue * valuesOnStack).immediateValue
-        let resetSPInstr = ARMInstruction.add(target: .real(.stackPointer),
-                                              firstOp: .real(.stackPointer),
+        let resetSPInstr = ARMInstruction.add(target: sp,
+                                              firstOp: sp,
                                               secondOp: .constant(spAdjustment))
         return [
             valuesOnStack > 0 ? resetSPInstr : nil,
             registersUsed.isEmpty == false ? .pop(registers: registersUsed) : nil,
-            .pop(registers: [.real(.framePointer), .real(.programCounter)]),
+            .pop(registers: [fp, pc]),
         ].compact()
     }
 }

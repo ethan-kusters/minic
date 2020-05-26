@@ -11,11 +11,18 @@ class ARMManager {
     let program: Program
     let controlFlowGraphs: [ARMControlFlowGraph]
     let filename: String
+    let codeGenerationContext: CodeGenerationContext
     
     init(_ program: Program, with llvmControlFlowGraphs: [LLVMControlFlowGraph], named filename: String) {
-        self.controlFlowGraphs = llvmControlFlowGraphs.map(\.armControlFlowGraph)
+        let codeGenerationContext = CodeGenerationContext()
+        
+        self.controlFlowGraphs = llvmControlFlowGraphs.map { llvmCFG in
+            llvmCFG.getARMControlFlowGraph(withContext: codeGenerationContext)
+        }
+        
         self.filename = filename
         self.program = program
+        self.codeGenerationContext = codeGenerationContext
     }
     
     func generateAssembly(printOutput: Bool = false, outputFilePath: URL? = nil) throws {

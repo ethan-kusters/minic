@@ -8,9 +8,10 @@
 import Foundation
 
 extension Array where Element == InstructionBlock<ARMInstruction> {
-    mutating func getBlock(forLLVMBlock llvmBlock: InstructionBlock<LLVMInstruction>) -> InstructionBlock<ARMInstruction> {
+    mutating func getBlock(forLLVMBlock llvmBlock: InstructionBlock<LLVMInstruction>,
+                           withContext context: CodeGenerationContext) -> InstructionBlock<ARMInstruction> {
         guard let existingBlock = first(where: { $0.label == llvmBlock.label }) else {
-            let newBlock = InstructionBlock(withLLVMInstructionBlock: llvmBlock)
+            let newBlock = InstructionBlock(withLLVMInstructionBlock: llvmBlock, context: context)
             append(newBlock)
             return newBlock
         }

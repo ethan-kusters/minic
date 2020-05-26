@@ -7,7 +7,17 @@
 
 import Foundation
 
-enum ARMRegister: Hashable {
-    case virtual(LLVMVirtualRegister)
-    case real(ARMRealRegister)
+class ARMRegister {
+    let register: ARMRegisterProtocol
+    let uuid = UUID()
+    var uses = Set<ARMInstruction>()
+    var definitions = Set<ARMInstruction>()
+    
+    var flexibleOperand: ARMFlexibleOperand {
+        .register(self)
+    }
+    
+    init(_ register: ARMRegisterProtocol) {
+        self.register = register
+    }
 }

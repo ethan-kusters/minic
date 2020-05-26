@@ -9,11 +9,6 @@ import Foundation
 
 extension ARMRegister: CustomStringConvertible {
     var description: String {
-        switch(self) {
-        case let .virtual(virtualLabel):
-            return "\(virtualLabel)"
-        case let .real(armRegister):
-            return armRegister.description
-        }
+        register.description
     }
 }

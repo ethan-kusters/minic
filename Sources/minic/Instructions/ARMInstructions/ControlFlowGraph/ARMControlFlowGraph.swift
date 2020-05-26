@@ -12,15 +12,15 @@ class ARMControlFlowGraph: ControlFlowGraph {
     
     var blocks: [InstructionBlock<ARMInstruction>]
     let function: Function
-    let context: TypeContext
+    let context: CodeGenerationContext
     
-    init(withBlocks blocks: [InstructionBlock<ARMInstruction>], forFunction function: Function, context: TypeContext) {
+    init(withBlocks blocks: [InstructionBlock<ARMInstruction>], forFunction function: Function, context: CodeGenerationContext) {
         self.blocks = blocks
         self.function = function
         self.context = context
         
-        let functionPrologue = ARMInstructionMacros.getFunctionPrologue(registersUsed: [], valuesOnStack: 0)
-        let functionEpilogue = ARMInstructionMacros.getFunctionEpilogue(registersUsed: [], valuesOnStack: 0)
+        let functionPrologue = ARMInstructionMacros.getFunctionPrologue(context, registersUsed: [], valuesOnStack: 0)
+        let functionEpilogue = ARMInstructionMacros.getFunctionEpilogue(context, registersUsed: [], valuesOnStack: 0)
         
         self.blocks.first?.instructions.insert(contentsOf: functionPrologue, at: 0)
         self.blocks.last?.instructions.append(contentsOf: functionEpilogue)
