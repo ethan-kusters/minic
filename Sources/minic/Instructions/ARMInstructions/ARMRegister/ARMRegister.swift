@@ -20,4 +20,12 @@ class ARMRegister {
     init(_ register: ARMRegisterProtocol) {
         self.register = register
     }
+    
+    func addUse(_ instruction: ARMInstruction) {
+        uses.insert(instruction)
+    }
+    
+    func addDefinition(_ instruction: ARMInstruction) {
+        definitions.insert(instruction)
+    }
 }

@@ -38,7 +38,7 @@ struct ARMInstructionMacros {
             [
                 .branchWithLink(label: ARMInstructionStringConstants.printFunctionSymbol)
             ]
-        ].flatten()
+            ].flatten()
     }
     
     static func getPrintlnInstructions(_ context: CodeGenerationContext) -> [ARMInstruction] {
@@ -60,35 +60,35 @@ struct ARMInstructionMacros {
             [
                 .branchWithLink(label: ARMInstructionStringConstants.scanFunctionSymbol)
             ]
-        ].flatten()
+            ].flatten()
     }
     
     static func getMoveSymbol32(target: ARMRegister, source: ARMSymbol) -> [ARMInstruction] {
         [
-            .moveBottom(condCode: nil,
-                        target: target,
-                        source: .symbol(prefix: .lower16,
-                                        symbol: source)),
-            .moveTop(condCode: nil,
-                     target: target,
-                     source: .symbol(prefix: .upper16,
-                                        symbol: source)),
+            ARMInstruction.moveBottom(condCode: nil,
+                                      target: target,
+                                      source: .symbol(prefix: .lower16,
+                                                      symbol: source)).logRegisterUses(),
+            ARMInstruction.moveTop(condCode: nil,
+                                   target: target,
+                                   source: .symbol(prefix: .upper16,
+                                                   symbol: source)).logRegisterUses(),
         ]
     }
     
     static func getMoveLiteral32(target: ARMRegister, source: ARMImmediateValue) -> [ARMInstruction] {
         return [
-            .moveBottom(condCode: nil,
-                        target: target,
-                        source: .literal(prefix: .lower16,
-                                         immediate: source)),
-            .moveTop(condCode: nil,
-                     target: target,
-                     source: .literal(prefix: .upper16,
-                                      immediate: source)),
+            ARMInstruction.moveBottom(condCode: nil,
+                                      target: target,
+                                      source: .literal(prefix: .lower16,
+                                                       immediate: source)).logRegisterUses(),
+            ARMInstruction.moveTop(condCode: nil,
+                                   target: target,
+                                   source: .literal(prefix: .upper16,
+                                                    immediate: source)).logRegisterUses(),
         ]
     }
- 
+    
     static func getFunctionHeader(_ functionSymbol: ARMSymbol) -> [ARMInstruction] {
         [
             .alignmentDirective(exponent: 2),
@@ -105,12 +105,17 @@ struct ARMInstructionMacros {
         let spAdjustment = (ARMInstructionConstants.bytesPerValue * valuesOnStack).immediateValue
         let setSPInstr = ARMInstruction.subtract(target: sp,
                                                  firstOp: sp,
-                                                 secondOp: .constant(spAdjustment))
+                                                 secondOp: .constant(spAdjustment)).logRegisterUses()
+        
+        let pushInstr = ARMInstruction.push(registers: [fp, lr]).logRegisterUses()
+        let addFPInstr = ARMInstruction.add(target: fp,
+                                            firstOp: sp,
+                                            secondOp: .constant(ARMInstructionConstants.bytesPerValue.immediateValue)).logRegisterUses()
         
         return [
-            .push(registers: [fp, lr]),
-            .add(target: fp, firstOp: sp, secondOp: .constant(ARMInstructionConstants.bytesPerValue.immediateValue)),
-            registersUsed.isEmpty == false ? .push(registers: registersUsed) : nil,
+            pushInstr,
+            addFPInstr,
+            registersUsed.isEmpty == false ? ARMInstruction.push(registers: registersUsed).logRegisterUses() : nil,
             valuesOnStack > 0 ? setSPInstr : nil
         ].compact()
     }
@@ -129,11 +134,11 @@ struct ARMInstructionMacros {
         let spAdjustment = (ARMInstructionConstants.bytesPerValue * valuesOnStack).immediateValue
         let resetSPInstr = ARMInstruction.add(target: sp,
                                               firstOp: sp,
-                                              secondOp: .constant(spAdjustment))
+                                              secondOp: .constant(spAdjustment)).logRegisterUses()
         return [
             valuesOnStack > 0 ? resetSPInstr : nil,
-            registersUsed.isEmpty == false ? .pop(registers: registersUsed) : nil,
+            registersUsed.isEmpty == false ? ARMInstruction.pop(registers: registersUsed).logRegisterUses() : nil,
             .pop(registers: [fp, pc]),
-        ].compact()
+            ].compact()
     }
 }

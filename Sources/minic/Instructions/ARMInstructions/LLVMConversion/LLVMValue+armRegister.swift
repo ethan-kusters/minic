@@ -18,7 +18,7 @@ extension LLVMValue {
             if let _ = Int16(exactly: value) {
                 let movInstr = ARMInstruction.move(condCode: nil,
                                                           target: targetReg,
-                                                          source: .constant(value.immediateValue))
+                                                          source: .constant(value.immediateValue)).logRegisterUses()
                 
                 return ([movInstr], targetReg)
             } else {
@@ -31,7 +31,7 @@ extension LLVMValue {
             let targetReg = context.newVirtualRegister()
             let moveInstruction = ARMInstruction.move(condCode: nil,
                                                       target: targetReg,
-                                                      source: .constant(ARMInstructionConstants.nullValue))
+                                                      source: .constant(ARMInstructionConstants.nullValue)).logRegisterUses()
             
             return ([moveInstruction], targetReg)
         case .void:
@@ -46,14 +46,14 @@ extension LLVMValue {
             
             let movInstr = ARMInstruction.move(condCode: nil,
                                                target: target,
-                                               source: sourceOp)
+                                               source: sourceOp).logRegisterUses()
             
             return [movInstr]
         case let .literal(value):
             if let _ = Int16(exactly: value) {
                 let movInstr = ARMInstruction.move(condCode: nil,
                                                           target: target,
-                                                          source: .constant(value.immediateValue))
+                                                          source: .constant(value.immediateValue)).logRegisterUses()
                 
                 return [movInstr]
             } else {
@@ -65,7 +65,7 @@ extension LLVMValue {
         case .null:
             let movInstr = ARMInstruction.move(condCode: nil,
                                                target: target,
-                                               source: .constant(ARMInstructionConstants.nullValue))
+                                               source: .constant(ARMInstructionConstants.nullValue)).logRegisterUses()
             
             return [movInstr]
         case .void:

@@ -19,7 +19,7 @@ extension LLVMIdentifier {
                                                                source: label)
             
             let loadVal = ARMInstruction.load(target: destRegister,
-                                              sourceAddress: destRegister)
+                                              sourceAddress: destRegister).logRegisterUses()
             
             return ([movAddr, [loadVal]].flatten(), destRegister)
         case .function:
