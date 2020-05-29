@@ -12,6 +12,10 @@ class CodeGenerationContext {
     private var realRegisterMapping = [ARMRealRegister : ARMRegister]()
     
     func getRegister(fromVirtualRegister virtualRegister: LLVMVirtualRegister) -> ARMRegister {
+//        guard virtualRegister.parmeterIndex == nil else {
+//            return getParameterReg(fromVirtualRegister: virtualRegister)
+//        }
+        
         let armVirtualRegister = ARMVirtualRegister(virtualRegister.description)
         
         guard let register = virtualRegisterMapping[armVirtualRegister] else {
@@ -40,5 +44,9 @@ class CodeGenerationContext {
         }
         
         return register
+    }
+    
+    func getParameterReg(fromVirtualRegister virtualRegister: LLVMVirtualRegister) -> ARMRegister {
+        return getRegister(fromRealRegister: ARMRealRegister.generalPurpose(virtualRegister.parmeterIndex!))
     }
 }

@@ -12,6 +12,7 @@ class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlo
     
     let context: TypeContext
     let ssaEnabled: Bool
+    var parameters = [LLVMVirtualRegister]()
     
     init(_ function: Function, context: TypeContext, useSSA: Bool) {
         self.context = context
@@ -63,13 +64,16 @@ class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlo
             entryBlock.addInstruction(allocRetInstr)
         }
         
-        let parameterInstructions = function.parameters.flatMap { param -> [LLVMInstruction] in
+        let parameterInstructions = function.parameters.enumerated().flatMap { (index, param) -> [LLVMInstruction] in
             let paramReg = LLVMVirtualRegister(withId: param.name, type: param.type.llvmType)
             let existingParam = LLVMVirtualRegister(withId: LLVMInstructionConstants.parameterPrefix + param.name,
-                                                     type: param.type.llvmType)
+                                                     type: param.type.llvmType,
+                                                     parameterIndex: index)
             
             /// We manually set the def instruction for the parameter since LLVM defined it
             existingParam.setDefiningInstruction(LLVMInstruction.allocate(target: existingParam, block: entryBlock))
+            
+            parameters.append(existingParam)
             
             let allocateInstruction = LLVMInstruction.allocate(target: paramReg,
                                                                block: entryBlock).logRegisterUses()
@@ -101,11 +105,14 @@ class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlo
             entryBlock.writeVariable(retReg.identifier, asValue: .null(function.retType.llvmType))
         }
         
-        function.parameters.forEach { param  in
+        function.parameters.enumerated().forEach { (index, param)  in
             let existingParam = LLVMVirtualRegister(withId: param.name,
-                                                    type: param.type.llvmType)
+                                                    type: param.type.llvmType,
+                                                    parameterIndex: index)
             
             existingParam.setDefiningInstruction(LLVMInstruction.allocate(target: existingParam, block: entryBlock))
+            
+            parameters.append(existingParam)
             
             entryBlock.writeVariable(existingParam.identifier, asValue: .register(existingParam))
         }

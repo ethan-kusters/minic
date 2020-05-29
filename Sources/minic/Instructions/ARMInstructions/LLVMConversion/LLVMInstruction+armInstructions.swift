@@ -96,6 +96,8 @@ extension LLVMInstruction {
                                                    target: target.getARMRegister(context),
                                                    source: .constant(ARMInstructionConstants.trueValue)).logRegisterUses()
             
+            target.getARMRegister(context).addUse(condMovInstr)
+            
             return [[assumeFalseInstr], firstOpInstr, secondOpInstr, [cmpInstr, condMovInstr]].compactAndFlatten()
         case let .conditionalBranch(conditional, ifTrue, ifFalse, _):
             let (condInstr, condReg) = conditional.getARMRegister(context)
@@ -131,6 +133,8 @@ extension LLVMInstruction {
             return [srcInstr, trgInstr, [storeInstruction]].compactAndFlatten()
         case let .getElementPointer(target, _, structurePointer, elementIndex, _):
             let (ptrInstr, ptrReg) = structurePointer.getARMRegister(context)
+            
+            
             let offset = elementIndex * ARMInstructionConstants.bytesPerValue
             
             let addInstr = ARMInstruction.add(target: target.getARMRegister(context),
@@ -165,8 +169,8 @@ extension LLVMInstruction {
             return [movArgIntrs, [blInstr, movRetValInstr].compact()].compactAndFlatten()
         case let .returnValue(retVal, _):
             let r0 = context.getRegister(fromRealRegister: 0)
-            let fp = context.getRegister(fromRealRegister: .framePointer)
-            let pc = context.getRegister(fromRealRegister: .programCounter)
+//            let fp = context.getRegister(fromRealRegister: .framePointer)
+//            let pc = context.getRegister(fromRealRegister: .programCounter)
             
             let (retValInstr, retVal) = retVal.getFlexibleOperand(context)
             
@@ -174,15 +178,15 @@ extension LLVMInstruction {
                                                 target: r0,
                                                 source: retVal).logRegisterUses()
             
-            let popInstr = ARMInstruction.pop(registers: [fp, pc]).logRegisterUses()
+//            let popInstr = ARMInstruction.pop(registers: [fp, pc]).logRegisterUses()
             
-            return [retValInstr, [movRetVal, popInstr]].compactAndFlatten()
+            return [retValInstr, [movRetVal]].compactAndFlatten()
         case .returnVoid:
-            let fp = context.getRegister(fromRealRegister: .framePointer)
-            let pc = context.getRegister(fromRealRegister: .programCounter)
-            let popInstr = ARMInstruction.pop(registers: [fp, pc]).logRegisterUses()
+//            let fp = context.getRegister(fromRealRegister: .framePointer)
+//            let pc = context.getRegister(fromRealRegister: .programCounter)
+//            let popInstr = ARMInstruction.pop(registers: [fp, pc]).logRegisterUses()
             
-            return [popInstr]
+            return []
         case let .allocate(target, _):
             let sp = context.getRegister(fromRealRegister: .stackPointer)
             

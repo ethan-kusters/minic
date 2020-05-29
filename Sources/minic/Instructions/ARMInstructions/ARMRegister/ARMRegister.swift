@@ -8,10 +8,16 @@
 import Foundation
 
 class ARMRegister {
-    let register: ARMRegisterProtocol
+    var register: ARMRegisterProtocol
     let uuid = UUID()
     var uses = Set<ARMInstruction>()
     var definitions = Set<ARMInstruction>()
+    
+    var interferingRegisters = Set<ARMRegister>()
+    
+    var levelOfInterference: Double {
+        Double(uses.count) / Double(interferingRegisters.count)
+    }
     
     var flexibleOperand: ARMFlexibleOperand {
         .register(self)
@@ -27,5 +33,16 @@ class ARMRegister {
     
     func addDefinition(_ instruction: ARMInstruction) {
         definitions.insert(instruction)
+    }
+    
+    func addEdges(to registers: Set<ARMRegister>) {
+        registers.forEach { register in
+            addEdge(to: register)
+        }
+    }
+    
+    func addEdge(to register: ARMRegister) {
+        interferingRegisters.insert(register)
+        register.interferingRegisters.insert(self)
     }
 }

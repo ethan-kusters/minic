@@ -35,7 +35,7 @@ class CompilerManager {
         let llvmManager = LLVMManager(program, with: llvmControlFlowGraphs, named: sourceFileName)
         try llvmManager.generateLLVM(printOutput: printLlvm, outputFilePath: outputFile)
         
-//        let armManager = ARMManager(program, with: llvmControlFlowGraphs, named: sourceFileName)
-//        try armManager.generateAssembly(printOutput: printLlvm, outputFilePath: outputFile)
+        let armManager = ARMManager(program, with: llvmControlFlowGraphs, named: sourceFileName)
+        try armManager.generateAssembly(printOutput: printLlvm, outputFilePath: outputFile)
     }
 }

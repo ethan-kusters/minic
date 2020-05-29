@@ -12,6 +12,7 @@ class LLVMVirtualRegister {
     
     var rawIdentifier: String
     let type: LLVMType
+    let parmeterIndex: Int?
     
     private(set) var definingInstruction: LLVMInstruction?
     
@@ -22,21 +23,24 @@ class LLVMVirtualRegister {
         .virtualRegister(self)
     }
     
-    init(ofType type: LLVMType) {
+    init(ofType type: LLVMType, parameterIndex: Int? = nil) {
         LLVMVirtualRegister.currentIndex += 1
         rawIdentifier = "_reg\(LLVMVirtualRegister.currentIndex)"
         self.type = type
+        self.parmeterIndex = parameterIndex
     }
     
-    init(withPrefix prefix: String, type: LLVMType) {
+    init(withPrefix prefix: String, type: LLVMType, parameterIndex: Int? = nil) {
         LLVMVirtualRegister.currentIndex += 1
         rawIdentifier = "_\(prefix)_\(LLVMVirtualRegister.currentIndex)"
         self.type = type
+        self.parmeterIndex = parameterIndex
     }
     
-    init(withId id: String, type: LLVMType) {
+    init(withId id: String, type: LLVMType, parameterIndex: Int? = nil) {
         self.rawIdentifier = id
         self.type = type
+        self.parmeterIndex = parameterIndex
     }
     
     func setDefiningInstruction(_ instruction: LLVMInstruction) {

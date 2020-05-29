@@ -25,6 +25,14 @@ extension LLVMControlFlowGraph {
             }
         }
         
+        parameters.forEach { parameter in
+            guard let parameterIndex = parameter.parmeterIndex else { return }
+            let paramVirtualReg = context.getRegister(fromVirtualRegister: parameter)
+            let paramRealReg = context.getRegister(fromRealRegister: .generalPurpose(parameterIndex))
+            let moveInstruction = ARMInstruction.move(condCode: nil, target: paramVirtualReg, source: .register(paramRealReg))
+            armBlocks.first?.instructions.insert(moveInstruction, at: 0)
+        }
+        
         return ARMControlFlowGraph(withBlocks: armBlocks, forFunction: self.function, context: context)
     }
 }

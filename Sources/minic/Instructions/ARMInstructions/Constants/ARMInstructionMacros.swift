@@ -139,6 +139,6 @@ struct ARMInstructionMacros {
             valuesOnStack > 0 ? resetSPInstr : nil,
             registersUsed.isEmpty == false ? ARMInstruction.pop(registers: registersUsed).logRegisterUses() : nil,
             .pop(registers: [fp, pc]),
-            ].compact()
+        ].compact()
     }
 }

@@ -18,7 +18,7 @@ struct LLVMInstructionConstants {
     static let printlnHelperFunction = ".printlnHelper"
     static let readHelperFunction = ".readHelper"
     static let mallocFunction = "malloc"
-    static let expectedArchitecture: Architecture = Int.bitWidth == 64 ? ._64 : ._32
+    static let expectedArchitecture: Architecture = ._32
     
     static let freeFunction = "free"
     

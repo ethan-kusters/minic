@@ -13,14 +13,20 @@ final class ARMInstructionBlock: InstructionBlock {
     let uuid = UUID()
     let label: String
     
-    var instructions = [InstructionType]()
+    var instructions = [ARMInstruction]()
     var predecessors = [ARMInstructionBlock]()
     var successors = [ARMInstructionBlock]()
+    
+    // gen/kill sets:
+    var generatedVariables = Set<ARMRegister>()
+    var killedVariables = Set<ARMRegister>()
+    var liveOutVariables = Set<ARMRegister>()
     
     init(withLLVMInstructionBlock llvmInstructionBlock: LLVMInstructionBlock, context: CodeGenerationContext) {
         llvmInstructionBlock.deconstructSSA()
         self.label = llvmInstructionBlock.label
         instructions = llvmInstructionBlock.instructions.getARMInstructions(withContext: context)
+        computeGenKillSets()
     }
     
     func addPredecessor(_ block: ARMInstructionBlock) {
