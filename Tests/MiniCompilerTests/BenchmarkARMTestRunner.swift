@@ -8,7 +8,7 @@
 import XCTest
 import class Foundation.Bundle
 
-class BenchmarkTestRunner {
+class BenchmarkARMTestRunner {
     let ssaEnabled: Bool
     let useLongerInput: Bool
     
@@ -33,7 +33,7 @@ class BenchmarkTestRunner {
             return
         }
         
-        let compiledMiniFile = MiniCompilerTestConstants.productsDirectory.appendingPathComponent(name).appendingPathExtension("ll")
+        let compiledMiniFile = MiniCompilerTestConstants.productsDirectory.appendingPathComponent(name).appendingPathExtension("s")
         let executableMiniFile = compiledMiniFile.deletingPathExtension()
         let minicProcessOutput = Pipe()
         
@@ -54,27 +54,26 @@ class BenchmarkTestRunner {
         let minicProcessOutputData = minicProcessOutput.fileHandleForReading.readDataToEndOfFile()
         let minicProcessOutputString = String(data: minicProcessOutputData, encoding: .utf8)!
         
-        
         guard minicProcessOutputString.isEmpty else {
             XCTFail("\n\n\(minicProcessOutputString)")
             return
         }
         
-        let clangProcessOutput = Pipe()
+        let gccProcessOutput = Pipe()
         
-        let clangProcess = Process()
-        clangProcess.executableURL = MiniCompilerTestConstants.clangURL
-        clangProcess.arguments = ["-Wno-override-module", compiledMiniFile.path, "-o", executableMiniFile.path]
-        clangProcess.standardOutput = clangProcessOutput
-        clangProcess.standardError = clangProcessOutput
-        try clangProcess.run()
-        clangProcess.waitUntilExit()
+        let gccProcess = Process()
+        gccProcess.executableURL = MiniCompilerTestConstants.gccURL
+        gccProcess.arguments = [compiledMiniFile.path, "-o", executableMiniFile.path, "-static"]
+        gccProcess.standardOutput = gccProcessOutput
+        gccProcess.standardError = gccProcessOutput
+        try gccProcess.run()
+        gccProcess.waitUntilExit()
         
-        let clangProcessOutputData = clangProcessOutput.fileHandleForReading.readDataToEndOfFile()
-        let clangProcessOutputString = String(data: clangProcessOutputData, encoding: .utf8)!
-        
-        guard clangProcessOutputString.isEmpty else {
-            XCTFail("\nClang failure:\n\n\(clangProcessOutputString)")
+        let gccProcessOutputData = gccProcessOutput.fileHandleForReading.readDataToEndOfFile()
+        let gccProcessOutputString = String(data: gccProcessOutputData, encoding: .utf8)!
+       
+        guard gccProcessOutputString.isEmpty else {
+            XCTFail("GCC failure:\n\n\(gccProcessOutputString)")
             return
         }
         
@@ -88,7 +87,7 @@ class BenchmarkTestRunner {
         miniProgramProcess.standardOutput = miniProgramOutput
         miniProgramProcess.standardError = miniProgramOutput
         try miniProgramProcess.run()
-        clangProcess.waitUntilExit()
+        miniProgramProcess.waitUntilExit()
         
         let data = miniProgramOutput.fileHandleForReading.readDataToEndOfFile()
         let programOutput = String(data: data, encoding: .utf8)!

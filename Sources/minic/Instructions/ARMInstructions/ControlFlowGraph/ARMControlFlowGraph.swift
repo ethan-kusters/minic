@@ -18,11 +18,20 @@ class ARMControlFlowGraph: ControlFlowGraph<ARMInstruction, ARMInstructionBlock>
         computeLiveOut()
         buildInteferenceGraph()
         let allUsedRegisters = performRegisterAllocation()
-        let calleeSavedUsedRegisters = Set(allUsedRegisters)
-            .intersection(ARMInstructionConstants.calleeSavedRegisters)
-            .sorted()
-            .map { register in
-                context.getRegister(fromRealRegister: register)
+//        let calleeSavedUsedRegisters = Set(allUsedRegisters)
+//            .intersection(ARMInstructionConstants.calleeSavedRegisters)
+//            .sorted()
+//            .map { register in
+//                context.getRegister(fromRealRegister: register)
+//        }
+        
+        let calleeSavedUsedRegisters = [ARMRegister]()
+        
+        blocks.forEach { block in
+            block.liveOutVariables.forEach { liveOut in
+                print(liveOut)
+                print(liveOut.interferingRegisters)
+            }
         }
         
         let functionPrologue = ARMInstructionMacros.getFunctionPrologue(context,
@@ -35,18 +44,6 @@ class ARMControlFlowGraph: ControlFlowGraph<ARMInstruction, ARMInstructionBlock>
         
         self.blocks.first?.instructions.insert(contentsOf: functionPrologue, at: 0)
         self.blocks.last?.instructions.append(contentsOf: functionEpilogue)
-        
-        
-        
-        blocks.forEach { block in
-            print(block.label)
-            print(block.liveOutVariables)
-        }
-        
-        interferenceGraph.forEach { register in
-            print(register)
-            print(register.interferingRegisters)
-        }
     }
     
     var instructions: [ARMInstruction] {

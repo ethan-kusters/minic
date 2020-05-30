@@ -7,8 +7,8 @@
 
 import Foundation
 
-extension Array {
-    func formUnion<T>(_ transform: (Self.Element) throws -> Set<T>) rethrows -> Set<T> {
+extension Collection {
+    func union<T>(_ transform: (Self.Element) throws -> Set<T>) rethrows -> Set<T> {
         guard isEmpty == false else { return [] }
 
         var result = Set<T>()

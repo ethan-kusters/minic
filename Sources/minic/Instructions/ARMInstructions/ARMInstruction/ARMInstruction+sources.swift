@@ -29,19 +29,22 @@ extension ARMInstruction {
             } else {
                 return [firstOp]
             }
-        case .branch,
-             .branchWithLink:
+        case .branch:
             return []
+        case let .branchWithLink(_, arguments):
+            return arguments
         case let .move(condCode, target, source):
             if case let .register(sourceReg) = source {
                 guard condCode == nil else {
                     return [target, sourceReg]
                 }
+                
                 return [sourceReg]
             } else {
                 guard condCode == nil else {
                     return [target]
                 }
+                
                 return []
             }
         case .moveTop(_, _, _),

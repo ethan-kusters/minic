@@ -14,8 +14,8 @@ final class LLVMInstructionBlock: InstructionBlock {
     let label: String
     
     var instructions = [InstructionType]()
-    var predecessors = [LLVMInstructionBlock]()
-    var successors = [LLVMInstructionBlock]()
+    var predecessors = Set<LLVMInstructionBlock>()
+    var successors = Set<LLVMInstructionBlock>()
     
     var identifierMapping = [LLVMIdentifier : LLVMValue]()
     var sealed: Bool
@@ -42,11 +42,11 @@ final class LLVMInstructionBlock: InstructionBlock {
     }
     
     func addPredecessor(_ block: LLVMInstructionBlock) {
-        predecessors.append(block)
+        predecessors.insert(block)
     }
     
     func addSuccesor(_ block: LLVMInstructionBlock) {
-        successors.append(block)
+        successors.insert(block)
     }
     
     func addInstructions(_ newInstructions: [InstructionType]) {
@@ -65,6 +65,13 @@ final class LLVMInstructionBlock: InstructionBlock {
         if let index = instructions.firstIndex(of: currentInstruction) {
             instructions[index] = newInstruction
             currentInstruction.removeRegisterUses()
+        }
+    }
+    
+    func removeInstruction(_ instruction: InstructionType) {
+        if let index = instructions.firstIndex(of: instruction) {
+            instruction.removeRegisterUses()
+            instructions.remove(at: index)
         }
     }
 }

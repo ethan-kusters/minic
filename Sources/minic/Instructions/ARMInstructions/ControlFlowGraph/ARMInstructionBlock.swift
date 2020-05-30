@@ -14,8 +14,8 @@ final class ARMInstructionBlock: InstructionBlock {
     let label: String
     
     var instructions = [ARMInstruction]()
-    var predecessors = [ARMInstructionBlock]()
-    var successors = [ARMInstructionBlock]()
+    var predecessors = Set<ARMInstructionBlock>()
+    var successors = Set<ARMInstructionBlock>()
     
     // gen/kill sets:
     var generatedVariables = Set<ARMRegister>()
@@ -23,18 +23,22 @@ final class ARMInstructionBlock: InstructionBlock {
     var liveOutVariables = Set<ARMRegister>()
     
     init(withLLVMInstructionBlock llvmInstructionBlock: LLVMInstructionBlock, context: CodeGenerationContext) {
-        llvmInstructionBlock.deconstructSSA()
         self.label = llvmInstructionBlock.label
-        instructions = llvmInstructionBlock.instructions.getARMInstructions(withContext: context)
-        computeGenKillSets()
+        
+        for index in 0..<llvmInstructionBlock.instructions.count {
+            let armInstructions = llvmInstructionBlock.instructions[index].getArmInstructions(withContext: context)
+            instructions += armInstructions
+        }
+        
+        computeGenKillSets(context)
     }
     
     func addPredecessor(_ block: ARMInstructionBlock) {
-        predecessors.append(block)
+        predecessors.insert(block)
     }
     
     func addSuccesor(_ block: ARMInstructionBlock) {
-        successors.append(block)
+        successors.insert(block)
     }
     
     func addInstructions(_ newInstructions: [InstructionType]) {

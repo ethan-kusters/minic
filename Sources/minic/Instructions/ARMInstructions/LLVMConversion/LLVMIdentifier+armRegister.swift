@@ -15,11 +15,12 @@ extension LLVMIdentifier {
         case let .globalValue(label, _):
             let destRegister = context.newVirtualRegister()
             
-            let movAddr = ARMInstructionMacros.getMoveSymbol32(target: destRegister,
+            let movAddr = ARMInstructionMacros.getMoveSymbol32(context,
+                                                               target: destRegister,
                                                                source: label)
             
             let loadVal = ARMInstruction.load(target: destRegister,
-                                              sourceAddress: destRegister).logRegisterUses()
+                                              sourceAddress: destRegister).logRegisterUses(context)
             
             return ([movAddr, [loadVal]].flatten(), destRegister)
         case .function:

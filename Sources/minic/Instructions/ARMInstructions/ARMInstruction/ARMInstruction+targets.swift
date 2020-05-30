@@ -8,7 +8,7 @@
 import Foundation
 
 extension ARMInstruction {
-    var targets: [ARMRegister] {
+    func getTargets(_ context: CodeGenerationContext) -> [ARMRegister] {
         switch(self) {
         case let .add(target, _, _),
              let .subtract(target, _, _),
@@ -21,9 +21,10 @@ extension ARMInstruction {
             return [target]
         case .compare(_, _):
             return []
-        case .branch,
-             .branchWithLink:
+        case .branch:
             return []
+        case .branchWithLink:
+            return context.getRegisters(fromRealRegisters: ARMInstructionConstants.callerSavedRegisters)
         case let .move(_, target, _):
             return [target]
         case let .moveTop(_, target, _),

@@ -174,7 +174,7 @@ enum ARMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/bl)
-    case branchWithLink(label: ARMSymbol)
+    case branchWithLink(label: ARMSymbol, arguments: [ARMRegister])
     
     /// Push registers onto a full descending stack.
     ///

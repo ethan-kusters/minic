@@ -39,11 +39,10 @@ class ARMManager {
                 ARMInstructionMacros.fileFooter
             ].flatten()
         
-        let outputURL = outputFilePath ?? FileManager.default.currentDirectory
-            .appendingPathComponent(filename)
+        let outputURL = (outputFilePath ?? FileManager.default.currentDirectory.appendingPathComponent(filename))
             .appendingPathExtension("s")
         
-        let programString = programInstructions.map(\.description).joined(separator: "\n")
+        let programString = programInstructions.map(\.description).joined(separator: "\n").appending("\n")
         
         if printOutput {
             print(programString)

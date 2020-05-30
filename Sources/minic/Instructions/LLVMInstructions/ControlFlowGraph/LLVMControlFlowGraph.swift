@@ -426,4 +426,10 @@ class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlo
         
         return [castInstruction, branch]
     }
+    
+    func deconstructSSA() {
+        blocks.forEach { block in
+            block.deconstructSSA()
+        }
+    }
 }

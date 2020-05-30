@@ -11,8 +11,6 @@ extension LLVMInstructionBlock {
     
     /// Removes all Phi instructions and replaces them with move instructions.
     func deconstructSSA() {
-//        let copyBlock = LLVMInstructionBlock.
-        
         phiInstructions.forEach { phiInstruction in
             let newPhiReg = LLVMVirtualRegister(withPrefix: "phi", type: phiInstruction.target.type)
             
@@ -24,11 +22,8 @@ extension LLVMInstructionBlock {
                 operand.block.insertInstruction(moveInstruction, at: operand.block.finalBranchIndex!)
             }
             
-            let moveInstruction = LLVMInstruction.move(target: phiInstruction.target,
-                                                       source: .register(newPhiReg),
-                                                       block: self).logRegisterUses()
-            
-            replaceInstruction(.phi(phiInstruction), with: moveInstruction)
+            phiInstruction.target.replaceAllUses(withValue: .register(newPhiReg))
+            removeInstruction(.phi(phiInstruction))
         }
     }
 }

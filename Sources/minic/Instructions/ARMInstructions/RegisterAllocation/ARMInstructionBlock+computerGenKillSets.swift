@@ -8,7 +8,7 @@
 import Foundation
 
 extension ARMInstructionBlock {
-    func computeGenKillSets() {
+    func computeGenKillSets(_ context: CodeGenerationContext) {
         instructions.forEach { instruction in
             instruction.sources.forEach { usedRegister in
                 if !killedVariables.contains(usedRegister) {
@@ -16,7 +16,7 @@ extension ARMInstructionBlock {
                 }
             }
             
-            instruction.targets.forEach { definedRegister in
+            instruction.getTargets(context).forEach { definedRegister in
                 killedVariables.insert(definedRegister)
             }
         }

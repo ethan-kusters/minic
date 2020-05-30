@@ -1,15 +1,17 @@
 //
-//  LLVMWithSSABenchmarks.swift
+//  ARMWithSSABenchmarks.swift
 //  MiniCompilerTests
 //
-//  Created by Ethan Kusters on 5/15/20.
+//  Created by Ethan Kusters on 5/29/20.
 //
+
+import Foundation
 
 import XCTest
 import class Foundation.Bundle
 
-final class LLVMWithSSABenchmarks: XCTestCase {
-    let runBenchmarkWithSSA = BenchmarkLLVMTestRunner(enableSSA: true, useLongerInput: false)
+final class ARMWithSSABenchmarks: XCTestCase {
+    let runBenchmarkWithSSA = BenchmarkARMTestRunner(enableSSA: true, useLongerInput: false)
     
     func testBenchMarkishTopicsBenchmark() throws {
         try runBenchmarkWithSSA(named: "BenchMarkishTopics")

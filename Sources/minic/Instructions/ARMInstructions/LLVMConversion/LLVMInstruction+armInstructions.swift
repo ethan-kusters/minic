@@ -16,7 +16,7 @@ extension LLVMInstruction {
             
             let addInstr = ARMInstruction.add(target: target.getARMRegister(context),
                                               firstOp: firstOp,
-                                              secondOp: secondOp).logRegisterUses()
+                                              secondOp: secondOp).logRegisterUses(context)
             
             return [firstOpInstr, secondOpInstr, [addInstr]].compactAndFlatten()
         case let .subtract(target, firstOp, secondOp, _):
@@ -25,7 +25,7 @@ extension LLVMInstruction {
             
             let subInstr = ARMInstruction.subtract(target: target.getARMRegister(context),
                                                    firstOp: firstOp,
-                                                   secondOp: secondOp).logRegisterUses()
+                                                   secondOp: secondOp).logRegisterUses(context)
             
             return [firstOpInstr, secondOpInstr, [subInstr]].compactAndFlatten()
         case let .multiply(target, firstOp, secondOp, _):
@@ -34,7 +34,7 @@ extension LLVMInstruction {
             
             let multInstr = ARMInstruction.multiply(target: target.getARMRegister(context),
                                                     firstOp: firstOp,
-                                                    secondOp: secondOp).logRegisterUses()
+                                                    secondOp: secondOp).logRegisterUses(context)
             
             return [firstOpInstr, secondOpInstr, [multInstr]].compactAndFlatten()
         case let .signedDivide(target, firstOp, secondOp, _):
@@ -47,11 +47,12 @@ extension LLVMInstruction {
             let firstOpInstr = firstOp.moveToRegister(context, target: r0)
             let secondOpInstr = secondOp.moveToRegister(context, target: r1)
             
-            let divCall = ARMInstruction.branchWithLink(label: ARMInstructionStringConstants.divideFunctionSymbol).logRegisterUses()
+            let divCall = ARMInstruction.branchWithLink(label: ARMInstructionStringConstants.divideFunctionSymbol,
+                                                        arguments: [r0, r1]).logRegisterUses(context)
             
             let movRetVal = ARMInstruction.move(condCode: nil,
                                                 target: target.getARMRegister(context),
-                                                source: r0.flexibleOperand).logRegisterUses()
+                                                source: r0.flexibleOperand).logRegisterUses(context)
             
             return [firstOpInstr, secondOpInstr, [divCall, movRetVal]].compactAndFlatten()
         case let .and(target, firstOp, secondOp, _):
@@ -60,7 +61,7 @@ extension LLVMInstruction {
             
             let andInstr = ARMInstruction.and(target: target.getARMRegister(context),
                                               firstOp: firstOp,
-                                              secondOp: secondOp).logRegisterUses()
+                                              secondOp: secondOp).logRegisterUses(context)
             
             return [firstOpInstr, secondOpInstr, [andInstr]].compactAndFlatten()
         case let .or(target, firstOp, secondOp, _):
@@ -69,7 +70,7 @@ extension LLVMInstruction {
             
             let orInstr = ARMInstruction.or(target: target.getARMRegister(context),
                                             firstOp: firstOp,
-                                            secondOp: secondOp).logRegisterUses()
+                                            secondOp: secondOp).logRegisterUses(context)
             
             return [firstOpInstr, secondOpInstr, [orInstr]].compactAndFlatten()
         case let .exclusiveOr(target, firstOp, secondOp, _):
@@ -78,23 +79,23 @@ extension LLVMInstruction {
             
             let xorInstr = ARMInstruction.exclusiveOr(target: target.getARMRegister(context),
                                                       firstOp: firstOp,
-                                                      secondOp: secondOp).logRegisterUses()
+                                                      secondOp: secondOp).logRegisterUses(context)
             
             return [firstOpInstr, secondOpInstr, [xorInstr]].compactAndFlatten()
         case let .comparison(target, condCode, firstOp, secondOp, _):
             let assumeFalseInstr = ARMInstruction.move(condCode: nil,
                                                        target: target.getARMRegister(context),
-                                                       source: .constant(ARMInstructionConstants.falseValue)).logRegisterUses()
+                                                       source: .constant(ARMInstructionConstants.falseValue)).logRegisterUses(context)
             
             let (firstOpInstr, firstOp) = firstOp.getARMRegister(context)
             let (secondOpInstr, secondOp) = secondOp.getFlexibleOperand(context)
             
             let cmpInstr = ARMInstruction.compare(firstOp: firstOp,
-                                                  secondOp: secondOp).logRegisterUses()
+                                                  secondOp: secondOp).logRegisterUses(context)
             
             let condMovInstr = ARMInstruction.move(condCode: condCode.armConditionCode,
                                                    target: target.getARMRegister(context),
-                                                   source: .constant(ARMInstructionConstants.trueValue)).logRegisterUses()
+                                                   source: .constant(ARMInstructionConstants.trueValue)).logRegisterUses(context)
             
             target.getARMRegister(context).addUse(condMovInstr)
             
@@ -103,13 +104,13 @@ extension LLVMInstruction {
             let (condInstr, condReg) = conditional.getARMRegister(context)
             
             let cmpInstr = ARMInstruction.compare(firstOp: condReg,
-                                                  secondOp: .constant(ARMInstructionConstants.trueValue)).logRegisterUses()
+                                                  secondOp: .constant(ARMInstructionConstants.trueValue)).logRegisterUses(context)
             
             let ifTrueBranch = ARMInstruction.branch(condCode: .EQ,
-                                                     label: ifTrue.armSymbol).logRegisterUses()
+                                                     label: ifTrue.armSymbol).logRegisterUses(context)
             
             let ifFalseBranch = ARMInstruction.branch(condCode: nil,
-                                                      label: ifFalse.armSymbol).logRegisterUses()
+                                                      label: ifFalse.armSymbol).logRegisterUses(context)
             
             return [condInstr, [cmpInstr, ifTrueBranch, ifFalseBranch]].compactAndFlatten()
         case let .unconditionalBranch(destLabel, _):
@@ -120,7 +121,7 @@ extension LLVMInstruction {
             let (srcInstr, srcReg) = srcPointer.getARMRegister(context)
             
             let ldInstr = ARMInstruction.load(target: target.getARMRegister(context),
-                                              sourceAddress: srcReg).logRegisterUses()
+                                              sourceAddress: srcReg).logRegisterUses(context)
             
             return [srcInstr, [ldInstr]].compactAndFlatten()
         case let .store(source, destPointer, _):
@@ -128,7 +129,7 @@ extension LLVMInstruction {
             let (trgInstr, trgRrg) = destPointer.getARMRegister(context)
             
             let storeInstruction = ARMInstruction.store(source: srcReg,
-                                                        targetAddress: trgRrg).logRegisterUses()
+                                                        targetAddress: trgRrg).logRegisterUses(context)
             
             return [srcInstr, trgInstr, [storeInstruction]].compactAndFlatten()
         case let .getElementPointer(target, _, structurePointer, elementIndex, _):
@@ -139,23 +140,29 @@ extension LLVMInstruction {
             
             let addInstr = ARMInstruction.add(target: target.getARMRegister(context),
                                               firstOp: ptrReg,
-                                              secondOp: .constant(offset.immediateValue)).logRegisterUses()
+                                              secondOp: .constant(offset.immediateValue)).logRegisterUses(context)
             
             return [ptrInstr, [addInstr]].compactAndFlatten()
         case let .call(target, functionIdentifier, arguments, _):
+            var argumentRegisters = [ARMRegister]()
+            
             let movArgIntrs = arguments.enumerated().flatMap { (index, argument) -> [ARMInstruction] in
                 guard index < 3 else { fatalError("ToDo: Add support for >3 args")}
                 
                 let (srcInstr, srcOp) = argument.getFlexibleOperand(context)
                 
+                let argReg = index.getARMRegister(context)
+                argumentRegisters.append(argReg)
+                
                 let movInstr = ARMInstruction.move(condCode: nil,
-                                                   target: index.getARMRegister(context),
-                                                   source: srcOp).logRegisterUses()
+                                                   target: argReg,
+                                                   source: srcOp).logRegisterUses(context)
                 
                 return [srcInstr, [movInstr]].compactAndFlatten()
             }
             
-            let blInstr = ARMInstruction.branchWithLink(label: functionIdentifier.armSymbol)
+            let blInstr = ARMInstruction.branchWithLink(label: functionIdentifier.armSymbol,
+                                                        arguments: argumentRegisters)
             
             var movRetValInstr: ARMInstruction?
             if let target = target {
@@ -163,7 +170,7 @@ extension LLVMInstruction {
                 
                 movRetValInstr = ARMInstruction.move(condCode: nil,
                                        target: target.getARMRegister(context),
-                                       source: r0.flexibleOperand).logRegisterUses()
+                                       source: r0.flexibleOperand).logRegisterUses(context)
             }
             
             return [movArgIntrs, [blInstr, movRetValInstr].compact()].compactAndFlatten()
@@ -176,15 +183,15 @@ extension LLVMInstruction {
             
             let movRetVal = ARMInstruction.move(condCode: nil,
                                                 target: r0,
-                                                source: retVal).logRegisterUses()
+                                                source: retVal).logRegisterUses(context)
             
-//            let popInstr = ARMInstruction.pop(registers: [fp, pc]).logRegisterUses()
+//            let popInstr = ARMInstruction.pop(registers: [fp, pc]).logRegisterUses(context)
             
             return [retValInstr, [movRetVal]].compactAndFlatten()
         case .returnVoid:
 //            let fp = context.getRegister(fromRealRegister: .framePointer)
 //            let pc = context.getRegister(fromRealRegister: .programCounter)
-//            let popInstr = ARMInstruction.pop(registers: [fp, pc]).logRegisterUses()
+//            let popInstr = ARMInstruction.pop(registers: [fp, pc]).logRegisterUses(context)
             
             return []
         case let .allocate(target, _):
@@ -192,11 +199,11 @@ extension LLVMInstruction {
             
             let spSubInstr = ARMInstruction.subtract(target: sp,
                                                      firstOp: sp,
-                                                     secondOp: .constant(ARMInstructionConstants.bytesPerValue.immediateValue)).logRegisterUses()
+                                                     secondOp: .constant(ARMInstructionConstants.bytesPerValue.immediateValue)).logRegisterUses(context)
             
             let movInstr = ARMInstruction.move(condCode: nil,
                                                target: target.getARMRegister(context),
-                                               source: sp.flexibleOperand).logRegisterUses()
+                                               source: sp.flexibleOperand).logRegisterUses(context)
             
             return [spSubInstr, movInstr]
         case let .declareGlobal(target, _):
@@ -216,19 +223,23 @@ extension LLVMInstruction {
             fatalError("Phi has no equivalent in Assembly.")
         case let .move(target, source, _):
             let (srcInstr, source) = source.getFlexibleOperand(context)
+            let target = target.getARMRegister(context)
+            
+            guard target != source else { return [] }
             
             let movInstr = ARMInstruction.move(condCode: nil,
-                                               target: target.getARMRegister(context),
-                                               source: source).logRegisterUses()
+                                               target: target,
+                                               source: source).logRegisterUses(context)
             
             return [srcInstr, [movInstr]].compactAndFlatten()
         case let .read(target, _):
             let scanInstructions = ARMInstructionMacros.getScanInstructions(context)
-            let movRetAddrInstr = ARMInstructionMacros.getMoveSymbol32(target: target.getARMRegister(context),
+            let movRetAddrInstr = ARMInstructionMacros.getMoveSymbol32(context,
+                                                                       target: target.getARMRegister(context),
                                                                        source: ARMInstructionStringConstants.readScratchVariableSymbol)
             
             let loadRetValInstr = ARMInstruction.load(target: target.getARMRegister(context),
-                                                      sourceAddress: target.getARMRegister(context)).logRegisterUses()
+                                                      sourceAddress: target.getARMRegister(context)).logRegisterUses(context)
             
             return [scanInstructions, movRetAddrInstr, [loadRetValInstr]].compactAndFlatten()
         case let .print(source, _):

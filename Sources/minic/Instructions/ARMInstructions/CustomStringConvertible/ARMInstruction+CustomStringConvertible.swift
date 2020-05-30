@@ -38,7 +38,7 @@ extension ARMInstruction: CustomStringConvertible {
             return "\tLDR \(target), [\(sourceAddress)]"
         case let .store(source, targetAddress):
             return "\tSTR \(source), [\(targetAddress)]"
-        case let .branchWithLink(label):
+        case let .branchWithLink(label, _):
             return "\tBL \(label)"
         case let .push(registers):
             let registerList = registers.map(\.description).joined(separator: ", ")

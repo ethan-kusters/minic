@@ -12,7 +12,7 @@ extension ARMInstructionBlock {
     func computeLiveOut() -> Bool {
         let oldLiveOutVariables = liveOutVariables
         
-        liveOutVariables = successors.formUnion { successor in
+        liveOutVariables = successors.union { successor in
             let genSet = successor.generatedVariables
             let liveOut = successor.liveOutVariables
             let killSet = successor.killedVariables

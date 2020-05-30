@@ -9,18 +9,23 @@ import Foundation
 
 extension ARMControlFlowGraph {
     func buildInteferenceGraph() {
+        interferenceGraph.removeAll()
+        
         blocks.forEach { block in
             var liveNow = block.liveOutVariables
             block.instructions.reversed().forEach { instruction in
-                instruction.targets.forEach { target in
+                let instructionTargets = instruction.getTargets(context)
+                let instructionSources = instruction.sources
+                
+                instructionTargets.forEach { target in
                     liveNow.remove(target)
                     target.addEdges(to: liveNow)
                 }
                 
-                liveNow.formUnion(instruction.sources)
+                liveNow.formUnion(instructionSources)
                 
-                interferenceGraph.formUnion(instruction.targets)
-                interferenceGraph.formUnion(instruction.sources)
+                interferenceGraph.formUnion(instructionTargets)
+                interferenceGraph.formUnion(instructionSources)
             }
         }
     }

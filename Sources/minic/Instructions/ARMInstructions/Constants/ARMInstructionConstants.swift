@@ -14,7 +14,10 @@ struct ARMInstructionConstants {
     
     static let expectedARMArchitecture = ARMArchitecture.ARMv7A
     
+    static let callerSavedRegisters: Set<ARMRealRegister> = [0, 1, 2, 3, .intraproceduralScratch]
     static let calleeSavedRegisters: Set<ARMRealRegister> = [4, 5, 6, 7, 8, 9, 10, 11]
+    
+    static let availableRegisters: Set<ARMRealRegister> = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, .intraproceduralScratch]
     
     static var expectedProcessorArchitecture: Architecture {
         switch(expectedARMArchitecture) {

@@ -19,7 +19,8 @@ extension LLVMValue {
             
             let destReg = context.newVirtualRegister()
             
-            let movInstr = ARMInstructionMacros.getMoveLiteral32(target: destReg,
+            let movInstr = ARMInstructionMacros.getMoveLiteral32(context,
+                                                                 target: destReg,
                                                                  source: value.immediateValue)
             return (movInstr, .register(destReg))
         case .null:

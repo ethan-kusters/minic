@@ -8,7 +8,7 @@
 import Foundation
 
 extension ARMInstruction {
-    func logRegisterUses() -> ARMInstruction {
+    func logRegisterUses(_ context: CodeGenerationContext) -> ARMInstruction {
         switch(self) {
         case let .add(target, firstOp, secondOp),
              let .subtract(target, firstOp, secondOp),
@@ -26,9 +26,13 @@ extension ARMInstruction {
         case let .compare(firstOp, secondOp):
             firstOp.addUse(self)
             secondOp.addUse(self)
-        case .branch,
-             .branchWithLink:
+        case .branch:
             return self
+         case let .branchWithLink(_, args):
+            args.forEach { $0.addUse(self) }
+            context.getRegisters(fromRealRegisters: ARMInstructionConstants.callerSavedRegisters).forEach {
+                $0.addDefinition(self)
+            }
         case let .move(_, target, source):
             target.addDefinition(self)
             source.addUse(self)

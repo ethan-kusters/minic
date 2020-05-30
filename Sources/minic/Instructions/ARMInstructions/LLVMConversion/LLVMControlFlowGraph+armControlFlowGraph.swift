@@ -9,20 +9,25 @@ import Foundation
 
 extension LLVMControlFlowGraph {
     func getARMControlFlowGraph(withContext context: CodeGenerationContext) -> ARMControlFlowGraph {
+        deconstructSSA()
+        
         var armBlocks = [ARMInstructionBlock]()
+        var tempARMBlocks = [ARMInstructionBlock]()
         
         for currentLLVMBlock in self.blocks {
-            let currentARMBlock = armBlocks.getBlock(forLLVMBlock: currentLLVMBlock, withContext: context)
+            let currentARMBlock = tempARMBlocks.getBlock(forLLVMBlock: currentLLVMBlock, withContext: context)
             
             currentLLVMBlock.predecessors.forEach { llvmPredeccesor in
-                let armPredecessor = armBlocks.getBlock(forLLVMBlock: llvmPredeccesor, withContext: context)
+                let armPredecessor = tempARMBlocks.getBlock(forLLVMBlock: llvmPredeccesor, withContext: context)
                 currentARMBlock.addPredecessor(armPredecessor)
             }
             
             currentLLVMBlock.successors.forEach { llvmSuccessor in
-                let armSuccessor = armBlocks.getBlock(forLLVMBlock: llvmSuccessor, withContext: context)
+                let armSuccessor = tempARMBlocks.getBlock(forLLVMBlock: llvmSuccessor, withContext: context)
                 currentARMBlock.addSuccesor(armSuccessor)
             }
+            
+            armBlocks.append(currentARMBlock)
         }
         
         parameters.forEach { parameter in

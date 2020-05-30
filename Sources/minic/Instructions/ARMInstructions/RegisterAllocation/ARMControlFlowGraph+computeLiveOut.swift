@@ -12,9 +12,12 @@ extension ARMControlFlowGraph {
         var liveOutChanged = true
         
         while liveOutChanged {
-            liveOutChanged = blocks.map { block in
-                block.computeLiveOut()
-            }.contains(true)
+            liveOutChanged = false
+            for blondIndex in 0..<blocks.count {
+                if blocks[blondIndex].computeLiveOut() {
+                    liveOutChanged = true
+                }
+            }
         }
     }
 }

@@ -45,4 +45,10 @@ class ARMRegister {
         interferingRegisters.insert(register)
         register.interferingRegisters.insert(self)
     }
+    
+    func removeEdges() {
+        interferingRegisters.forEach { register in
+            register.interferingRegisters.remove(self)
+        }
+    }
 }

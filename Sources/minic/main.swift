@@ -14,8 +14,6 @@ struct minic: ParsableCommand {
     
     @Option(name: .shortAndLong, help: "The path of the destination file.") var outputFilePath: URL?
     
-    
-    
     @Flag(help: "Generate a GraphViz DOT file of the program's control flow graph.")
     var generateCfg: Bool
     
@@ -42,7 +40,7 @@ struct minic: ParsableCommand {
     
     func run() throws {
         try CompilerManager.compile(sourceFile: sourceFilePath,
-                                    outputFile: outputFilePath,
+                                    outputFile: outputFilePath?.deletingPathExtension(),
                                     generateCfg: generateCfg,
                                     generateCfgPdf: generateCfgPdf,
                                     printLlvm: printLlvm,

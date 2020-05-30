@@ -9,6 +9,7 @@ import Foundation
 
 extension Sequence where Element == LLVMInstruction {
     func getARMInstructions(withContext context: CodeGenerationContext) -> [ARMInstruction] {
+        
         flatMap({ instruction in
             instruction.getArmInstructions(withContext: context)
         })

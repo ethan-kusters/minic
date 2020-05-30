@@ -18,11 +18,12 @@ extension LLVMValue {
             if let _ = Int16(exactly: value) {
                 let movInstr = ARMInstruction.move(condCode: nil,
                                                           target: targetReg,
-                                                          source: .constant(value.immediateValue)).logRegisterUses()
+                                                          source: .constant(value.immediateValue)).logRegisterUses(context)
                 
                 return ([movInstr], targetReg)
             } else {
-                let move32Instr = ARMInstructionMacros.getMoveLiteral32(target: targetReg,
+                let move32Instr = ARMInstructionMacros.getMoveLiteral32(context,
+                                                                        target: targetReg,
                                                                         source: value.immediateValue)
                 
                 return (move32Instr, targetReg)
@@ -31,7 +32,7 @@ extension LLVMValue {
             let targetReg = context.newVirtualRegister()
             let moveInstruction = ARMInstruction.move(condCode: nil,
                                                       target: targetReg,
-                                                      source: .constant(ARMInstructionConstants.nullValue)).logRegisterUses()
+                                                      source: .constant(ARMInstructionConstants.nullValue)).logRegisterUses(context)
             
             return ([moveInstruction], targetReg)
         case .void:
@@ -46,18 +47,19 @@ extension LLVMValue {
             
             let movInstr = ARMInstruction.move(condCode: nil,
                                                target: target,
-                                               source: sourceOp).logRegisterUses()
+                                               source: sourceOp).logRegisterUses(context)
             
             return [movInstr]
         case let .literal(value):
             if let _ = Int16(exactly: value) {
                 let movInstr = ARMInstruction.move(condCode: nil,
                                                           target: target,
-                                                          source: .constant(value.immediateValue)).logRegisterUses()
+                                                          source: .constant(value.immediateValue)).logRegisterUses(context)
                 
                 return [movInstr]
             } else {
-                let move32Instr = ARMInstructionMacros.getMoveLiteral32(target: target,
+                let move32Instr = ARMInstructionMacros.getMoveLiteral32(context,
+                                                                        target: target,
                                                                         source: value.immediateValue)
                 
                 return move32Instr
@@ -65,7 +67,7 @@ extension LLVMValue {
         case .null:
             let movInstr = ARMInstruction.move(condCode: nil,
                                                target: target,
-                                               source: .constant(ARMInstructionConstants.nullValue)).logRegisterUses()
+                                               source: .constant(ARMInstructionConstants.nullValue)).logRegisterUses(context)
             
             return [movInstr]
         case .void:

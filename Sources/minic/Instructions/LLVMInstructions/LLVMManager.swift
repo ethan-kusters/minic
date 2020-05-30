@@ -57,8 +57,7 @@ class LLVMManager {
         
         let programFooter = getProgramFooter()
         
-        let outputURL = outputFilePath ?? FileManager.default.currentDirectory
-            .appendingPathComponent(filename)
+        let outputURL = (outputFilePath ?? FileManager.default.currentDirectory.appendingPathComponent(filename))
             .appendingPathExtension("ll")
         
         let programString = [programHeader, programBody, programFooter].joined(separator: "\n\n")
