@@ -8,7 +8,9 @@
 import Foundation
 
 extension LLVMControlFlowGraph {
-    func getARMControlFlowGraph(withContext context: CodeGenerationContext) -> ARMControlFlowGraph {
+    func getARMControlFlowGraph() -> ARMControlFlowGraph {
+        let context = CodeGenerationContext()
+        
         deconstructSSA()
         
         var armBlocks = [ARMInstructionBlock]()
@@ -34,7 +36,9 @@ extension LLVMControlFlowGraph {
             guard let parameterIndex = parameter.parmeterIndex else { return }
             let paramVirtualReg = context.getRegister(fromVirtualRegister: parameter)
             let paramRealReg = context.getRegister(fromRealRegister: .generalPurpose(parameterIndex))
-            let moveInstruction = ARMInstruction.move(condCode: nil, target: paramVirtualReg, source: .register(paramRealReg))
+            let moveInstruction = ARMInstruction.move(condCode: nil,
+                                                      target: paramVirtualReg,
+                                                      source: .register(paramRealReg)).logRegisterUses(context)
             armBlocks.first?.instructions.insert(moveInstruction, at: 0)
         }
         

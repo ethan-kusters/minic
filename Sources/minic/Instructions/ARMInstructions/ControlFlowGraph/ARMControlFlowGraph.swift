@@ -15,24 +15,18 @@ class ARMControlFlowGraph: ControlFlowGraph<ARMInstruction, ARMInstructionBlock>
         self.context = context
         super.init(blocks: blocks, function: function)
         
+        computeGenKillSets(context)
         computeLiveOut()
         buildInteferenceGraph()
+        
         let allUsedRegisters = performRegisterAllocation()
-//        let calleeSavedUsedRegisters = Set(allUsedRegisters)
-//            .intersection(ARMInstructionConstants.calleeSavedRegisters)
-//            .sorted()
-//            .map { register in
-//                context.getRegister(fromRealRegister: register)
-//        }
-        
-        let calleeSavedUsedRegisters = [ARMRegister]()
-        
-        blocks.forEach { block in
-            block.liveOutVariables.forEach { liveOut in
-                print(liveOut)
-                print(liveOut.interferingRegisters)
-            }
+        let calleeSavedUsedRegisters = Set(allUsedRegisters)
+            .intersection(ARMInstructionConstants.calleeSavedRegisters)
+            .sorted()
+            .map { register in
+                context.getRegister(fromRealRegister: register)
         }
+        
         
         let functionPrologue = ARMInstructionMacros.getFunctionPrologue(context,
                                                                         registersUsed: calleeSavedUsedRegisters,

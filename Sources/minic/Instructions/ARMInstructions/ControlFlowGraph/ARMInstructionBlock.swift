@@ -29,8 +29,6 @@ final class ARMInstructionBlock: InstructionBlock {
             let armInstructions = llvmInstructionBlock.instructions[index].getArmInstructions(withContext: context)
             instructions += armInstructions
         }
-        
-        computeGenKillSets(context)
     }
     
     func addPredecessor(_ block: ARMInstructionBlock) {

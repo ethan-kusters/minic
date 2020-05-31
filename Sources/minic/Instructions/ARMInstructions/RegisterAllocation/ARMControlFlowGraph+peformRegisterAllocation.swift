@@ -8,18 +8,13 @@
 import Foundation
 
 extension ARMControlFlowGraph {
-    func performRegisterAllocation() -> [ARMRealRegister] {
+    func performRegisterAllocation() -> Set<ARMRealRegister> {
         var registerColoring = [Set<ARMRegister>]()
+        var coloringStack = [ARMRegister]()
         
-        let unconstrainedNodes = interferenceGraph.filter { node in
-            (node.interferingRegisters.count < ARMInstructionConstants.availableRegisters.count)
-                && (node.register is ARMVirtualRegister)
-        }
-        
-        interferenceGraph.subtract(unconstrainedNodes)
-        
-        unconstrainedNodes.forEach { node in
-            color(node, with: &registerColoring)
+        while let unconstrainedNode = interferenceGraph.removeFirstUnconstrainedNode() {
+            unconstrainedNode.removeEdges()
+            coloringStack.append(unconstrainedNode)
         }
         
         let constrainedNodes = interferenceGraph.filter { node in
@@ -27,56 +22,71 @@ extension ARMControlFlowGraph {
         }
         
         interferenceGraph.subtract(constrainedNodes)
-        let sortedConstrainedNodes = constrainedNodes.sorted(by: { $0.levelOfInterference > $1.levelOfInterference })
         
-        sortedConstrainedNodes.forEach { node in
-            color(node, with: &registerColoring)
+        let sortedConstrainedNodes = constrainedNodes.sorted(by: {
+            $0.levelOfInterference > $1.levelOfInterference
+        })
+        
+        sortedConstrainedNodes.forEach { constrainedNode in
+            constrainedNode.removeEdges()
+            coloringStack.append(constrainedNode)
         }
         
-        let realRegisterNodes = interferenceGraph.sorted(by: { $0.levelOfInterference > $1.levelOfInterference })
-        realRegisterNodes.forEach { node in
-            color(node, with: &registerColoring)
+        interferenceGraph.forEach { realNode in
+            realNode.removeEdges()
+            coloringStack.append(realNode)
         }
         
-        var usedRegisters = realRegisterNodes.map { node in
-            node.register as! ARMRealRegister
+        while let currentNode = coloringStack.popLast() {
+            color(currentNode, with: &registerColoring)
         }
         
-        var availableRegisters = ARMInstructionConstants.availableRegisters.subtracting(usedRegisters).sorted()
+        var availableRegisters = ARMInstructionConstants.availableRegisters
+        var usedRegisters = Set<ARMRealRegister>()
         
-        for registerColor in registerColoring {
-            if let realRegister = registerColor.firstRealRegister {
-                registerColor.forEach { register in
-                    register.register = realRegister
+        for registerColor in registerColoring where registerColor.containsRealRegister {
+            let realRegister = registerColor.firstRealRegister!
+            registerColor.forEach { register in
+                register.register = realRegister
+            }
+            
+            availableRegisters.removeAll(where: { $0 == realRegister })
+            usedRegisters.insert(realRegister)
+        }
+        
+        for registerColor in registerColoring where !registerColor.containsRealRegister {
+                guard let nextAvailableRegister = availableRegisters.first(where: { realRegister in
+                    let interference = context.getRegister(fromRealRegister: realRegister).interferingRegisters
+                    return registerColor.intersection(interference).isEmpty
+                }) else {
+                    fatalError("Haven't implmented spilling yet")
                 }
-            } else if !availableRegisters.isEmpty {
-                /// This coloring does not contain a real register, just grab the next available register
-                let nextAvailableRegister = availableRegisters.removeFirst()
+            
                 registerColor.forEach { armRegister in
                     armRegister.register = nextAvailableRegister
                 }
                 
-                usedRegisters.append(nextAvailableRegister)
-            } else {
-                fatalError("Haven't implmeneted spilling yet...")
-            }
+                usedRegisters.insert(nextAvailableRegister)
+                availableRegisters.removeAll(where: { $0 == nextAvailableRegister })
         }
             
         return usedRegisters
     }
     
     func color(_ register: ARMRegister, with registerColoring: inout [Set<ARMRegister>]) {
-        if (register.register as? ARMVirtualRegister)?.label == "%_phi_84" {
-            print("fount it")
-        }
+        let possibleColor: Int?
         
-        let possibleColor = registerColoring.firstIndex { color in
-            color.intersection(register.interferingRegisters).isEmpty && !color.containsRealRegister
+        if register.register is ARMRealRegister {
+            possibleColor = registerColoring.firstIndex { color in
+                color.intersection(register.interferingRegisters).isEmpty && !color.containsRealRegister
+            }
+        } else {
+            possibleColor = registerColoring.firstIndex { color in
+                color.intersection(register.interferingRegisters).isEmpty
+            }
         }
-        
         
         if let colorIndex = possibleColor {
-            print(registerColoring[colorIndex])
             registerColoring[colorIndex].insert(register)
         } else {
             registerColoring.append([register])

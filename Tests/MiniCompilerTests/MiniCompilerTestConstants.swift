@@ -31,4 +31,6 @@ struct MiniCompilerTestConstants {
     static let clangURL = URL(fileURLWithPath: "/usr/bin/clang")
     
     static let gccURL = URL(fileURLWithPath: "/usr/bin/arm-linux-gnueabi-gcc")
+    
+    static let armGCC = "arm-linux-gnueabi-gcc"
 }

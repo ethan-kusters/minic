@@ -7,11 +7,14 @@
 
 import Foundation
 
-extension Collection where Element == ARMRegister {
-    var firstUnconstrainedNode: ARMRegister? {
-        first(where: { element in
+extension Set where Element == ARMRegister {
+    mutating func removeFirstUnconstrainedNode() -> ARMRegister? {
+         guard let node = first(where: { element in
             (element.interferingRegisters.count < ARMInstructionConstants.availableRegisters.count)
                 && (element.register is ARMVirtualRegister)
-        })
+         }) else { return nil }
+        
+        remove(node)
+        return node
     }
 }
