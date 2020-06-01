@@ -10,4 +10,7 @@ Package.resolved
 *.out
 *.txt
 *.s
-*.s
+diffresult
+diffresult.longer
+actualoutput
+actualoutput.longer

@@ -11,20 +11,26 @@ class ARMControlFlowGraph: ControlFlowGraph<ARMInstruction, ARMInstructionBlock>
     let context: CodeGenerationContext
     var interferenceGraph = Set<ARMRegister>()
     
-    init(withBlocks blocks: [ARMInstructionBlock], forFunction function: Function, context: CodeGenerationContext) {
+    init(withBlocks blocks: [ARMInstructionBlock], forFunction function: Function, context: CodeGenerationContext, skipRegisterAllocation: Bool) {
         self.context = context
         super.init(blocks: blocks, function: function)
         
-        computeGenKillSets(context)
-        computeLiveOut()
-        buildInteferenceGraph()
+        let calleeSavedUsedRegisters: [ARMRegister]
         
-        let allUsedRegisters = performRegisterAllocation()
-        let calleeSavedUsedRegisters = Set(allUsedRegisters)
-            .intersection(ARMInstructionConstants.calleeSavedRegisters)
-            .sorted()
-            .map { register in
-                context.getRegister(fromRealRegister: register)
+        if skipRegisterAllocation {
+            calleeSavedUsedRegisters = []
+        } else {
+            computeGenKillSets(context)
+            computeLiveOut()
+            buildInteferenceGraph()
+            
+            let allUsedRegisters = performRegisterAllocation()
+            calleeSavedUsedRegisters = Set(allUsedRegisters)
+                .intersection(ARMInstructionConstants.calleeSavedRegisters)
+                .sorted()
+                .map { register in
+                    context.getRegister(fromRealRegister: register)
+            }
         }
         
         

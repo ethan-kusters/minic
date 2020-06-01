@@ -22,8 +22,12 @@ extension LLVMInstructionBlock {
                 operand.block.insertInstruction(moveInstruction, at: operand.block.finalBranchIndex!)
             }
             
-            phiInstruction.target.replaceAllUses(withValue: .register(newPhiReg))
-            removeInstruction(.phi(phiInstruction))
+            
+            let finalMove = LLVMInstruction.move(target: phiInstruction.target,
+                                                 source: .register(newPhiReg),
+                                                 block: self).logRegisterUses()
+            
+            replaceInstruction(.phi(phiInstruction), with: finalMove)
         }
     }
 }

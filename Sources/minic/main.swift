@@ -23,8 +23,14 @@ struct minic: ParsableCommand {
     @Flag(help: "Use GraphViz to generate a PDF of the program's control flow graph.")
     var generateCfgPdf: Bool
     
-    @Flag(help: "Print LLVM output instead of outputting to file.")
-    var printLlvm: Bool
+    @Flag(help: "Print output instead of outputting to file.")
+    var printOutput: Bool
+    
+    @Flag(help: "Emit LLVM code instead of ARM assembly.")
+    var emitLlvm: Bool
+    
+    @Flag(help: "Skips the register allocation phase of generating ARM.")
+    var skipRegisterAllocation: Bool
     
     mutating func validate() throws {
         
@@ -43,8 +49,10 @@ struct minic: ParsableCommand {
                                     outputFile: outputFilePath?.deletingPathExtension(),
                                     generateCfg: generateCfg,
                                     generateCfgPdf: generateCfgPdf,
-                                    printLlvm: printLlvm,
-                                    useSSA: !disableSSA)
+                                    emitLlvm: emitLlvm,
+                                    printOutput: printOutput,
+                                    useSSA: !disableSSA,
+                                    skipRegisterAllocation: skipRegisterAllocation)
     }
 }
 

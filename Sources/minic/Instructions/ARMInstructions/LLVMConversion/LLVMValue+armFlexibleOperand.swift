@@ -13,12 +13,11 @@ extension LLVMValue {
         case let .register(virtualRegister):
             return (nil, context.getRegister(fromVirtualRegister: virtualRegister).flexibleOperand)
         case let .literal(value):
-            if let _ = Int16(exactly: value) {
+            guard !ARMFlexibleOperand.canHoldValue(value) else {
                 return (nil, .constant(value.immediateValue))
             }
             
             let destReg = context.newVirtualRegister()
-            
             let movInstr = ARMInstructionMacros.getMoveLiteral32(context,
                                                                  target: destReg,
                                                                  source: value.immediateValue)

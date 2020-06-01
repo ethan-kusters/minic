@@ -28,9 +28,7 @@ struct MiniCompilerTestConstants {
         productsDirectory.appendingPathComponent("minic")
     }()
     
-    static let clangURL = URL(fileURLWithPath: "/usr/bin/clang")
-    
-    static let gccURL = URL(fileURLWithPath: "/usr/bin/arm-linux-gnueabi-gcc")
     
     static let armGCC = "arm-linux-gnueabi-gcc"
+    static let clang = "clang"
 }

@@ -5,6 +5,9 @@ import PackageDescription
 
 let package = Package(
     name: "minic",
+    platforms: [
+        .macOS(.v10_13),
+    ],
     products: [
         .executable(name: "minic", targets: ["minic"])
     ],
@@ -26,6 +29,6 @@ let package = Package(
         ]),
         .testTarget(
             name: "MiniCompilerTests",
-            dependencies: ["minic", "System"]),
+            dependencies: ["minic", "System"])
     ]
 )

@@ -12,9 +12,9 @@ class ARMManager {
     let controlFlowGraphs: [ARMControlFlowGraph]
     let filename: String
     
-    init(_ program: Program, with llvmControlFlowGraphs: [LLVMControlFlowGraph], named filename: String) {
+    init(_ program: Program, with llvmControlFlowGraphs: [LLVMControlFlowGraph], named filename: String, skipRegisterAllocation: Bool) {
         self.controlFlowGraphs = llvmControlFlowGraphs.map { llvmCFG in
-            llvmCFG.getARMControlFlowGraph()
+            llvmCFG.getARMControlFlowGraph(skipRegisterAllocation: skipRegisterAllocation)
         }
         
         self.filename = filename

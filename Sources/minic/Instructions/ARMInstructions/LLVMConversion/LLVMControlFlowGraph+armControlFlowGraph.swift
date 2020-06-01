@@ -8,7 +8,7 @@
 import Foundation
 
 extension LLVMControlFlowGraph {
-    func getARMControlFlowGraph() -> ARMControlFlowGraph {
+    func getARMControlFlowGraph(skipRegisterAllocation: Bool) -> ARMControlFlowGraph {
         let context = CodeGenerationContext()
         
         deconstructSSA()
@@ -42,6 +42,6 @@ extension LLVMControlFlowGraph {
             armBlocks.first?.instructions.insert(moveInstruction, at: 0)
         }
         
-        return ARMControlFlowGraph(withBlocks: armBlocks, forFunction: self.function, context: context)
+        return ARMControlFlowGraph(withBlocks: armBlocks, forFunction: self.function, context: context, skipRegisterAllocation: skipRegisterAllocation)
     }
 }
