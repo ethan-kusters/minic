@@ -33,6 +33,8 @@ class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlo
         if useSSA {
             blocks.removeTrivialPhis()
         }
+        
+        removeUselessInstructions()
     }
     
     private lazy var functionEntry = {
