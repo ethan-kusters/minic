@@ -107,14 +107,14 @@ extension LLVMInstruction {
                                                   secondOp: .constant(ARMInstructionConstants.trueValue)).logRegisterUses(context)
             
             let ifTrueBranch = ARMInstruction.branch(condCode: .EQ,
-                                                     label: ifTrue.armSymbol).logRegisterUses(context)
+                                                     label: ifTrue.llvmIdentifier.armSymbol).logRegisterUses(context)
             
             let ifFalseBranch = ARMInstruction.branch(condCode: nil,
-                                                      label: ifFalse.armSymbol).logRegisterUses(context)
+                                                      label: ifFalse.llvmIdentifier.armSymbol).logRegisterUses(context)
             
             return [condInstr, [cmpInstr, ifTrueBranch, ifFalseBranch]].compactAndFlatten()
         case let .unconditionalBranch(destLabel, _):
-            let brInstr = ARMInstruction.branch(condCode: nil, label: destLabel.armSymbol)
+            let brInstr = ARMInstruction.branch(condCode: nil, label: destLabel.llvmIdentifier.armSymbol)
             
             return [brInstr]
         case let .load(target, srcPointer, _):

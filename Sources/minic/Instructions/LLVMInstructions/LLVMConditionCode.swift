@@ -19,18 +19,6 @@ enum LLVMConditionCode: String, Hashable {
     /// not equal
     case ne
     
-    /// unsigned greater than
-    case ugt
-    
-    /// unsigned greater or equal
-    case uge
-    
-    /// unsigned less than
-    case ult
-    
-    /// unsigned less or equal
-    case ule
-    
     /// signed greater than
     case sgt
     

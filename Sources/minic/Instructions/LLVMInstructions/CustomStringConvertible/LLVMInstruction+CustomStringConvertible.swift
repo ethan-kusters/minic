@@ -36,10 +36,10 @@ extension LLVMInstruction: CustomStringConvertible {
             return "\(target) = icmp \(condCode) \(firstOp.type) \(firstOp), \(secondOp)"
             
         case let .conditionalBranch(conditional, ifTrue, ifFalse, _):
-            return "br i1 \(conditional), \(ifTrue), \(ifFalse)"
+            return "br i1 \(conditional), \(ifTrue.llvmIdentifier), \(ifFalse.llvmIdentifier)"
             
         case let .unconditionalBranch(destination, _):
-            return "br \(destination)"
+            return "br \(destination.llvmIdentifier)"
             
         case let .load(target, srcPointer, _):
             return "\(target) = load \(target.type), \(srcPointer.type)* \(srcPointer)"

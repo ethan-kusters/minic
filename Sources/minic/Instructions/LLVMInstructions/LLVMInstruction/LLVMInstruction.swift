@@ -78,13 +78,13 @@ enum LLVMInstruction: InstructionProtocol {
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#br-instruction)
-    case conditionalBranch(conditional: LLVMValue, ifTrue: LLVMIdentifier, ifFalse: LLVMIdentifier, block: LLVMInstructionBlock)
+    case conditionalBranch(conditional: LLVMValue, ifTrue: LLVMInstructionBlock, ifFalse: LLVMInstructionBlock, block: LLVMInstructionBlock)
     
     /// The ‘br’ instruction is used to cause control flow to transfer to a different basic block in the current function.
     ///
     /// # Reference
     /// [LLVM Documentation](https://releases.llvm.org/9.0.0/docs/LangRef.html#br-instruction)
-    case unconditionalBranch(_ target: LLVMIdentifier, block: LLVMInstructionBlock)
+    case unconditionalBranch(_ target: LLVMInstructionBlock, block: LLVMInstructionBlock)
     
     // MARK: - Load & Store
     

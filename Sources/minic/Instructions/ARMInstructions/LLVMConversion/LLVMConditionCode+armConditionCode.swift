@@ -14,14 +14,6 @@ extension LLVMConditionCode {
             return .EQ
         case .ne:
             return .NE
-        case .ugt:
-            return .HI
-        case .uge:
-            return .HS
-        case .ult:
-            return .LO
-        case .ule:
-            return .LS
         case .sgt:
             return .GT
         case .sge:

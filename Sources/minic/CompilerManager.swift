@@ -10,7 +10,7 @@ import Foundation
 class CompilerManager {
     static func compile(sourceFile: URL, outputFile: URL? = nil, generateCfg: Bool = false,
                         generateCfgPdf: Bool = false, emitLlvm: Bool = false, printOutput: Bool = false,
-                        useSSA: Bool, skipRegisterAllocation: Bool = false) throws {
+                        useSSA: Bool, optimize: Bool, skipRegisterAllocation: Bool = false) throws {
         let program = try ParsingManager().parseFileAtURL(sourceFile)
         
         let sourceFileName = sourceFile.deletingPathExtension().lastPathComponent
@@ -18,7 +18,7 @@ class CompilerManager {
         guard let functionsWithContexts = try TypeCheckingManager().check(program) else { return }
         
         let llvmControlFlowGraphs = functionsWithContexts.map { (function, context) in
-            function.getLLVMControlFlowGraph(context: context, useSSA: useSSA)
+            function.getLLVMControlFlowGraph(context: context, useSSA: useSSA, optimize: optimize)
         }
         
         if generateCfgPdf || generateCfg {

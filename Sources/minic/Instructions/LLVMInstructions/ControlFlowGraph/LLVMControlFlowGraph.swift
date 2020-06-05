@@ -12,28 +12,32 @@ class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlo
     
     let context: TypeContext
     let ssaEnabled: Bool
+    let optimizationsEnabled: Bool
     var parameters = [LLVMVirtualRegister]()
     
-    init(_ function: Function, context: TypeContext, useSSA: Bool) {
+    init(_ function: Function, context: TypeContext, useSSA ssaEnabled: Bool, optimize optimizationsEnabled: Bool) {
         self.context = context
-        self.ssaEnabled = useSSA
+        self.ssaEnabled = ssaEnabled
+        self.optimizationsEnabled = optimizationsEnabled
         super.init(blocks: [], function: function)
         
         blocks.append(functionEntry)
         
         if let final = build(function.body, currentBlock: functionEntry) {
             link(final, functionExit)
-            final.addInstruction(.unconditionalBranch(functionExit.llvmIdentifier, block: final))
+            final.addInstruction(.unconditionalBranch(functionExit, block: final))
         }
         
         functionExit.seal()
         buildExitBlock(functionExit)
         blocks.append(functionExit)
         
-        if useSSA {
-            blocks.removeTrivialPhis()
-        }
         
+        guard ssaEnabled else { return }
+        blocks.removeTrivialPhis()
+        
+        guard optimizationsEnabled else { return }
+        sparseConditionalConstantPropagation()
         removeUselessInstructions()
     }
     
@@ -250,7 +254,7 @@ class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlo
             
             if let thenExit = build(thenStmt, currentBlock: thenEntry) {
                 link(thenExit, condExit)
-                thenExit.addInstruction(.unconditionalBranch(condExit.llvmIdentifier, block: thenExit))
+                thenExit.addInstruction(.unconditionalBranch(condExit, block: thenExit))
             }
             
             let ifBranch: [LLVMInstruction]
@@ -262,19 +266,19 @@ class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlo
                 blocks.append(elseEntry)
                 
                 ifBranch = getConditionalBranch(conditional: guardValue,
-                                                ifTrue: thenEntry.llvmIdentifier,
-                                                ifFalse: elseEntry.llvmIdentifier,
+                                                ifTrue: thenEntry,
+                                                ifFalse: elseEntry,
                                                 block: currentBlock)
                 
                 if let elseExit = build(elseStmt, currentBlock: elseEntry) {
                     link(elseExit, condExit)
-                    elseExit.addInstruction(.unconditionalBranch(condExit.llvmIdentifier, block: elseExit))
+                    elseExit.addInstruction(.unconditionalBranch(condExit, block: elseExit))
                 }
             } else {
                 link(currentBlock, condExit)
                 ifBranch = getConditionalBranch(conditional: guardValue,
-                                                ifTrue: thenEntry.llvmIdentifier,
-                                                ifFalse: condExit.llvmIdentifier,
+                                                ifTrue: thenEntry,
+                                                ifFalse: condExit,
                                                 block: currentBlock)
             }
             
@@ -360,7 +364,7 @@ class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlo
             }
             
             link(currentBlock, functionExit)
-            currentBlock.addInstruction(.unconditionalBranch(functionExit.llvmIdentifier, block: currentBlock))
+            currentBlock.addInstruction(.unconditionalBranch(functionExit, block: currentBlock))
             
             return nil
         case let .while(_, guardExp, body):
@@ -373,8 +377,8 @@ class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlo
             link(currentBlock, whileBodyEntry)
             link(currentBlock, whileExit)
             currentBlock.addInstructions(getConditionalBranch(conditional: guardValue,
-                                                              ifTrue: whileBodyEntry.llvmIdentifier,
-                                                              ifFalse: whileExit.llvmIdentifier,
+                                                              ifTrue: whileBodyEntry,
+                                                              ifFalse: whileExit,
                                                               block: currentBlock))
             
             blocks.append(whileBodyEntry)
@@ -391,8 +395,8 @@ class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlo
                 whileBodyExit.addInstructions(secondGuardInstructions)
                 
                 whileBodyExit.addInstructions(getConditionalBranch(conditional: secondGuardValue,
-                                                                   ifTrue: whileBodyEntry.llvmIdentifier,
-                                                                   ifFalse: whileExit.llvmIdentifier,
+                                                                   ifTrue: whileBodyEntry,
+                                                                   ifFalse: whileExit,
                                                                    block: whileBodyExit))
             }
             
@@ -405,8 +409,8 @@ class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlo
     }
     
     func getConditionalBranch(conditional: LLVMValue,
-                              ifTrue: LLVMIdentifier,
-                              ifFalse: LLVMIdentifier,
+                              ifTrue: LLVMInstructionBlock,
+                              ifFalse: LLVMInstructionBlock,
                               block: LLVMInstructionBlock) -> [LLVMInstruction] {
         guard conditional.type != .i1 else {
             let brInstr = LLVMInstruction.conditionalBranch(conditional: conditional,

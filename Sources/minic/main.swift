@@ -20,6 +20,9 @@ struct minic: ParsableCommand {
     @Flag(help: "Favor the stack and disable the use of static single assignment")
     var disableSSA: Bool
     
+    @Flag(help: "Disable single static constant propagation.")
+    var disableOptimizations: Bool
+    
     @Flag(help: "Use GraphViz to generate a PDF of the program's control flow graph.")
     var generateCfgPdf: Bool
     
@@ -52,6 +55,7 @@ struct minic: ParsableCommand {
                                     emitLlvm: emitLlvm,
                                     printOutput: printOutput,
                                     useSSA: !disableSSA,
+                                    optimize: !disableOptimizations,
                                     skipRegisterAllocation: skipRegisterAllocation)
     }
 }

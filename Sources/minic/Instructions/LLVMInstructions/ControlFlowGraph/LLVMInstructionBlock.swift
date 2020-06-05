@@ -20,6 +20,13 @@ final class LLVMInstructionBlock: InstructionBlock {
     var identifierMapping = [LLVMIdentifier : LLVMValue]()
     var sealed: Bool
     
+    var incomingEdgeIsExecutable = [LLVMInstructionBlock : Bool]()
+    var executable: Bool {
+        incomingEdgeIsExecutable.values.contains(true)
+    }
+    
+    var visitedDuringConstantPropagation = false
+    
     var llvmIdentifier: LLVMIdentifier {
         .label(label)
     }
@@ -36,6 +43,26 @@ final class LLVMInstructionBlock: InstructionBlock {
         })
     }
     
+    var conditionalBranchInstructions: [LLVMInstruction] {
+        instructions.filter { instruction in
+            if case .conditionalBranch = instruction {
+                return true
+            } else {
+                return false
+            }
+        }
+    }
+    
+    var unconditionalBranchInstructions: [LLVMInstruction] {
+        instructions.filter { instruction in
+            if case .unconditionalBranch = instruction {
+                return true
+            } else {
+                return false
+            }
+        }
+    }
+    
     init(_ description: String, sealed: Bool = true) {
         self.label = LLVMInstructionBlock.getUniqueLabel(description)
         self.sealed = sealed
@@ -43,6 +70,7 @@ final class LLVMInstructionBlock: InstructionBlock {
     
     func addPredecessor(_ block: LLVMInstructionBlock) {
         predecessors.insert(block)
+        incomingEdgeIsExecutable[block] = false
     }
     
     func addSuccesor(_ block: LLVMInstructionBlock) {
