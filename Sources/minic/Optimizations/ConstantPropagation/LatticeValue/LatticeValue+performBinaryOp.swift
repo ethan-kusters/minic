@@ -11,16 +11,14 @@ extension LatticeValue {
     static func performBinaryOp(lhs: LatticeValue, rhs: LatticeValue,
                                             op: (Int, Int) throws -> (Int)) -> LatticeValue? {
         switch(lhs, rhs) {
-        case let (.constant(lhs), constant(rhs)):
+        case let (.constant(lhsValue), constant(rhsValue)):
             do {
-                let constantVal = try op(lhs, rhs)
+                let constantVal = try op(lhsValue, rhsValue)
                 return .constant(constantVal)
             } catch {
                 /// Probably a divide by zero error
                 return .bottom
             }
-            
-            
         case (_, .bottom),
              (.bottom, _):
             return .bottom

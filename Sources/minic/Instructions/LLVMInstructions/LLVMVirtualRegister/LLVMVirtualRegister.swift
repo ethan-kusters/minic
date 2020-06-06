@@ -12,7 +12,7 @@ class LLVMVirtualRegister {
     
     var rawIdentifier: String
     let type: LLVMType
-    let parmeterIndex: Int?
+    let parameterIndex: Int?
     
     private(set) var definingInstruction: LLVMInstruction?
     
@@ -27,20 +27,20 @@ class LLVMVirtualRegister {
         LLVMVirtualRegister.currentIndex += 1
         rawIdentifier = "_reg\(LLVMVirtualRegister.currentIndex)"
         self.type = type
-        self.parmeterIndex = parameterIndex
+        self.parameterIndex = parameterIndex
     }
     
     init(withPrefix prefix: String, type: LLVMType, parameterIndex: Int? = nil) {
         LLVMVirtualRegister.currentIndex += 1
         rawIdentifier = "_\(prefix)_\(LLVMVirtualRegister.currentIndex)"
         self.type = type
-        self.parmeterIndex = parameterIndex
+        self.parameterIndex = parameterIndex
     }
     
     init(withId id: String, type: LLVMType, parameterIndex: Int? = nil) {
         self.rawIdentifier = id
         self.type = type
-        self.parmeterIndex = parameterIndex
+        self.parameterIndex = parameterIndex
     }
     
     func setDefiningInstruction(_ instruction: LLVMInstruction) {

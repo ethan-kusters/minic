@@ -70,7 +70,7 @@ class BenchmarkLLVMTestRunner {
         guard clangResult.success
             && clangResult.standardError.isEmpty
             && clangResult.standardOutput.isEmpty else {
-                XCTFail("Mini Comiler Failure: \n\n\(miniCompilerResult.standardOutput)\n\n\(miniCompilerResult.standardError)")
+                XCTFail("Mini Compiler Failure: \n\n\(miniCompilerResult.standardOutput)\n\n\(miniCompilerResult.standardError)")
                 return
         }
         

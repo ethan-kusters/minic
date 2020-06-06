@@ -14,15 +14,8 @@ extension LLVMControlFlowGraph {
         
         var registerValues = LatticeMapping()
         
-        blocks.forEach { block in
-            block.identifierMapping.forEach { (id, value) in
-                guard case let .virtualRegister(register) = id else { return }
-                guard case let .literal(constantValue) = value else { return }
-                registerValues[register] = .constant(constantValue)
-            }
-        }
         virtualRegisters.forEach { register in
-            guard register.parmeterIndex == nil else {
+            guard register.parameterIndex == nil else {
                 registerValues[register] = .bottom
                 return
             }
@@ -100,8 +93,20 @@ extension LLVMControlFlowGraph {
             }
         }
         
+        let phiInstructions = blocks.flatMap { block in
+            block.phiInstructions
+        }
+        
+        phiInstructions.forEach { phiInstruction in
+            phiInstruction.operands = phiInstruction.operands.filter { operand in
+                operand.block.executable
+            }
+        }
+        
         blocks.removeAll { block in
             block.executable == false
         }
+        
+        blocks.removeTrivialPhis()
     }
 }

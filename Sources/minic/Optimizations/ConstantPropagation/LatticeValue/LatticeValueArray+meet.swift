@@ -11,13 +11,15 @@ extension Array where Element == LatticeValue {
     func meet() -> LatticeValue {
         guard var currentValue = first else { return .top }
         
-        forEach { value in
-            switch(currentValue, value) {
-            case let (.constant(lhs), .constant(rhs)):
-                guard lhs == rhs else {
+        forEach { newValue in
+            switch(currentValue, newValue) {
+            case let (.constant(currentValueConstant), .constant(newValueConstant)):
+                guard currentValueConstant == newValueConstant else {
                     currentValue = .bottom
                     return
                 }
+            case let (.top, .constant(newValueConstant)):
+                currentValue = .constant(newValueConstant)
             case (_, .bottom):
                 currentValue = .bottom
             case (_, .top):

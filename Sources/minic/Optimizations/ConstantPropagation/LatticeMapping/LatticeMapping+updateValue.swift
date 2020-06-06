@@ -9,7 +9,7 @@ import Foundation
 
 extension Dictionary where Key == LLVMVirtualRegister, Value == LatticeValue {
     mutating func setValue(_ ssaWorkList: inout [LLVMVirtualRegister],
-                              for register: LLVMVirtualRegister, with value: LatticeValue?) {
+                           for register: LLVMVirtualRegister, with value: LatticeValue?) {
         guard self[register] != value else { return }
         self[register] = value
         ssaWorkList.append(register)

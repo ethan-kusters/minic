@@ -33,7 +33,7 @@ extension LLVMControlFlowGraph {
         }
         
         parameters.forEach { parameter in
-            guard let parameterIndex = parameter.parmeterIndex else { return }
+            guard let parameterIndex = parameter.parameterIndex else { return }
             let paramVirtualReg = context.getRegister(fromVirtualRegister: parameter)
             let paramRealReg = context.getRegister(fromRealRegister: .generalPurpose(parameterIndex))
             let moveInstruction = ARMInstruction.move(condCode: nil,
