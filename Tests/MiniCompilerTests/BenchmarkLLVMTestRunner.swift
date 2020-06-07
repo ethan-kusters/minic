@@ -12,9 +12,11 @@ import System
 class BenchmarkLLVMTestRunner {
     let ssaEnabled: Bool
     let useLongerInput: Bool
+    let optimizationsEnabled: Bool
     
-    init(enableSSA: Bool, useLongerInput: Bool) {
+    init(enableSSA: Bool, enableOptimizations: Bool, useLongerInput: Bool) {
         self.ssaEnabled = enableSSA
+        self.optimizationsEnabled = enableOptimizations
         self.useLongerInput = useLongerInput
     }
     
@@ -47,6 +49,7 @@ class BenchmarkLLVMTestRunner {
                                                             "-o",
                                                             compiledMiniFile.path,
                                                             ssaEnabled ? nil : "--disable-ssa",
+                                                            optimizationsEnabled ? nil : "--disable-optimizations",
                                                             "--emit-llvm"
                                                         ].compactMap {$0},
                                             captureOutput: true)

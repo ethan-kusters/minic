@@ -15,6 +15,15 @@ extension LatticeValue {
             return .constant(value)
         case let (.constant(value), _) where value == LLVMInstructionConstants.falseValue:
             return .constant(value)
+        case let (.constant(lhsValue), .constant(rhsValue)):
+            let lhsBoolValue = lhsValue == LLVMInstructionConstants.trueValue ? true : false
+            let rhsBoolValue = rhsValue == LLVMInstructionConstants.trueValue ? true : false
+            
+            let resultBoolValue = lhsBoolValue && rhsBoolValue
+            
+            let resultValue = resultBoolValue == true ? LLVMInstructionConstants.trueValue : LLVMInstructionConstants.falseValue
+            
+            return .constant(resultValue)
         case (.bottom, _),
              (_, .bottom):
             return .bottom
@@ -29,6 +38,15 @@ extension LatticeValue {
             return .constant(value)
         case let (.constant(value), _) where value == LLVMInstructionConstants.trueValue:
             return .constant(value)
+        case let (.constant(lhsValue), .constant(rhsValue)):
+            let lhsBoolValue = lhsValue == LLVMInstructionConstants.trueValue ? true : false
+            let rhsBoolValue = rhsValue == LLVMInstructionConstants.trueValue ? true : false
+            
+            let resultBoolValue = lhsBoolValue || rhsBoolValue
+            
+            let resultValue = resultBoolValue == true ? LLVMInstructionConstants.trueValue : LLVMInstructionConstants.falseValue
+            
+            return .constant(resultValue)
         case (.bottom, _),
              (_, .bottom):
             return .bottom

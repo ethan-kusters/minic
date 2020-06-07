@@ -9,7 +9,9 @@ import XCTest
 import class Foundation.Bundle
 
 final class LLVMWithoutSSABenchmarks: XCTestCase {
-    let runBenchmarkWithoutSSA = BenchmarkLLVMTestRunner(enableSSA: false, useLongerInput: false)
+    let runBenchmarkWithoutSSA = BenchmarkLLVMTestRunner(enableSSA: false,
+                                                         enableOptimizations: false,
+                                                         useLongerInput: false)
     
     func testBenchMarkishTopicsBenchmark() throws {
         try runBenchmarkWithoutSSA(named: "BenchMarkishTopics")

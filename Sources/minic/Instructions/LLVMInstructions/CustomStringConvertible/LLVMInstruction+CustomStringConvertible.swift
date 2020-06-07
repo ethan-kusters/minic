@@ -12,25 +12,25 @@ extension LLVMInstruction: CustomStringConvertible {
         switch(self) {
             
         case let .add(target, firstOp, secondOp, _):
-            return "\(target) = add \(firstOp.type) \(firstOp), \(secondOp)"
+            return "\(target) = add \(target.type) \(firstOp), \(secondOp)"
             
         case let .subtract(target, firstOp, secondOp, _):
-            return "\(target) = sub \(firstOp.type) \(firstOp), \(secondOp)"
+            return "\(target) = sub \(target.type) \(firstOp), \(secondOp)"
             
         case let .multiply(target, firstOp, secondOp, _):
-            return "\(target) = mul \(firstOp.type) \(firstOp), \(secondOp)"
+            return "\(target) = mul \(target.type) \(firstOp), \(secondOp)"
             
         case let .signedDivide(target, firstOp, secondOp, _):
-            return "\(target) = sdiv \(firstOp.type) \(firstOp), \(secondOp)"
+            return "\(target) = sdiv \(target.type) \(firstOp), \(secondOp)"
             
         case let .and(target, firstOp, secondOp, _):
-            return "\(target) = and \(firstOp.type) \(firstOp), \(secondOp)"
+            return "\(target) = and \(target.type) \(firstOp), \(secondOp)"
             
         case let .or(target, firstOp, secondOp, _):
-            return "\(target) = or \(firstOp.type) \(firstOp), \(secondOp)"
+            return "\(target) = or \(target.type) \(firstOp), \(secondOp)"
             
         case let .exclusiveOr(target, firstOp, secondOp, _):
-            return "\(target) = xor \(firstOp.type) \(firstOp), \(secondOp)"
+            return "\(target) = xor \(target.type) \(firstOp), \(secondOp)"
             
         case let .comparison(target, condCode, firstOp, secondOp, _):
             return "\(target) = icmp \(condCode) \(firstOp.type) \(firstOp), \(secondOp)"

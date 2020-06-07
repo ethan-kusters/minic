@@ -9,7 +9,7 @@ import XCTest
 import class Foundation.Bundle
 
 final class LLVMWithSSABenchmarks: XCTestCase {
-    let runBenchmarkWithSSA = BenchmarkLLVMTestRunner(enableSSA: true, useLongerInput: false)
+    let runBenchmarkWithSSA = BenchmarkLLVMTestRunner(enableSSA: true, enableOptimizations: false, useLongerInput: false)
     
     func testBenchMarkishTopicsBenchmark() throws {
         try runBenchmarkWithSSA(named: "BenchMarkishTopics")
