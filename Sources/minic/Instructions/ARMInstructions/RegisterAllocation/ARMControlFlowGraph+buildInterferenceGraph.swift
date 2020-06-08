@@ -9,6 +9,10 @@ import Foundation
 
 extension ARMControlFlowGraph {
     func buildInteferenceGraph() {
+        registers.forEach { register in
+            register.resetInterferingRegisters()
+        }
+        
         interferenceGraph.removeAll()
         
         blocks.forEach { block in

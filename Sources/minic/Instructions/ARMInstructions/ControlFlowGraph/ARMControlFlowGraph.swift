@@ -20,10 +20,6 @@ class ARMControlFlowGraph: ControlFlowGraph<ARMInstruction, ARMInstructionBlock>
         if skipRegisterAllocation {
             calleeSavedUsedRegisters = []
         } else {
-            computeGenKillSets(context)
-            computeLiveOut()
-            buildInteferenceGraph()
-            
             let allUsedRegisters = performRegisterAllocation()
             calleeSavedUsedRegisters = Set(allUsedRegisters)
                 .intersection(ARMInstructionConstants.calleeSavedRegisters)

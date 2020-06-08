@@ -23,4 +23,8 @@ extension ARMInstructionBlock {
         
         return oldLiveOutVariables != liveOutVariables
     }
+    
+    func resetLiveOut() {
+        liveOutVariables.removeAll()
+    }
 }

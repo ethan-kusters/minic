@@ -8,8 +8,9 @@
 import Foundation
 
 extension ARMControlFlowGraph {
-    func computeGenKillSets(_ context: CodeGenerationContext) {
+    func computeGenKillSets() {
         blocks.forEach { block in
+            block.resetGenKillSets()
             block.computeGenKillSets(context)
         }
     }

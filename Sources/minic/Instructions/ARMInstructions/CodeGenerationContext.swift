@@ -69,4 +69,11 @@ class CodeGenerationContext {
         
         localValueMapping[id] = offset.immediateValue
     }
+    
+    func getNewSpillOffset() -> ARMImmediateValue {
+        let offset = ((numOfLocalsOnStack) * ARMInstructionConstants.bytesPerValue)
+        numOfLocalsOnStack += 1
+        
+        return offset.immediateValue
+    }
 }

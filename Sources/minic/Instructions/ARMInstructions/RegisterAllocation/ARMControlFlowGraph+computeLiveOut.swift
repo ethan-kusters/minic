@@ -9,6 +9,10 @@ import Foundation
 
 extension ARMControlFlowGraph {
     func computeLiveOut() {
+        blocks.forEach { block in
+            block.resetLiveOut()
+        }
+        
         var liveOutChanged = true
         
         while liveOutChanged {

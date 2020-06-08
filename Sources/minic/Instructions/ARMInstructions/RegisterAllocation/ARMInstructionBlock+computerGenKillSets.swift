@@ -21,4 +21,9 @@ extension ARMInstructionBlock {
             }
         }
     }
+    
+    func resetGenKillSets() {
+        killedVariables.removeAll()
+        generatedVariables.removeAll()
+    }
 }

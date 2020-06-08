@@ -9,8 +9,18 @@ import Foundation
 
 extension ARMControlFlowGraph {
     func performRegisterAllocation() -> Set<ARMRealRegister> {
+        computeGenKillSets()
+        computeLiveOut()
+        buildInteferenceGraph()
+        
         var registerColoring = [Set<ARMRegister>]()
         var coloringStack = [ARMRegister]()
+        
+        var coloringCount: Int {
+            registerColoring.filter { color in
+                !color.containsNonAvailableRegister
+            }.count
+        }
         
         while let unconstrainedNode = interferenceGraph.removeFirstUnconstrainedNode() {
             unconstrainedNode.removeEdges()
@@ -39,6 +49,16 @@ extension ARMControlFlowGraph {
         
         while let currentNode = coloringStack.popLast() {
             color(currentNode, with: &registerColoring)
+            guard coloringCount <= ARMInstructionConstants.availableRegisters.count else {
+                if !currentNode.spilled {
+                    currentNode.spill(self)
+                } else {
+                    coloringStack.first(where: { $0.spilled == false })!.spill(self)
+                }
+                
+                
+                return performRegisterAllocation()
+            }
         }
         
         var availableRegisters = ARMInstructionConstants.availableRegisters
@@ -59,7 +79,7 @@ extension ARMControlFlowGraph {
                     let interference = context.getRegister(fromRealRegister: realRegister).interferingRegisters
                     return registerColor.intersection(interference).isEmpty
                 }) else {
-                    fatalError("Haven't implmented spilling yet")
+                    fatalError()
                 }
             
                 registerColor.forEach { armRegister in

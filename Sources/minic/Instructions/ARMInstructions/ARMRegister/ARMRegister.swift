@@ -12,6 +12,7 @@ class ARMRegister {
     let uuid = UUID()
     var uses = Set<ARMInstruction>()
     var definitions = Set<ARMInstruction>()
+    var spilled = false
     
     var interferingRegisters = Set<ARMRegister>()
     
@@ -50,5 +51,9 @@ class ARMRegister {
         interferingRegisters.forEach { register in
             register.interferingRegisters.remove(self)
         }
+    }
+    
+    func resetInterferingRegisters() {
+        interferingRegisters.removeAll()
     }
 }
