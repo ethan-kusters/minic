@@ -106,7 +106,8 @@ class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlo
     
     private func buildEntryBlockWithSSA(_ entryBlock: LLVMInstructionBlock) {
         if function.retType != .void {
-            let retReg = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer, type: function.retType.llvmType)
+            let retReg = LLVMVirtualRegister(withId: LLVMInstructionConstants.returnPointer,
+                                             type: function.retType.llvmType)
             
             entryBlock.writeVariable(retReg.identifier, asValue: .null(function.retType.llvmType))
         }
@@ -116,7 +117,8 @@ class LLVMControlFlowGraph: ControlFlowGraph<LLVMInstruction, LLVMInstructionBlo
                                                     type: param.type.llvmType,
                                                     parameterIndex: index)
             
-            existingParam.setDefiningInstruction(LLVMInstruction.allocate(target: existingParam, block: entryBlock))
+            existingParam.setDefiningInstruction(LLVMInstruction.allocate(target: existingParam,
+                                                                          block: entryBlock))
             
             parameters.append(existingParam)
             

@@ -8,8 +8,17 @@
 import Foundation
 
 class CodeGenerationContext {
+    private let function: Function
+    
     private var virtualRegisterMapping = [ARMVirtualRegister : ARMRegister]()
     private var realRegisterMapping = [ARMRealRegister : ARMRegister]()
+    
+    private(set) var maxNumOfArgsOnStack = 0
+    private(set) var numOfLocalsOnStack = 0
+    
+    init(forFunction function: Function) {
+        self.function = function
+    }
     
     func getRegister(fromVirtualRegister virtualRegister: LLVMVirtualRegister) -> ARMRegister {
         let armVirtualRegister = ARMVirtualRegister(virtualRegister.description)
@@ -46,5 +55,15 @@ class CodeGenerationContext {
         registers.map { register in
             getRegister(fromRealRegister: register)
         }
+    }
+    
+    func setMaxNumOfArgsOnStack(_ numOfArgs: Int) {
+        guard numOfArgs > maxNumOfArgsOnStack else { return }
+        maxNumOfArgsOnStack = numOfArgs
+    }
+    
+    func getNextLocalAddressOffset() -> ARMImmediateValue {
+        numOfLocalsOnStack += 1
+        return (numOfLocalsOnStack - 1).immediateValue
     }
 }

@@ -39,10 +39,10 @@ extension ARMInstruction {
         case let .moveTop(_, target, _),
              let .moveBottom(_, target, _):
             target.addDefinition(self)
-        case let .load(target, sourceAddress):
+        case let .load(target, sourceAddress, _):
             target.addDefinition(self)
             sourceAddress.addUse(self)
-        case let .store(source, targetAddress):
+        case let .store(source, targetAddress, _):
             source.addUse(self)
             targetAddress.addUse(self)
         case let .push(registers):

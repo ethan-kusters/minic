@@ -30,9 +30,9 @@ extension ARMInstruction {
         case let .moveTop(_, target, _),
              let .moveBottom(_, target, _):
             return [target]
-        case let .load(target, _):
+        case let .load(target, _, _):
             return [target]
-        case .store(_, _):
+        case .store(_, _, _):
             return []
         case .push(_):
             return []

@@ -20,9 +20,9 @@ struct LLVMInstructionConstants {
     static let mallocFunction = "malloc"
     static var expectedArchitecture: Architecture {
         #if (arch(x86_64))
-        return Architecture._64
+        return ._64
         #else
-        return Architecture._32
+        return ._32
         #endif
     }
     

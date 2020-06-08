@@ -50,9 +50,9 @@ extension ARMInstruction {
         case .moveTop(_, _, _),
              .moveBottom(_, _, _):
             return []
-        case let .load(_, sourceAddress):
+        case let .load(_, sourceAddress, _):
             return [sourceAddress]
-        case let .store(source, targetAddress):
+        case let .store(source, targetAddress, _):
             return [source, targetAddress]
         case let .push(registers):
             return registers

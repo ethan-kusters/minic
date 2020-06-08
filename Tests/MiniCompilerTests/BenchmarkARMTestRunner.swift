@@ -57,6 +57,10 @@ class BenchmarkARMTestRunner {
                 return
         }
         
+        guard MiniCompilerTestConstants.expectedArchitecture == ._32 else {
+            throw XCTSkip("This test can only be run on an ARM CPU.")
+        }
+        
         let assemblerResult = try system(command: MiniCompilerTestConstants.armGCC,
                                          parameters: [
                                                         compiledMiniFile.path,

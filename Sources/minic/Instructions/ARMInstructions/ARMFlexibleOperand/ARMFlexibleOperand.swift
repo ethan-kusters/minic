@@ -30,6 +30,6 @@ extension ARMFlexibleOperand {
     static let maximumValue: Int = Int(pow(Double(maximumNumberOfBits), 2))
     
     static func canHoldValue(_ value: Int) -> Bool {
-        return value < maximumValue
+        return abs(value) < maximumValue
     }
 }

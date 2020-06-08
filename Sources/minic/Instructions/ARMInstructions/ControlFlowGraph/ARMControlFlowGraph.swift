@@ -33,14 +33,15 @@ class ARMControlFlowGraph: ControlFlowGraph<ARMInstruction, ARMInstructionBlock>
             }
         }
         
+        let valuesOnStack = context.maxNumOfArgsOnStack + context.numOfLocalsOnStack
         
         let functionPrologue = ARMInstructionMacros.getFunctionPrologue(context,
                                                                         registersUsed: calleeSavedUsedRegisters,
-                                                                        valuesOnStack: 0)
+                                                                        valuesOnStack: valuesOnStack)
         
         let functionEpilogue = ARMInstructionMacros.getFunctionEpilogue(context,
                                                                         registersUsed: calleeSavedUsedRegisters,
-                                                                        valuesOnStack: 0)
+                                                                        valuesOnStack: valuesOnStack)
         
         self.blocks.first?.instructions.insert(contentsOf: functionPrologue, at: 0)
         self.blocks.last?.instructions.append(contentsOf: functionEpilogue)

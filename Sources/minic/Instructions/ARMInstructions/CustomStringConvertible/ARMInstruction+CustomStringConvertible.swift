@@ -34,10 +34,18 @@ extension ARMInstruction: CustomStringConvertible {
             return "\tMOVT\(optional: condCode) \(target), \(source)"
         case let .moveBottom(condCode, target, source):
             return "\tMOVW\(optional: condCode) \(target), \(source)"
-        case let .load(target, sourceAddress):
-            return "\tLDR \(target), [\(sourceAddress)]"
-        case let .store(source, targetAddress):
-            return "\tSTR \(source), [\(targetAddress)]"
+        case let .load(target, sourceAddress, offset):
+            if let offset = offset {
+                return "\tLDR \(target), [\(sourceAddress), \(offset)]"
+            } else {
+                return "\tLDR \(target), [\(sourceAddress)]"
+            }
+        case let .store(source, targetAddress, offset):
+            if let offset = offset {
+                return "\tSTR \(source), [\(targetAddress), \(offset)]"
+            } else {
+                return "\tSTR \(source), [\(targetAddress)]"
+            }
         case let .branchWithLink(label, _):
             return "\tBL \(label)"
         case let .push(registers):

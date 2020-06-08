@@ -145,21 +145,33 @@ extension LLVMInstruction {
             return [ptrInstr, [addInstr]].compactAndFlatten()
         case let .call(target, functionIdentifier, arguments, _):
             var argumentRegisters = [ARMRegister]()
+            context.setMaxNumOfArgsOnStack(arguments.count - 4)
             
-            let movArgIntrs = arguments.enumerated().flatMap { (index, argument) -> [ARMInstruction] in
-                guard index < 3 else { fatalError("ToDo: Add support for >3 args")}
-                
-                let (srcInstr, srcOp) = argument.getFlexibleOperand(context)
-                
-                let argReg = index.getARMRegister(context)
-                argumentRegisters.append(argReg)
-                
-                let movInstr = ARMInstruction.move(condCode: nil,
-                                                   target: argReg,
-                                                   source: srcOp).logRegisterUses(context)
-                
-                return [srcInstr, [movInstr]].compactAndFlatten()
+            let movAndStrArgIntrs = arguments.enumerated().flatMap { (index, argument) -> [ARMInstruction] in
+                if index < 4 {
+                    let (srcInstr, srcOp) = argument.getFlexibleOperand(context)
+                    
+                    let argReg = index.getARMRegister(context)
+                    argumentRegisters.append(argReg)
+                    
+                    let movInstr = ARMInstruction.move(condCode: nil,
+                                                       target: argReg,
+                                                       source: srcOp).logRegisterUses(context)
+                    
+                    return [srcInstr, [movInstr]].compactAndFlatten()
+                } else {
+                    let (srcInstr, srcReg) = argument.getARMRegister(context)
+                    let offset = (index - 4) * ARMInstructionConstants.bytesPerValue
+                    
+                    let sp = context.getRegister(fromRealRegister: .stackPointer)
+                    let strInstr = ARMInstruction.store(source: srcReg,
+                                                                targetAddress: sp,
+                                                                offset: offset.immediateValue)
+                    
+                    return [srcInstr, [strInstr]].compactAndFlatten()
+                }
             }
+            
             
             let blInstr = ARMInstruction.branchWithLink(label: functionIdentifier.armSymbol,
                                                         arguments: argumentRegisters)
@@ -173,7 +185,7 @@ extension LLVMInstruction {
                                        source: r0.flexibleOperand).logRegisterUses(context)
             }
             
-            return [movArgIntrs, [blInstr, movRetValInstr].compact()].compactAndFlatten()
+            return [movAndStrArgIntrs, [blInstr, movRetValInstr].compact()].compactAndFlatten()
         case let .returnValue(retVal, _):
             let r0 = context.getRegister(fromRealRegister: 0)
             
@@ -187,17 +199,12 @@ extension LLVMInstruction {
         case .returnVoid:
             return []
         case let .allocate(target, _):
-            let sp = context.getRegister(fromRealRegister: .stackPointer)
+            let fp = context.getRegister(fromRealRegister: .framePointer)
+            let addInstr = ARMInstruction.subtract(target: target.getARMRegister(context),
+                                                   firstOp: fp,
+                                                   secondOp: .constant(context.getNextLocalAddressOffset()))
             
-            let spSubInstr = ARMInstruction.subtract(target: sp,
-                                                     firstOp: sp,
-                                                     secondOp: .constant(ARMInstructionConstants.bytesPerValue.immediateValue)).logRegisterUses(context)
-            
-            let movInstr = ARMInstruction.move(condCode: nil,
-                                               target: target.getARMRegister(context),
-                                               source: sp.flexibleOperand).logRegisterUses(context)
-            
-            return [spSubInstr, movInstr]
+            return [addInstr]
         case let .declareGlobal(target, _):
             return [.declareGlobal(label: target.armSymbol)]
         case .declareStructureType:

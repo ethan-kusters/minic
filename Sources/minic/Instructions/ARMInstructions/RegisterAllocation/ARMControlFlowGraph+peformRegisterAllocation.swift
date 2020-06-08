@@ -82,7 +82,7 @@ extension ARMControlFlowGraph {
             }
         } else {
             possibleColor = registerColoring.firstIndex { color in
-                color.intersection(register.interferingRegisters).isEmpty
+                color.intersection(register.interferingRegisters).isEmpty && !color.containsNonAvailableRegister
             }
         }
         

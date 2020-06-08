@@ -19,4 +19,11 @@ extension Collection where Element == ARMRegister {
             element.register is ARMRealRegister
         })?.register as? ARMRealRegister
     }
+    
+    var containsNonAvailableRegister: Bool {
+        contains { element in
+            guard let register = element.register as? ARMRealRegister else { return false }
+            return !ARMInstructionConstants.availableRegisters.contains(register)
+        }
+    }
 }

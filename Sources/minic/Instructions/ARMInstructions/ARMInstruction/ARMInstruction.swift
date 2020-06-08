@@ -150,20 +150,20 @@ enum ARMInstruction: InstructionProtocol {
     /// Load with register offset.
     ///
     /// # Syntax
-    /// `LDR{type}{cond} Rt, [Rn, ±Rm {, shift}] ; register offset`
+    /// `LDR{type}{cond} Rt, [Rn {, #offset}] ; immediate offset`
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/ldr-register-offset)
-    case load(target: ARMRegister, sourceAddress: ARMRegister)
+    case load(target: ARMRegister, sourceAddress: ARMRegister, offset: ARMImmediateValue? = nil)
     
     /// Store with register offset.
     ///
     /// # Syntax
-    /// `STR{type}{cond} Rt, [Rn, ±Rm {, shift}] ; register offset`
+    /// `STR{type}{cond} Rt, [Rn {, #offset}] ; immediate offset`
     ///
     /// # Reference
     /// [ARM Documentation](https://developer.arm.com/docs/100076/0200/a32t32-instruction-set-reference/a32-and-t32-instructions/str-register-offset)
-    case store(source: ARMRegister, targetAddress: ARMRegister)
+    case store(source: ARMRegister, targetAddress: ARMRegister, offset: ARMImmediateValue? = nil)
     
     // MARK: - Invocation
     

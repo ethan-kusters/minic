@@ -9,7 +9,7 @@ import Foundation
 
 extension LLVMControlFlowGraph {
     func getARMControlFlowGraph(skipRegisterAllocation: Bool) -> ARMControlFlowGraph {
-        let context = CodeGenerationContext()
+        let context = CodeGenerationContext(forFunction: function)
         
         deconstructSSA()
         
@@ -35,13 +35,28 @@ extension LLVMControlFlowGraph {
         parameters.forEach { parameter in
             guard let parameterIndex = parameter.parameterIndex else { return }
             let paramVirtualReg = context.getRegister(fromVirtualRegister: parameter)
-            let paramRealReg = context.getRegister(fromRealRegister: .generalPurpose(parameterIndex))
-            let moveInstruction = ARMInstruction.move(condCode: nil,
-                                                      target: paramVirtualReg,
-                                                      source: .register(paramRealReg)).logRegisterUses(context)
-            armBlocks.first?.instructions.insert(moveInstruction, at: 0)
+            
+            if parameterIndex < 4 {
+                let paramRealReg = context.getRegister(fromRealRegister: .generalPurpose(parameterIndex))
+                let moveInstruction = ARMInstruction.move(condCode: nil,
+                                                          target: paramVirtualReg,
+                                                          source: .register(paramRealReg)).logRegisterUses(context)
+                armBlocks.first?.instructions.insert(moveInstruction, at: 0)
+            } else {
+                let fp = context.getRegister(fromRealRegister: .framePointer)
+                let offset = (parameterIndex - 3) * ARMInstructionConstants.bytesPerValue
+                
+                let loadInstruction = ARMInstruction.load(target: paramVirtualReg,
+                                                          sourceAddress: fp,
+                                                          offset: offset.immediateValue).logRegisterUses(context)
+                
+                armBlocks.first?.instructions.insert(loadInstruction, at: 0)
+            }
         }
         
-        return ARMControlFlowGraph(withBlocks: armBlocks, forFunction: self.function, context: context, skipRegisterAllocation: skipRegisterAllocation)
+        return ARMControlFlowGraph(withBlocks: armBlocks,
+                                   forFunction: self.function,
+                                   context: context,
+                                   skipRegisterAllocation: skipRegisterAllocation)
     }
 }

@@ -99,7 +99,7 @@ extension LLVMControlFlowGraph {
         
         phiInstructions.forEach { phiInstruction in
             phiInstruction.operands = phiInstruction.operands.filter { operand in
-                operand.block.executable
+                phiInstruction.block.incomingEdgeIsExecutable[operand.block]!
             }
         }
         

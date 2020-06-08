@@ -28,7 +28,19 @@ struct MiniCompilerTestConstants {
         productsDirectory.appendingPathComponent("minic")
     }()
     
+    static var expectedArchitecture: Architecture {
+        #if (arch(x86_64))
+        return ._64
+        #else
+        return ._32
+        #endif
+    }
     
     static let armGCC = "arm-linux-gnueabi-gcc"
     static let clang = "clang"
+}
+
+enum Architecture {
+    case _32
+    case _64
 }
