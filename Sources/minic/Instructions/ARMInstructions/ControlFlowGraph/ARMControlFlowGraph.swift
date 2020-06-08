@@ -30,7 +30,7 @@ class ARMControlFlowGraph: ControlFlowGraph<ARMInstruction, ARMInstructionBlock>
                 .sorted()
                 .map { register in
                     context.getRegister(fromRealRegister: register)
-            }
+                }
         }
         
         let valuesOnStack = context.maxNumOfArgsOnStack + context.numOfLocalsOnStack

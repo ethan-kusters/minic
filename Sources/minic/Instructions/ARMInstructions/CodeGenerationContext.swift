@@ -12,6 +12,7 @@ class CodeGenerationContext {
     
     private var virtualRegisterMapping = [ARMVirtualRegister : ARMRegister]()
     private var realRegisterMapping = [ARMRealRegister : ARMRegister]()
+    private(set) var localValueMapping = [LLVMIdentifier : ARMImmediateValue]()
     
     private(set) var maxNumOfArgsOnStack = 0
     private(set) var numOfLocalsOnStack = 0
@@ -62,8 +63,10 @@ class CodeGenerationContext {
         maxNumOfArgsOnStack = numOfArgs
     }
     
-    func getNextLocalAddressOffset() -> ARMImmediateValue {
+    func mapLocalAllocation(_ id: LLVMIdentifier) {
+        let offset = ((numOfLocalsOnStack) * ARMInstructionConstants.bytesPerValue)
         numOfLocalsOnStack += 1
-        return (numOfLocalsOnStack - 1).immediateValue
+        
+        localValueMapping[id] = offset.immediateValue
     }
 }

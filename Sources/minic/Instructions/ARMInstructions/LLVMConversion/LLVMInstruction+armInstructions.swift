@@ -118,23 +118,41 @@ extension LLVMInstruction {
             
             return [brInstr]
         case let .load(target, srcPointer, _):
-            let (srcInstr, srcReg) = srcPointer.getARMRegisterForPointer(context)
-            
-            let ldInstr = ARMInstruction.load(target: target.getARMRegister(context),
-                                              sourceAddress: srcReg).logRegisterUses(context)
-            
-            return [srcInstr, [ldInstr]].compactAndFlatten()
+            if let localOffset = context.localValueMapping[srcPointer] {
+                let sp = context.getRegister(fromRealRegister: .stackPointer)
+                let ldInstr = ARMInstruction.load(target: target.getARMRegister(context),
+                                                  sourceAddress: sp,
+                                                  offset: localOffset).logRegisterUses(context)
+                
+                return [ldInstr]
+            } else {
+                let (srcInstr, srcReg) = srcPointer.getARMRegisterForPointer(context)
+                
+                let ldInstr = ARMInstruction.load(target: target.getARMRegister(context),
+                                                  sourceAddress: srcReg).logRegisterUses(context)
+                
+                return [srcInstr, [ldInstr]].compactAndFlatten()
+            }
         case let .store(source, destPointer, _):
             let (srcInstr, srcReg) = source.getARMRegister(context)
-            let (trgInstr, trgRrg) = destPointer.getARMRegisterForPointer(context)
             
-            let storeInstruction = ARMInstruction.store(source: srcReg,
-                                                        targetAddress: trgRrg).logRegisterUses(context)
-            
-            return [srcInstr, trgInstr, [storeInstruction]].compactAndFlatten()
+            if let localOffset = context.localValueMapping[destPointer] {
+                let sp = context.getRegister(fromRealRegister: .stackPointer)
+                let strInstr = ARMInstruction.store(source: srcReg,
+                                                   targetAddress: sp,
+                                                   offset: localOffset).logRegisterUses(context)
+                
+                return [srcInstr, [strInstr]].compactAndFlatten()
+            } else {
+                let (trgInstr, trgRrg) = destPointer.getARMRegisterForPointer(context)
+                
+                let storeInstruction = ARMInstruction.store(source: srcReg,
+                                                            targetAddress: trgRrg).logRegisterUses(context)
+                
+                return [srcInstr, trgInstr, [storeInstruction]].compactAndFlatten()
+            }
         case let .getElementPointer(target, _, structurePointer, elementIndex, _):
             let (ptrInstr, ptrReg) = structurePointer.getARMRegister(context)
-            
             
             let offset = elementIndex * ARMInstructionConstants.bytesPerValue
             
@@ -199,12 +217,8 @@ extension LLVMInstruction {
         case .returnVoid:
             return []
         case let .allocate(target, _):
-            let fp = context.getRegister(fromRealRegister: .framePointer)
-            let addInstr = ARMInstruction.subtract(target: target.getARMRegister(context),
-                                                   firstOp: fp,
-                                                   secondOp: .constant(context.getNextLocalAddressOffset()))
-            
-            return [addInstr]
+            context.mapLocalAllocation(target.identifier)
+            return []
         case let .declareGlobal(target, _):
             return [.declareGlobal(label: target.armSymbol)]
         case .declareStructureType:
