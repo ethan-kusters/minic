@@ -11,7 +11,7 @@ import XCTest
 import class Foundation.Bundle
 
 final class ARMWithSSABenchmarks: XCTestCase {
-    let runBenchmarkWithSSA = BenchmarkARMTestRunner(enableSSA: true, useLongerInput: false)
+    let runBenchmarkWithSSA = BenchmarkARMTestRunner(enableSSA: true, enableOptimizations: false, useLongerInput: false)
     
     func testBenchMarkishTopicsBenchmark() throws {
         try runBenchmarkWithSSA(named: "BenchMarkishTopics")

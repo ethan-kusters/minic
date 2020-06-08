@@ -12,10 +12,12 @@ import System
 class BenchmarkARMTestRunner {
     let ssaEnabled: Bool
     let useLongerInput: Bool
+    let optimizationsEnabled: Bool
     
-    init(enableSSA: Bool, useLongerInput: Bool) {
+    init(enableSSA: Bool, enableOptimizations: Bool, useLongerInput: Bool) {
         self.ssaEnabled = enableSSA
         self.useLongerInput = useLongerInput
+        self.optimizationsEnabled = enableOptimizations
     }
     
     func callAsFunction(named name: String) throws {
@@ -46,7 +48,8 @@ class BenchmarkARMTestRunner {
                                                             miniFile.path,
                                                             "-o",
                                                             compiledMiniFile.path,
-                                                            ssaEnabled ? nil : "--disable-ssa"
+                                                            ssaEnabled ? nil : "--disable-ssa",
+                                                            optimizationsEnabled ? nil : "--disable-optimizations"
                                                         ].compactMap {$0},
                                             captureOutput: true)
         

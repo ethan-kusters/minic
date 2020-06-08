@@ -1,5 +1,5 @@
 //
-//  ARMWithSSABenchmarks.swift
+//  ARMWithOptimizationsBenchmarks.swift
 //  MiniCompilerTests
 //
 //  Created by Ethan Kusters on 5/29/20.
@@ -10,8 +10,8 @@ import Foundation
 import XCTest
 import class Foundation.Bundle
 
-final class ARMWithoutSSABenchmarks: XCTestCase {
-    let runBenchmarkWithSSA = BenchmarkARMTestRunner(enableSSA: false, enableOptimizations: false, useLongerInput: false)
+final class ARMWithOptimizationsBenchmarks: XCTestCase {
+    let runBenchmarkWithSSA = BenchmarkARMTestRunner(enableSSA: true, enableOptimizations: true, useLongerInput: false)
     
     func testBenchMarkishTopicsBenchmark() throws {
         try runBenchmarkWithSSA(named: "BenchMarkishTopics")
