@@ -250,7 +250,7 @@ func runMinicBenchmark(_ benchmarkDirectory: URL, benchmarkName: String, disable
     try system(shell: "cat \(inputFileURL.path) | \(executableFile.path) > \(actualOutputFileURL.path)")
     gettimeofday(&endExecutionTime, nil)
     
-    let executionTime = endExecutionTime.totalTime - startCompileTime.totalTime
+    let executionTime = endExecutionTime.totalTime - startExecutionTime.totalTime
     
     print("Completed MINIC execution for \(benchmarkName) in \(executionTime).\n")
     
@@ -305,7 +305,7 @@ func runGccBenchmark(_ benchmarkDirectory: URL, benchmarkName: String, enableOpt
     try system(shell: "cat \(inputFileURL.path) | \(executableFile.path) > \(actualOutputFileURL.path)")
     gettimeofday(&endExecutionTime, nil)
     
-    let executionTime = endExecutionTime.totalTime - startCompileTime.totalTime
+    let executionTime = endExecutionTime.totalTime - startExecutionTime.totalTime
     
     print("Completed GCC execution for \(benchmarkName) in \(executionTime).\n")
     
