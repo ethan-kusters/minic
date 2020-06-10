@@ -7,7 +7,6 @@
 xcuserdata/
 /.swiftpm
 Package.resolved
-*.c
 *.ll
 *.out
 *.txt
