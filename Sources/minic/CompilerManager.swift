@@ -7,8 +7,8 @@
 
 import Foundation
 
-class CompilerManager {
-    static func compile(sourceFile: URL, outputFile: URL? = nil, generateCfg: Bool = false,
+public class CompilerManager {
+    public static func compile(sourceFile: URL, outputFile: URL? = nil, generateCfg: Bool = false,
                         generateCfgPdf: Bool = false, emitLlvm: Bool = false, printOutput: Bool = false,
                         useSSA: Bool, optimize: Bool, skipRegisterAllocation: Bool = false) throws {
         let program = try ParsingManager().parseFileAtURL(sourceFile)
