@@ -21,7 +21,11 @@ struct MiniCompilerTestConstants {
     
     static let benchmarksDirectory: URL = {
         let thisSourceFile = URL(fileURLWithPath: #file)
-        return thisSourceFile.deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("benchmarks")
+        return thisSourceFile
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("Benchmarks")
     }()
     
     static let minicBinary: URL = {
