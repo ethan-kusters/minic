@@ -78,40 +78,87 @@ MINIC constructs a Single Static Assignment (SSA) Form as [discussed by Braun, e
 
 ![Graph for BenchMarkishTopics](/BenchmarkUtility/Results/BenchMarkishTopics.png)
 
-### bert
+### [bert](/Benchmarks/bert)
 
 ![Graph for bert](/BenchmarkUtility/Results/bert.png)
 
-### biggest
+### [biggest](/Benchmarks/biggest)
 
 ![Graph for biggest](/BenchmarkUtility/Results/biggest.png)
 
-### binaryConverter
+### [binaryConverter](/Benchmarks/binaryConverter)
 
 ![Graph for binaryConverter](/BenchmarkUtility/Results/binaryConverter.png)
 
-### brett
+### [brett](/Benchmarks/brett)
 
 ![Graph for brett](/BenchmarkUtility/Results/brett.png)
 
-### creativeBenchMarkName
+### [creativeBenchMarkName](/Benchmarks/creativeBenchMarkName)
 
 ![Graph for creativeBenchMarkName](/BenchmarkUtility/Results/creativeBenchMarkName.png)
 
-### fact_sum
+### [fact_sum](/Benchmarks/fact_sum)
 
-![Graph for bert](/BenchmarkUtility/Results/bert.png)
+![Graph for bert](/BenchmarkUtility/Results/fact_sum.png)
 
+### [Fibonacci](/Benchmarks/Fibonacci)
 
+![Graph for Fibonacci](/BenchmarkUtility/Results/Fibonacci.png)
 
+### [GeneralFunctAndOptimize](/Benchmarks/GeneralFunctAndOptimize)
 
+![Graph for GeneralFunctAndOptimize](/BenchmarkUtility/Results/GeneralFunctAndOptimize.png)
 
+### [hailstone](/Benchmarks/hailstone)
 
+![Graph for hailstone](/BenchmarkUtility/Results/hailstone.png)
 
+### [hanoi_benchmark](/Benchmarks/hanoi_benchmark)
 
+![Graph for hanoi_benchmark](/BenchmarkUtility/Results/hanoi_benchmark.png)
 
+### [killerBubbles](/Benchmarks/killerBubbles)
 
+![Graph for killerBubbles](/BenchmarkUtility/Results/killerBubbles.png)
 
+### [mile1](/Benchmarks/mile1)
 
+![Graph for mile1](/BenchmarkUtility/Results/mile1.png)
 
+### [mixed](/Benchmarks/mixed)
+
+![Graph for mixed](/BenchmarkUtility/Results/mixed.png)
+
+### [mile1](/Benchmarks/mile1)
+
+![Graph for mile1](/BenchmarkUtility/Results/mile1.png)
+
+### [OptimizationBenchmark](/Benchmarks/OptimizationBenchmark)
+
+![Graph for OptimizationBenchmark](/BenchmarkUtility/Results/OptimizationBenchmark.png)
+
+### [primes](/Benchmarks/primes)
+
+![Graph for primes](/BenchmarkUtility/Results/primes.png)
+
+### [programBreaker](/Benchmarks/programBreaker)
+
+![Graph for programBreaker](/BenchmarkUtility/Results/programBreaker.png)
+
+### [stats](/Benchmarks/stats)
+
+![Graph for stats](/BenchmarkUtility/Results/stats.png)
+
+### [programBreaker](/Benchmarks/programBreaker)
+
+![Graph for programBreaker](/BenchmarkUtility/Results/programBreaker.png)
+
+### [TicTac](/Benchmarks/TicTac)
+
+![Graph for TicTac](/BenchmarkUtility/Results/TicTac.png)
+
+### [wasteOfCycles](/Benchmarks/wasteOfCycles)
+
+![Graph for wasteOfCycles](/BenchmarkUtility/Results/wasteOfCycles.png)
 
