@@ -146,6 +146,8 @@ I learned a lot working on this project and really enjoyed the challenge.
 
 ## Benchmark Results
 
+These benchmarks were compiled and run on a [Raspberry Pi 4 Model B](https://www.raspberrypi.org/products/raspberry-pi-4-model-b/) with 4gb of RAM running a 64bit version of Ubuntu 18.04. 64-bit Ubuntu was used because the Swift target of ANTLR4 requires 64-bit but a [32-bit version of GCC](https://packages.debian.org/stretch/devel/gcc-arm-linux-gnueabi) was used to compile the .c version of the benchmarks to make the comparison versus the 32-bit ARM assembly generated via MINIC fair. The entire benchmark sequence was performed 5 times and an average was taken.
+
 ### [BenchMarkishTopics](/Benchmarks/BenchMarkishTopics)
 
 ![Graph for BenchMarkishTopics](/BenchmarkUtility/Results/BenchMarkishTopics.png)
