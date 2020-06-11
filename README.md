@@ -60,17 +60,21 @@ The following rules complete the syntactic definition.
 
 - Utilizes the [ANTLR4](https://github.com/antlr/antlr4) Swift target for parsing
 
+- Utilizes [Swift Argument Parser](https://github.com/apple/swift-argument-parser) to parse command-line arguments in a user-friendly way
+
+![Swift argument parser help output](/Resources/ArgumentParserOutput.png)
+
 - Friendly type checker:
 
 ![Example type checker output](/Resources/TypeChecker.png)
 
-- Able to generate a control flow graph for the input Mini file in the [Graphviz](https://graphviz.org/about/) [DOT Language](https://graphviz.org/doc/info/lang.html):
+- Can generate a visual representation of the input program's control flow graph via the [Graphviz](https://graphviz.org/about/) [DOT Language](https://graphviz.org/doc/info/lang.html):
 
 ![Example control flow graph](/Resources/GraphExample.svg) 
 
 ## Optimizations
 
-MINIC constructs a Single Static Assignment (SSA) Form as [discussed by Braun, et. al.](http://compilers.cs.uni-saarland.de/papers/bbhlmz13cc.pdf). This form is then utilized for register allocation via a graph coloring-based algorithm. It is also used 
+MINIC constructs a Single Static Assignment (SSA) Form as [discussed by Braun, et. al.](http://compilers.cs.uni-saarland.de/papers/bbhlmz13cc.pdf). This form is used as a backbone for other optimizations as well as register allocation. Register allocation is done via a graph coloring-based algorithm. MINIC's main optimization is Sparse Conditional Constant Propagation as [described by Wegman and Zadeck](https://www.cse.wustl.edu/~cytron/531Pages/f11/Resources/Papers/cprop.pdf). MINIC also performs useless instruction removal.
 
 ## Benchmark Results
 
