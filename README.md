@@ -3,7 +3,7 @@
 ![Swift](https://github.com/keen-cp/compiler-project-ethankusters/workflows/Swift/badge.svg)
 
 ## Overview
-This repository holds a compiler for the Mini language written in Swift. It was developed for Professor Aaron Keen's [Compiler Construction](http://users.csc.calpoly.edu/~akeen/courses/csc431/) course at Cal Poly.
+This repository holds a compiler for the Mini language written in Swift. It was developed for Professor Aaron Keen's [Compiler Construction](http://users.csc.calpoly.edu/~akeen/courses/csc431/) course at Cal Poly. MINIC can produce 32-bit ARM instructions or LLVM IR.
 
 ## Building MINIC
 
@@ -64,13 +64,16 @@ The following rules complete the syntactic definition.
 
 ![Example type checker output](/Resources/TypeChecker.png)
 
-- Can generate a control flow graph of the input Mini file in the [Graphviz](https://graphviz.org/about/) [DOT Language](https://graphviz.org/doc/info/lang.html):
+- Able to generate a control flow graph for the input Mini file in the [Graphviz](https://graphviz.org/about/) [DOT Language](https://graphviz.org/doc/info/lang.html):
 
 ![Example control flow graph](/Resources/GraphExample.svg) 
 
+## Optimizations
 
+MINIC constructs a Single Static Assignment (SSA) Form as [discussed by Braun, et. al.](http://compilers.cs.uni-saarland.de/papers/bbhlmz13cc.pdf). This form is then utilized for register allocation via a graph coloring-based algorithm. It is also used 
 
+## Benchmark Results
 
+### BenchMarkishTopics
 
-
-l
+![Graph for BenchMarkishTopics](/BenchmarkUtility/Results/BenchMarkishTopics.png)
