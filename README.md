@@ -3,7 +3,7 @@
 ![Swift](https://github.com/keen-cp/compiler-project-ethankusters/workflows/Swift/badge.svg)
 
 ## Overview
-This repository holds a compiler for the Mini language written in Swift. It was developed for Professor Aaron Keen's [Compiler Construction](http://users.csc.calpoly.edu/~akeen/courses/csc431/) course at Cal Poly. MINIC can produce 32-bit ARM instructions or LLVM IR.
+This repository holds a compiler for the Mini language. It was developed entirely in Swift for Professor Aaron Keen's [Compiler Construction](http://users.csc.calpoly.edu/~akeen/courses/csc431/) course at Cal Poly. MINIC can generate 32-bit ARM Assembly instructions or LLVM IR.
 
 ## Building MINIC
 
@@ -12,14 +12,14 @@ MINIC is written entirely in Swift and developed as a Swift package. It requires
 ### Requirements
 
 - [Swift 5.2 or later](https://swift.org/download/#releases)
+
 - macOS 10.13 or later (or Linux)
 
 ### Quick Run Instructions
 
 - Clone this repository
-- Execute `swift run -c release -help`
 
-	- This will print out the list of the commands minic accepts
+- Execute `swift run -c release -help`
 
 ### Installation Instructions
 
@@ -32,8 +32,6 @@ MINIC is written entirely in Swift and developed as a Swift package. It requires
 - Add a symbolic link to ./build/release/minic in your /usr/bin/local
 
 - Run `minic -help`
-
-	- This will print out the list of the commands minic accepts
 
 ### Developing for MINIC
 
