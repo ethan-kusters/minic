@@ -27,9 +27,9 @@ MINIC is written entirely in Swift and developed as a Swift package. It requires
 
 - Execute `swift build -configuration release` from the repositories root
 
-- A minic executable will be placed in a .build/release folder
+- A minic executable will be placed in a `.build/release` folder
 
-- Add a symbolic link to ./build/release/minic in your /usr/bin/local
+- Add a symbolic link to `./build/release/minic` in your `/usr/bin/local`
 
 - Run `minic -help`
 
