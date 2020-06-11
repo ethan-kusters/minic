@@ -62,10 +62,6 @@ The following rules complete the syntactic definition.
 
 ![Swift argument parser help output](/Resources/ArgumentParserOutput.png)
 
-- Friendly type checker:
-
-![Example type checker output](/Resources/TypeChecker.png)
-
 - Can generate a visual representation of the input program's control flow graph via the [Graphviz](https://graphviz.org/about/) [DOT Language](https://graphviz.org/doc/info/lang.html):
 
 ![Example control flow graph](/Resources/GraphExample.svg) 
@@ -74,7 +70,7 @@ The following rules complete the syntactic definition.
 
 ### Parsing
 
-MINIC relies on [ANTLR4](https://github.com/antlr/antlr4) for text parsing and it's generater Visitor code to translate that initial parse into an Abstract Syntax Tree representation. The AST is represented as several enumerations. After working with [SML](https://www.smlnj.org/sml.html) in Professor Aaron Keen's [Programming Languages course](http://users.csc.calpoly.edu/~akeen/courses/csc430/) while developing an interpreter, I recognized how similar Swift's enum is to SML's datatype and was interested in continuing to work with this representation. For example, an `Expression` in my compiler is represented as the following:
+MINIC relies on [ANTLR4](https://github.com/antlr/antlr4) for text parsing and its generated Visitor pattern to translate that initial parse into an Abstract Syntax Tree representation. The AST is represented as several enumerations. After working with [SML](https://www.smlnj.org/sml.html) in Professor Aaron Keen's [Programming Languages course](http://users.csc.calpoly.edu/~akeen/courses/csc430/) while developing an interpreter, I recognized how similar Swift's enum is to SML's datatype and was interested in continuing to work with this representation. For example, an `Expression` in my compiler is represented as the following:
 
 ```swift
 enum Expression {
@@ -103,6 +99,15 @@ enum Expression {
     
 }
 ```
+
+Type checking is done on this representation via a series of `switch` statements over these enumerations. Errors are represented via yet another enumeration called `TypeError` which holds specific information for the kind of type error found. This allows for generation of user-friendly type errors:
+
+![Example type checker output](/Resources/TypeChecker.png)
+
+### Static Semantics
+
+
+
 
 MINIC constructs a Single Static Assignment (SSA) Form as [discussed by Braun, et. al.](http://compilers.cs.uni-saarland.de/papers/bbhlmz13cc.pdf). This form is used as a backbone for other optimizations as well as register allocation. Register allocation is done via a graph coloring-based algorithm. MINIC's main optimization is Sparse Conditional Constant Propagation as [described by Wegman and Zadeck](https://www.cse.wustl.edu/~cytron/531Pages/f11/Resources/Papers/cprop.pdf). MINIC also performs useless instruction removal.
 
