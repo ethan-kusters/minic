@@ -124,16 +124,33 @@ At the end of the type checking process, the `TypeCheckingManager` confirms that
 
 ### Intermediate Representation
 
-After the type checking process, the Abstract Syntax Tree representation is converted to a Control Flow Graph containing LLVM instructions. This is an intermediate representation used prior to generating ARM Assembly for a number of reasons. While working on generating the Control Flow Graph I wrote a tool that converts the internal CFG representation to a visualization in the [Graphviz](https://graphviz.org/about/) [DOT Language](https://graphviz.org/doc/info/lang.html):
+After the type checking process, the abstract syntax tree representation is converted to a control flow graph (CFG) containing LLVM instructions. This is an intermediate representation used prior to generating ARM Assembly for a number of reasons. While working on generating the control flow graph I wrote a tool that converts the internal CFG representation to a visualization in the [Graphviz](https://graphviz.org/about/) [DOT Language](https://graphviz.org/doc/info/lang.html):
 
 ![Example control flow graph](/Resources/GraphExample.svg) 
 
+The CFG is useful because it allows for analysis and modifications to code ordering without concern for breaking the flow of control. Instructions can be modified and reordered within a block without worry of effecting other blocks. This benefit is increased by using SSA Form.
 
+MINIC constructs a Single Static Assignment (SSA) Form as [discussed by Braun, et. al.](http://compilers.cs.uni-saarland.de/papers/bbhlmz13cc.pdf). This form is used as a backbone for other optimizations as well as register allocation. Similar to the benefits of a CFG representation, SSA is useful in that it allows isolation of concern. Because each variable is only assigned to a single time, that variable can be modified or removed without worry of unintended consequences. SSA also allows for easy generation of use-definition chains, another kind of graph overlaid on top of the CFG that connects each variable to its definition and uses. 
 
-The Control Flow Graph 
+LLVM is used because of its portability and the fact that it's easier to generate valid LLVM code than it is to generate valid ARM code. LLVM also contains a [phi instruction](https://releases.llvm.org/9.0.0/docs/LangRef.html#phi-instruction) specifically to allow for this SSA representation. Having the intermediate representation in LLVM allows for more complicated optimizations to be done on the LLVM representation and a mechanical, consistent, conversion to ARM later on in the process.
 
+### Optimizations
 
-MINIC constructs a Single Static Assignment (SSA) Form as [discussed by Braun, et. al.](http://compilers.cs.uni-saarland.de/papers/bbhlmz13cc.pdf). This form is used as a backbone for other optimizations as well as register allocation. Register allocation is done via a graph coloring-based algorithm. MINIC's main optimization is Sparse Conditional Constant Propagation as [described by Wegman and Zadeck](https://www.cse.wustl.edu/~cytron/531Pages/f11/Resources/Papers/cprop.pdf). MINIC also performs useless instruction removal.
+MINIC's primary optimization is Sparse Conditional Constant Propagation (SCCP) as [described by Wegman and Zadeck](https://www.cse.wustl.edu/~cytron/531Pages/f11/Resources/Papers/cprop.pdf). This optimization walks through the CFG in essentially the same way it will eventually be executed and statically analyses what can be computed before execution. This is very similar to interpretation but with the added complication of mixing values that are known with those that cannot be determined until execution. As MINIC represents LLVM instructions as (yet another) enum, this static evaluation is done via a single switch statement over the LLVM instruction type.
+
+MINIC also performs useless instruction removal which was rather trivial to implement because of work done prior to remove trivial phi statements. The SSA representation is used to determine which values have a definition but no uses, then the defining instruction for these values is removed from the program. This optimization is done after SCCP as SCCP can surface useless instructions.
+
+### Code Generation and Register Allocation
+
+The translation from LLVM to Assembly is intentionally rather mechanical and boring. There are definitely more efficient ways to convert certain common patterns of LLVM instructions, but the main goal was to simple produce valid ARM code and to optimize in the stages prior. The bulk of this conversion was done via extensions to the existing LLVM types that converted them to similar ARM representations. The ARM code was represented as (you guessed it) an enumeration.
+
+One exception to this rote conversion of LLVM to ARM is the LLVM `phi` instruction, ARM does not have a phi instruction and for good reason. Part of the "magic" of the phi instruction is that all phi instructions at the top of a block are performed simultaneously. Any sort of assembly language cannot have an equivalent for such an instruction. Because of this the phi instructions are converted into a series of move instructions that make use of an added virtual register. This allows the instructions to continue to be "simultaneous" while actually occurring as sequential instructions. This translation is done prior to the conversion to ARM via a temporary (and fictional) `move` instruction in the LLVM representation. This effectively deconstructs the SSA representation as the added "phi" virtual register will be assigned to multiple times.
+
+### Other
+
+I am generally pretty proud of how organized I kept the codebase for this compiler. It turned into a huge project but by making heavy use of Swift's ability to add new functionality to existing enumerations and classes via extensions I was able to keep files fairly small and grouped by functionality. I wasn't that familiar with Swift's enum type before this project and I think it's safe to say I am now a little too familiar with it. I also worked to get the compiler itself to run on the Raspberry Pi so that I could run both the generated ARM code and the compiler in the same environment. This allowed the benefit of being able to benchmark compile times but also just made the complier feel more "real".
+
+I learned a lot working on this project and really enjoyed the challenge. 
 
 ## Benchmark Results
 
