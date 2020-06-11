@@ -70,7 +70,39 @@ The following rules complete the syntactic definition.
 
 ![Example control flow graph](/Resources/GraphExample.svg) 
 
-## Optimizations
+## Compiler Overview
+
+### Parsing
+
+MINIC relies on [ANTLR4](https://github.com/antlr/antlr4) for text parsing and it's generater Visitor code to translate that initial parse into an Abstract Syntax Tree representation. The AST is represented as several enumerations. After working with [SML](https://www.smlnj.org/sml.html) in Professor Aaron Keen's [Programming Languages course](http://users.csc.calpoly.edu/~akeen/courses/csc430/) while developing an interpreter, I recognized how similar Swift's enum is to SML's datatype and was interested in continuing to work with this representation. For example, an `Expression` in my compiler is represented as the following:
+
+```swift
+enum Expression {
+    
+    indirect case binary(lineNumber: Int, op: BinaryOperator, left: Expression, right: Expression)
+    
+    indirect case dot(lineNumber: Int, left: Expression, id: String)
+    
+    case `false`(lineNumber: Int)
+    
+    case identifier(lineNumber: Int, id: String)
+    
+    case integer(lineNumber: Int, value: Int)
+    
+    indirect case invocation(lineNumber: Int, name: String, arguments: [Expression])
+    
+    case new(lineNumber: Int, id: String)
+    
+    case null(lineNumber: Int, typeIndex: Int)
+    
+    case read(lineNumber: Int)
+    
+    case `true`(lineNumber: Int)
+    
+    indirect case unary(lineNumber: Int, op: UnaryOperator, operand: Expression)
+    
+}
+```
 
 MINIC constructs a Single Static Assignment (SSA) Form as [discussed by Braun, et. al.](http://compilers.cs.uni-saarland.de/papers/bbhlmz13cc.pdf). This form is used as a backbone for other optimizations as well as register allocation. Register allocation is done via a graph coloring-based algorithm. MINIC's main optimization is Sparse Conditional Constant Propagation as [described by Wegman and Zadeck](https://www.cse.wustl.edu/~cytron/531Pages/f11/Resources/Papers/cprop.pdf). MINIC also performs useless instruction removal.
 
