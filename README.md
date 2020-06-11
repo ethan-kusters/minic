@@ -1,7 +1,5 @@
 # MINIC
 
-![Swift](https://github.com/keen-cp/compiler-project-ethankusters/workflows/Swift/badge.svg)
-
 ## Overview
 This repository holds a compiler for the Mini language. It was developed entirely in Swift for Professor Aaron Keen's [Compiler Construction](http://users.csc.calpoly.edu/~akeen/courses/csc431/) course at Cal Poly. MINIC can generate 32-bit ARM Assembly instructions and LLVM IR.
 
