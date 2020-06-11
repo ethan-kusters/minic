@@ -3,7 +3,7 @@
 ![Swift](https://github.com/keen-cp/compiler-project-ethankusters/workflows/Swift/badge.svg)
 
 ## Overview
-This repository holds a compiler for the Mini language. It was developed entirely in Swift for Professor Aaron Keen's [Compiler Construction](http://users.csc.calpoly.edu/~akeen/courses/csc431/) course at Cal Poly. MINIC can generate 32-bit ARM Assembly instructions or LLVM IR.
+This repository holds a compiler for the Mini language. It was developed entirely in Swift for Professor Aaron Keen's [Compiler Construction](http://users.csc.calpoly.edu/~akeen/courses/csc431/) course at Cal Poly. MINIC can generate 32-bit ARM Assembly instructions and LLVM IR.
 
 ## Building MINIC
 
@@ -53,18 +53,6 @@ The following rules complete the syntactic definition.
 - As is the case in most languages, a token is formed by taking the longest possible sequence of constituent characters. For example, the input “abcd” represents a single identifier, not several identifiers. Whitespace (i.e., one or more blanks, tabs, or newlines) may precede or follow any token. E.g., “x=10” and “x = 10” are equivalent. Note that whitespace delimits tokens; e.g., “abc” is one token whereas “a bc” is two.
 
 - A comment begins with “#” and consists of all characters up to a newline.
-
-## Features
-
-- Utilizes the [ANTLR4](https://github.com/antlr/antlr4) Swift target for parsing
-
-- Utilizes [Swift Argument Parser](https://github.com/apple/swift-argument-parser) to parse command-line arguments in a user-friendly way
-
-![Swift argument parser help output](/Resources/ArgumentParserOutput.png)
-
-- Can generate a visual representation of the input program's control flow graph via the [Graphviz](https://graphviz.org/about/) [DOT Language](https://graphviz.org/doc/info/lang.html):
-
-![Example control flow graph](/Resources/GraphExample.svg) 
 
 ## Compiler Overview
 
@@ -149,6 +137,10 @@ One exception to this rote conversion of LLVM to ARM is the LLVM `phi` instructi
 ### Other
 
 I am generally pretty proud of how organized I kept the codebase for this compiler. It turned into a huge project but by making heavy use of Swift's ability to add new functionality to existing enumerations and classes via extensions I was able to keep files fairly small and grouped by functionality. I wasn't that familiar with Swift's enum type before this project and I think it's safe to say I am now a little too familiar with it. I also worked to get the compiler itself to run on the Raspberry Pi so that I could run both the generated ARM code and the compiler in the same environment. This allowed the benefit of being able to benchmark compile times but also just made the complier feel more "real".
+
+I also made use of the Swift Argument Parser that was released just a couple of months before I began work on the project. It also added to the overall polish of the finished project. 
+
+![Swift argument parser help output](/Resources/ArgumentParserOutput.png)
 
 I learned a lot working on this project and really enjoyed the challenge. 
 
