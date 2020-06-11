@@ -1,58 +1,10 @@
+Ethan Kusters  
+CSC 431-01: Compiler Construction  
+Professor Aaron Keen  
+10 June 2020  
+
+
 # MINIC
-
-![Swift](https://github.com/keen-cp/compiler-project-ethankusters/workflows/Swift/badge.svg)
-
-## Overview
-This repository holds a compiler for the Mini language. It was developed entirely in Swift for Professor Aaron Keen's [Compiler Construction](http://users.csc.calpoly.edu/~akeen/courses/csc431/) course at Cal Poly. MINIC can generate 32-bit ARM Assembly instructions and LLVM IR.
-
-## Building MINIC
-
-MINIC is written entirely in Swift and developed as a Swift package. It requires Swift 5.3 or later and while it supports Linux, when run on macOS it requires macOS 10.13 or later.
-
-### Requirements
-
-- [Swift 5.2 or later](https://swift.org/download/#releases)
-
-- macOS 10.13 or later (or Linux)
-
-### Quick Run Instructions
-
-- Clone this repository
-
-- Execute `swift run -c release -help`
-
-### Installation Instructions
-
-- Clone this repository
-
-- Execute `swift build -configuration release` from the repositories root
-
-- A minic executable will be placed in a `.build/release` folder
-
-- Add a symbolic link to `./build/release/minic` in your `/usr/bin/local`
-
-- Run `minic -help`
-
-### Developing for MINIC
-
-- The easiest way to work on or view the codebase is via Xcode
-
-- Execute `swift package generate-xcodeproj` to create an Xcode project for the compiler
-
-## Mini Language
-The following grammar partially describes the language’s syntax. This language is similar in many respects to C, but limited in features. In the EBNF below, non-terminals are typeset in **bold** font and terminals are typeset in `typewriter` font.
-
-![Mini Grammar Overview](/Resources/MiniGrammarOverview.svg)	
-
-The following rules complete the syntactic definition.
-
-- A valid program is followed by an end-of-file indicator; extra text is not legal.
-
-- The terminal (token) “id” represents a nonempty sequence (beginning with a letter) of letters and digits other than one of the keywords. Similarly, the terminal (token) “number” represents a nonempty sequence of digits.
-
-- As is the case in most languages, a token is formed by taking the longest possible sequence of constituent characters. For example, the input “abcd” represents a single identifier, not several identifiers. Whitespace (i.e., one or more blanks, tabs, or newlines) may precede or follow any token. E.g., “x=10” and “x = 10” are equivalent. Note that whitespace delimits tokens; e.g., “abc” is one token whereas “a bc” is two.
-
-- A comment begins with “#” and consists of all characters up to a newline.
 
 ## Compiler Overview
 
@@ -90,7 +42,7 @@ enum Expression {
 
 Type checking is done on this representation via a series of `switch` statements over these enumerations. Errors are represented via yet another enumeration called `TypeError` which holds specific information for the kind of type error found. This allows for the generation of user-friendly type errors:
 
-![Example type checker output](/Resources/TypeChecker.png)
+![Example type checker output](./Resources/TypeChecker.png)
 
 ### Static Semantics
 
@@ -114,7 +66,7 @@ At the end of the type checking process, the `TypeCheckingManager` confirms that
 
 After the type checking process, the abstract syntax tree representation is converted to a control flow graph (CFG) containing LLVM instructions. This is an intermediate representation used prior to generating ARM Assembly for a number of reasons. While working on generating the control flow graph I wrote a tool that converts the internal CFG representation to a visualization in the [Graphviz](https://graphviz.org/about/) [DOT Language](https://graphviz.org/doc/info/lang.html):
 
-![Example control flow graph](/Resources/GraphExample.svg) 
+![Example control flow graph](./Resources/GraphExample.svg) 
 
 The CFG is useful because it allows for analysis and modifications to code ordering without concern for breaking the flow of control. Instructions can be modified and reordered within a block without worry of effecting other blocks. This benefit is increased by using SSA Form.
 
@@ -140,7 +92,7 @@ I am generally pretty proud of how organized I kept the codebase for this compil
 
 I also made use of the Swift Argument Parser that was released just a couple of months before I began work on the project. It also added to the overall polish of the finished project. 
 
-![Swift argument parser help output](/Resources/ArgumentParserOutput.png)
+![Swift argument parser help output](./Resources/ArgumentParserOutput.png)
 
 I learned a lot working on this project and really enjoyed the challenge. 
 
@@ -148,83 +100,83 @@ I learned a lot working on this project and really enjoyed the challenge.
 
 These benchmarks were compiled and run on a [Raspberry Pi 4 Model B](https://www.raspberrypi.org/products/raspberry-pi-4-model-b/) with 4GB of RAM running a 64-bit version of Ubuntu 18.04. 64-bit Ubuntu was used because the Swift target of ANTLR4 requires 64-bit but a [32-bit version of GCC](https://packages.debian.org/stretch/devel/gcc-arm-linux-gnueabi) was used to compile the .c version of the benchmarks to make the comparison versus the 32-bit ARM assembly generated via MINIC fair. The entire benchmark sequence was performed 5 times and an average was taken.
 
-### [BenchMarkishTopics](/Benchmarks/BenchMarkishTopics)
+### [BenchMarkishTopics](./Benchmarks/BenchMarkishTopics)
 
-![Graph for BenchMarkishTopics](/BenchmarkUtility/Results/BenchMarkishTopics.png)
+![Graph for BenchMarkishTopics](./BenchmarkUtility/Results/BenchMarkishTopics.png)
 
-### [bert](/Benchmarks/bert)
+### [bert](./Benchmarks/bert)
 
-![Graph for bert](/BenchmarkUtility/Results/bert.png)
+![Graph for bert](./BenchmarkUtility/Results/bert.png)
 
-### [biggest](/Benchmarks/biggest)
+### [biggest](./Benchmarks/biggest)
 
-![Graph for biggest](/BenchmarkUtility/Results/biggest.png)
+![Graph for biggest](./BenchmarkUtility/Results/biggest.png)
 
-### [binaryConverter](/Benchmarks/binaryConverter)
+### [binaryConverter](./Benchmarks/binaryConverter)
 
-![Graph for binaryConverter](/BenchmarkUtility/Results/binaryConverter.png)
+![Graph for binaryConverter](./BenchmarkUtility/Results/binaryConverter.png)
 
-### [brett](/Benchmarks/brett)
+### [brett](./Benchmarks/brett)
 
-![Graph for brett](/BenchmarkUtility/Results/brett.png)
+![Graph for brett](./BenchmarkUtility/Results/brett.png)
 
-### [creativeBenchMarkName](/Benchmarks/creativeBenchMarkName)
+### [creativeBenchMarkName](./Benchmarks/creativeBenchMarkName)
 
-![Graph for creativeBenchMarkName](/BenchmarkUtility/Results/creativeBenchMarkName.png)
+![Graph for creativeBenchMarkName](./BenchmarkUtility/Results/creativeBenchMarkName.png)
 
-### [fact_sum](/Benchmarks/fact_sum)
+### [fact_sum](./Benchmarks/fact_sum)
 
-![Graph for bert](/BenchmarkUtility/Results/fact_sum.png)
+![Graph for bert](./BenchmarkUtility/Results/fact_sum.png)
 
-### [Fibonacci](/Benchmarks/Fibonacci)
+### [Fibonacci](./Benchmarks/Fibonacci)
 
-![Graph for Fibonacci](/BenchmarkUtility/Results/Fibonacci.png)
+![Graph for Fibonacci](./BenchmarkUtility/Results/Fibonacci.png)
 
-### [GeneralFunctAndOptimize](/Benchmarks/GeneralFunctAndOptimize)
+### [GeneralFunctAndOptimize](./Benchmarks/GeneralFunctAndOptimize)
 
-![Graph for GeneralFunctAndOptimize](/BenchmarkUtility/Results/GeneralFunctAndOptimize.png)
+![Graph for GeneralFunctAndOptimize](./BenchmarkUtility/Results/GeneralFunctAndOptimize.png)
 
-### [hailstone](/Benchmarks/hailstone)
+### [hailstone](./Benchmarks/hailstone)
 
-![Graph for hailstone](/BenchmarkUtility/Results/hailstone.png)
+![Graph for hailstone](./BenchmarkUtility/Results/hailstone.png)
 
-### [hanoi_benchmark](/Benchmarks/hanoi_benchmark)
+### [hanoi_benchmark](./Benchmarks/hanoi_benchmark)
 
-![Graph for hanoi_benchmark](/BenchmarkUtility/Results/hanoi_benchmark.png)
+![Graph for hanoi_benchmark](./BenchmarkUtility/Results/hanoi_benchmark.png)
 
-### [killerBubbles](/Benchmarks/killerBubbles)
+### [killerBubbles](./Benchmarks/killerBubbles)
 
-![Graph for killerBubbles](/BenchmarkUtility/Results/killerBubbles.png)
+![Graph for killerBubbles](./BenchmarkUtility/Results/killerBubbles.png)
 
-### [mile1](/Benchmarks/mile1)
+### [mile1](./Benchmarks/mile1)
 
-![Graph for mile1](/BenchmarkUtility/Results/mile1.png)
+![Graph for mile1](./BenchmarkUtility/Results/mile1.png)
 
-### [mixed](/Benchmarks/mixed)
+### [mixed](./Benchmarks/mixed)
 
-![Graph for mixed](/BenchmarkUtility/Results/mixed.png)
+![Graph for mixed](./BenchmarkUtility/Results/mixed.png)
 
-### [OptimizationBenchmark](/Benchmarks/OptimizationBenchmark)
+### [OptimizationBenchmark](./Benchmarks/OptimizationBenchmark)
 
-![Graph for OptimizationBenchmark](/BenchmarkUtility/Results/OptimizationBenchmark.png)
+![Graph for OptimizationBenchmark](./BenchmarkUtility/Results/OptimizationBenchmark.png)
 
-### [primes](/Benchmarks/primes)
+### [primes](./Benchmarks/primes)
 
-![Graph for primes](/BenchmarkUtility/Results/primes.png)
+![Graph for primes](./BenchmarkUtility/Results/primes.png)
 
-### [programBreaker](/Benchmarks/programBreaker)
+### [programBreaker](./Benchmarks/programBreaker)
 
-![Graph for programBreaker](/BenchmarkUtility/Results/programBreaker.png)
+![Graph for programBreaker](./BenchmarkUtility/Results/programBreaker.png)
 
-### [stats](/Benchmarks/stats)
+### [stats](./Benchmarks/stats)
 
-![Graph for stats](/BenchmarkUtility/Results/stats.png)
+![Graph for stats](./BenchmarkUtility/Results/stats.png)
 
-### [TicTac](/Benchmarks/TicTac)
+### [TicTac](./Benchmarks/TicTac)
 
-![Graph for TicTac](/BenchmarkUtility/Results/TicTac.png)
+![Graph for TicTac](./BenchmarkUtility/Results/TicTac.png)
 
-### [wasteOfCycles](/Benchmarks/wasteOfCycles)
+### [wasteOfCycles](./Benchmarks/wasteOfCycles)
 
-![Graph for wasteOfCycles](/BenchmarkUtility/Results/wasteOfCycles.png)
+![Graph for wasteOfCycles](./BenchmarkUtility/Results/wasteOfCycles.png)
 
