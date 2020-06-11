@@ -74,6 +74,44 @@ MINIC constructs a Single Static Assignment (SSA) Form as [discussed by Braun, e
 
 ## Benchmark Results
 
-### BenchMarkishTopics
+### [BenchMarkishTopics](/Benchmarks/BenchMarkishTopics)
 
 ![Graph for BenchMarkishTopics](/BenchmarkUtility/Results/BenchMarkishTopics.png)
+
+### bert
+
+![Graph for bert](/BenchmarkUtility/Results/bert.png)
+
+### biggest
+
+![Graph for biggest](/BenchmarkUtility/Results/biggest.png)
+
+### binaryConverter
+
+![Graph for binaryConverter](/BenchmarkUtility/Results/binaryConverter.png)
+
+### brett
+
+![Graph for brett](/BenchmarkUtility/Results/brett.png)
+
+### creativeBenchMarkName
+
+![Graph for creativeBenchMarkName](/BenchmarkUtility/Results/creativeBenchMarkName.png)
+
+### fact_sum
+
+![Graph for bert](/BenchmarkUtility/Results/bert.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
