@@ -124,6 +124,14 @@ At the end of the type checking process, the `TypeCheckingManager` confirms that
 
 ### Intermediate Representation
 
+After the type checking process, the Abstract Syntax Tree representation is converted to a Control Flow Graph containing LLVM instructions. This is an intermediate representation used prior to generating ARM Assembly for a number of reasons. While working on generating the Control Flow Graph I wrote a tool that converts the internal CFG representation to a visualization in the [Graphviz](https://graphviz.org/about/) [DOT Language](https://graphviz.org/doc/info/lang.html):
+
+![Example control flow graph](/Resources/GraphExample.svg) 
+
+
+
+The Control Flow Graph 
+
 
 MINIC constructs a Single Static Assignment (SSA) Form as [discussed by Braun, et. al.](http://compilers.cs.uni-saarland.de/papers/bbhlmz13cc.pdf). This form is used as a backbone for other optimizations as well as register allocation. Register allocation is done via a graph coloring-based algorithm. MINIC's main optimization is Sparse Conditional Constant Propagation as [described by Wegman and Zadeck](https://www.cse.wustl.edu/~cytron/531Pages/f11/Resources/Papers/cprop.pdf). MINIC also performs useless instruction removal.
 
