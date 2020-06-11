@@ -130,10 +130,6 @@ MINIC constructs a Single Static Assignment (SSA) Form as [discussed by Braun, e
 
 ![Graph for mixed](/BenchmarkUtility/Results/mixed.png)
 
-### [mile1](/Benchmarks/mile1)
-
-![Graph for mile1](/BenchmarkUtility/Results/mile1.png)
-
 ### [OptimizationBenchmark](/Benchmarks/OptimizationBenchmark)
 
 ![Graph for OptimizationBenchmark](/BenchmarkUtility/Results/OptimizationBenchmark.png)
@@ -149,10 +145,6 @@ MINIC constructs a Single Static Assignment (SSA) Form as [discussed by Braun, e
 ### [stats](/Benchmarks/stats)
 
 ![Graph for stats](/BenchmarkUtility/Results/stats.png)
-
-### [programBreaker](/Benchmarks/programBreaker)
-
-![Graph for programBreaker](/BenchmarkUtility/Results/programBreaker.png)
 
 ### [TicTac](/Benchmarks/TicTac)
 
