@@ -100,13 +100,29 @@ enum Expression {
 }
 ```
 
-Type checking is done on this representation via a series of `switch` statements over these enumerations. Errors are represented via yet another enumeration called `TypeError` which holds specific information for the kind of type error found. This allows for generation of user-friendly type errors:
+Type checking is done on this representation via a series of `switch` statements over these enumerations. Errors are represented via yet another enumeration called `TypeError` which holds specific information for the kind of type error found. This allows for the generation of user-friendly type errors:
 
 ![Example type checker output](/Resources/TypeChecker.png)
 
 ### Static Semantics
 
+The bulk of the static type checking is done via two switch statements. One for the `Expression` enum and one for the `Statement` enum. While this type checking is performed, a `TypeContext` is passed around that holds type information for any identifiers in the program. In general I found this to be a pretty clean way to do type checking, all of the logic is kept to a couple of files that deal with the type checking. Because of the nature of enums and switch statements in Swift, if a value were ver added to `Expression`, Swift would throw a compiler error until the case was handled by the checking. That being said, enums can be a bit clunky when working with a particularly complicated case. In example, type checking binary Expressions requires a nested switch statement over the `BinaryOperator`. Because this case is so complicated, I moved type checking binary expressions into a specific function. Unfortunately, there's no way to pass a specific case of an enum to a function. This leads to some inelegant code at the top of the `typeCheckBinaryExp` function that throws an error if any case of `Expression` besides `binary` is passed to it. That being said, I think the overall benefit of localizing all type checking related code to a couple of places outweighs the bit of clunkiness produced by enumerations. 
 
+The compiler also checks for a return statement along each possible path of the function. This is implemented via a custom enum type that is returned from `StatementTypeChecker` called `ReturnEquivalent`. If the statement type checker can determine that one path is return equivalent, it returns a value of `isReturnEquivalent`, if not it returns `notReturnEquivalent`. For example, when type checking a block statement, `typeCheck` is called on each statement within the block and the results of each of these calls is saved in an array. The compiler then confirms that this array contains at least one value of `isReturnEquivalent` and returns `isReturnEquivalent` for the block statement if so. 
+
+```swift
+case let .block(_, statements):
+    let statementReturnEquivalences = statements.map(typeCheck)
+    guard statementReturnEquivalences.contains(.isReturnEquivalent) else {
+        return .notReturnEquivalent
+    }
+    
+    return .isReturnEquivalent
+```
+
+At the end of the type checking process, the `TypeCheckingManager` confirms that each function has a value of `isReturnEquivalent` and raises a type error if not.
+
+### Intermediate Representation
 
 
 MINIC constructs a Single Static Assignment (SSA) Form as [discussed by Braun, et. al.](http://compilers.cs.uni-saarland.de/papers/bbhlmz13cc.pdf). This form is used as a backbone for other optimizations as well as register allocation. Register allocation is done via a graph coloring-based algorithm. MINIC's main optimization is Sparse Conditional Constant Propagation as [described by Wegman and Zadeck](https://www.cse.wustl.edu/~cytron/531Pages/f11/Resources/Papers/cprop.pdf). MINIC also performs useless instruction removal.
